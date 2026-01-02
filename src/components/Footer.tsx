@@ -9,11 +9,11 @@ const Footer = () => {
           <div className="lg:col-span-2 space-y-5">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
-                <span className="text-2xl font-black text-primary-foreground">D</span>
+                <span className="text-2xl font-black text-primary-foreground">E</span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-foreground">Digital Store</span>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">Premium Products</p>
+                <span className="text-2xl font-bold text-foreground">Economiza.IA</span>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Produtos Digitais</p>
               </div>
             </div>
             <p className="text-muted-foreground max-w-md leading-relaxed">
@@ -86,7 +86,7 @@ const Footer = () => {
         <div className="pt-8 border-t border-border/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Digital Store. Todos os direitos reservados.
+              © {new Date().getFullYear()} Economiza.IA. Todos os direitos reservados.
             </p>
             <p className="text-sm text-muted-foreground flex items-center gap-1.5">
               Feito com <Heart className="h-4 w-4 text-destructive fill-destructive" /> no Brasil

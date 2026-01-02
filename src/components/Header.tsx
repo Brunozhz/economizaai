@@ -9,11 +9,11 @@ const Header = () => {
         {/* Logo */}
         <div className="flex items-center gap-3 group cursor-pointer">
           <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm transition-all duration-300 group-hover:shadow-glow group-hover:scale-110">
-            <span className="text-2xl font-black text-primary-foreground">D</span>
+            <span className="text-2xl font-black text-primary-foreground">E</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold text-foreground tracking-tight">Digital Store</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Premium Products</span>
+            <span className="text-xl font-bold text-foreground tracking-tight">Economiza.IA</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Produtos Digitais</span>
           </div>
         </div>
 
