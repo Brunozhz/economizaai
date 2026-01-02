@@ -1,20 +1,103 @@
-import { Search, Menu, Brain, Download, X } from "lucide-react";
+import { Search, Menu, Brain, Download, X, Share, Plus, Monitor, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+type DeviceType = 'android' | 'ios' | 'desktop-chrome' | 'desktop-edge' | 'desktop-other';
 
 const Header = () => {
   const { isInstallable, isInstalled, isIOS, installApp, canShowInstall } = usePWAInstall();
-  const [showIOSModal, setShowIOSModal] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [deviceType, setDeviceType] = useState<DeviceType>('desktop-other');
+
+  useEffect(() => {
+    const detectDevice = () => {
+      const ua = navigator.userAgent.toLowerCase();
+      const isAndroid = /android/.test(ua);
+      const isIOSDevice = /iphone|ipad|ipod/.test(ua);
+      const isChrome = /chrome/.test(ua) && !/edge|edg/.test(ua);
+      const isEdge = /edge|edg/.test(ua);
+
+      if (isIOSDevice) return 'ios';
+      if (isAndroid) return 'android';
+      if (isEdge) return 'desktop-edge';
+      if (isChrome) return 'desktop-chrome';
+      return 'desktop-other';
+    };
+    setDeviceType(detectDevice());
+  }, []);
 
   const handleInstall = async () => {
-    if (isIOS) {
-      setShowIOSModal(true);
+    // Se pode instalar diretamente (Android/Chrome/Edge), tenta instalar
+    if (isInstallable && !isIOS) {
+      const installed = await installApp();
+      if (!installed) {
+        // Se falhou, mostra modal com instruções
+        setShowInstallModal(true);
+      }
     } else {
-      await installApp();
+      // iOS ou navegadores que não suportam, mostra instruções
+      setShowInstallModal(true);
     }
   };
+
+  const getDeviceInstructions = () => {
+    switch (deviceType) {
+      case 'ios':
+        return {
+          title: 'Instalar no iPhone',
+          icon: <Smartphone className="h-7 w-7 text-white" />,
+          steps: [
+            { text: 'Toque em', highlight: 'Compartilhar', icon: '⬆️' },
+            { text: 'Selecione', highlight: '"Adicionar à Tela de Início"', icon: '➕' },
+            { text: 'Toque em', highlight: '"Adicionar"', icon: '✓' },
+          ]
+        };
+      case 'android':
+        return {
+          title: 'Instalar no Android',
+          icon: <Smartphone className="h-7 w-7 text-white" />,
+          steps: [
+            { text: 'Toque no menu', highlight: '⋮', icon: '⋮' },
+            { text: 'Selecione', highlight: '"Instalar aplicativo"', icon: '📲' },
+            { text: 'Confirme tocando em', highlight: '"Instalar"', icon: '✓' },
+          ]
+        };
+      case 'desktop-chrome':
+        return {
+          title: 'Instalar no Chrome',
+          icon: <Monitor className="h-7 w-7 text-white" />,
+          steps: [
+            { text: 'Clique no ícone', highlight: '⊕', icon: '⊕' },
+            { text: 'Na barra de endereço (à direita)', highlight: '', icon: '🔗' },
+            { text: 'Clique em', highlight: '"Instalar"', icon: '✓' },
+          ]
+        };
+      case 'desktop-edge':
+        return {
+          title: 'Instalar no Edge',
+          icon: <Monitor className="h-7 w-7 text-white" />,
+          steps: [
+            { text: 'Clique no menu', highlight: '...', icon: '⋯' },
+            { text: 'Selecione', highlight: '"Aplicativos" → "Instalar este site"', icon: '📲' },
+            { text: 'Clique em', highlight: '"Instalar"', icon: '✓' },
+          ]
+        };
+      default:
+        return {
+          title: 'Instalar o App',
+          icon: <Download className="h-7 w-7 text-white" />,
+          steps: [
+            { text: 'Abra o menu do navegador', highlight: '', icon: '☰' },
+            { text: 'Procure por', highlight: '"Instalar" ou "Adicionar à tela inicial"', icon: '📲' },
+            { text: 'Confirme a instalação', highlight: '', icon: '✓' },
+          ]
+        };
+    }
+  };
+
+  const instructions = getDeviceInstructions();
 
   return (
     <>
@@ -148,12 +231,12 @@ const Header = () => {
         </div>
       </header>
 
-      {/* iOS Install Modal */}
-      {showIOSModal && (
+      {/* Install Modal - Device Specific */}
+      {showInstallModal && (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative bg-card border border-border/50 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-slide-up">
             <button 
-              onClick={() => setShowIOSModal(false)}
+              onClick={() => setShowInstallModal(false)}
               className="absolute top-3 right-3 p-2 rounded-full hover:bg-muted/50 transition-colors"
             >
               <X className="h-5 w-5 text-muted-foreground" />
@@ -161,30 +244,28 @@ const Header = () => {
 
             <div className="text-center mb-6">
               <div className="h-14 w-14 mx-auto rounded-2xl bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-primary/30 mb-4">
-                <Download className="h-7 w-7 text-white" />
+                {instructions.icon}
               </div>
               <h3 className="text-lg font-bold text-foreground mb-1">
-                Instalar no iPhone
+                {instructions.title}
               </h3>
             </div>
 
             <div className="space-y-3 mb-5 text-sm">
-              <div className="flex items-start gap-3">
-                <span className="h-5 w-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">1</span>
-                <p className="text-foreground/90">Toque em <strong>Compartilhar</strong> (ícone ⬆️)</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="h-5 w-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">2</span>
-                <p className="text-foreground/90">Selecione <strong>"Adicionar à Tela de Início"</strong></p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="h-5 w-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">3</span>
-                <p className="text-foreground/90">Toque em <strong>"Adicionar"</strong></p>
-              </div>
+              {instructions.steps.map((step, index) => (
+                <div key={index} className="flex items-start gap-3">
+                  <span className="h-5 w-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                    {index + 1}
+                  </span>
+                  <p className="text-foreground/90">
+                    {step.text} {step.highlight && <strong>{step.highlight}</strong>}
+                  </p>
+                </div>
+              ))}
             </div>
 
             <Button 
-              onClick={() => setShowIOSModal(false)}
+              onClick={() => setShowInstallModal(false)}
               className="w-full h-10 bg-gradient-to-r from-primary to-emerald-600 text-white font-semibold rounded-xl"
             >
               Entendi
