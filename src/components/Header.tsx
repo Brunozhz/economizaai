@@ -1,4 +1,4 @@
-import { Search, User, Menu, Brain } from "lucide-react";
+import { Search, Menu, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logoNew from "@/assets/logo-new.jpeg";
@@ -112,11 +112,6 @@ const Header = () => {
             <Menu className="h-5 w-5" />
           </Button>
           
-          
-          <Button variant="ghost" size="sm" className="h-9 px-3 gap-2">
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline text-sm">Entrar</span>
-          </Button>
           
           <Button 
             size="sm" 
