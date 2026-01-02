@@ -2,6 +2,7 @@ import { Search, Menu, Brain, Download, X, Share, Plus, Monitor, Smartphone, Use
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { useNotificationSound } from "@/hooks/useNotificationSound";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +13,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isInstallable, isInstalled, isIOS, installApp, canShowInstall } = usePWAInstall();
+  const { playNotificationSound } = useNotificationSound();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop-other');
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -37,7 +39,11 @@ const Header = () => {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
-        () => setUnreadMessages(prev => prev + 1)
+        () => {
+          setUnreadMessages(prev => prev + 1);
+          // Play notification sound when new message arrives
+          playNotificationSound();
+        }
       )
       .on(
         'postgres_changes',
