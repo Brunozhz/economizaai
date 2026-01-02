@@ -95,9 +95,9 @@ const ProductGrid = () => {
                   Pacotes de Créditos
                 </h2>
               </div>
-              {/* Logo sutil com glow */}
+              {/* Logo sutil com glow e levitação */}
               <div className="flex items-center justify-center gap-2 mt-2">
-                <div className="relative group">
+                <div className="relative group animate-float">
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-lg blur-md opacity-50 group-hover:opacity-80 animate-pulse transition-opacity duration-500" />
                   <img 
                     src={lovableLogo} 
