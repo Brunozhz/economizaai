@@ -20,23 +20,41 @@ self.addEventListener('push', (event) => {
     }
   }
 
+  // Check if this is a sales notification
+  const notificationType = data.data?.type;
+  const isSalesNotification = notificationType === 'pix_generated' || notificationType === 'pix_approved';
+
   const options = {
     body: data.body,
     icon: data.icon,
     badge: data.badge,
-    vibrate: [200, 100, 200],
+    vibrate: isSalesNotification ? [200, 100, 200, 100, 300] : [200, 100, 200],
     data: data.data,
     actions: [
       { action: 'open', title: 'Ver Oferta' },
       { action: 'close', title: 'Fechar' },
     ],
     requireInteraction: true,
-    tag: 'economiza-notification',
+    tag: notificationType || 'economiza-notification',
     renotify: true,
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    (async () => {
+      // Show the notification
+      await self.registration.showNotification(data.title, options);
+
+      // Send message to all clients to play the appropriate sound
+      if (isSalesNotification) {
+        const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+        allClients.forEach(client => {
+          client.postMessage({
+            type: 'PLAY_SALES_SOUND',
+            notificationType: notificationType
+          });
+        });
+      }
+    })()
   );
 });
 
@@ -56,8 +74,11 @@ self.addEventListener('notificationclick', (event) => {
       for (const client of clientList) {
         if ('focus' in client) {
           client.focus();
-          // Navigate to messages if we have data
-          if (event.notification.data?.url) {
+          // Navigate to admin for sales notifications, otherwise messages
+          const notificationType = event.notification.data?.type;
+          if (notificationType === 'pix_generated' || notificationType === 'pix_approved') {
+            client.navigate('/admin');
+          } else if (event.notification.data?.url) {
             client.navigate(event.notification.data.url);
           } else {
             client.navigate('/messages');
@@ -68,6 +89,10 @@ self.addEventListener('notificationclick', (event) => {
       
       // If no window is open, open a new one
       if (clients.openWindow) {
+        const notificationType = event.notification.data?.type;
+        if (notificationType === 'pix_generated' || notificationType === 'pix_approved') {
+          return clients.openWindow('/admin');
+        }
         const url = event.notification.data?.url || '/messages';
         return clients.openWindow(url);
       }
@@ -77,4 +102,13 @@ self.addEventListener('notificationclick', (event) => {
 
 self.addEventListener('notificationclose', (event) => {
   console.log('Notification closed:', event);
+});
+
+// Listen for messages from the main app
+self.addEventListener('message', (event) => {
+  console.log('[Service Worker] Message received:', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
