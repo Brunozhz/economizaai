@@ -27,16 +27,7 @@ const products = [
   // Pro
   { name: "Pacote Pro - 500 créditos", originalPrice: 550.00, discountPrice: 119.90, credits: 500, tag: "PRO", category: "pro" },
   { name: "Ultra Pack - 600 créditos", originalPrice: 650.00, discountPrice: 139.90, credits: 600, tag: "ULTRA", category: "pro" },
-  { name: "Recarga +800 créditos na sua conta", originalPrice: 800.00, discountPrice: 189.90, credits: 800, tag: "SUPER", category: "pro" },
-  { name: "Recarga +1000 créditos na sua conta", originalPrice: 1000.00, discountPrice: 229.90, credits: 1000, tag: "MASTER", category: "pro" },
-  
-  // Enterprise
-  { name: "Pacote Business - 1500 créditos", originalPrice: 1500.00, discountPrice: 339.90, credits: 1500, tag: "BUSINESS", category: "enterprise" },
-  { name: "Recarga +2000 créditos na sua conta", originalPrice: 2000.00, discountPrice: 449.90, credits: 2000, tag: "ENTERPRISE", category: "enterprise" },
-  { name: "Pacote Corporativo - 3000 créditos", originalPrice: 3000.00, discountPrice: 649.90, credits: 3000, popular: true, tag: "CORPORATIVO", category: "enterprise" },
-  { name: "Recarga +4000 créditos na sua conta", originalPrice: 4000.00, discountPrice: 879.90, credits: 4000, tag: "ILIMITADO", category: "enterprise" },
-  { name: "Mega Enterprise - 5000 créditos", originalPrice: 5000.00, discountPrice: 1099.90, credits: 5000, tag: "MEGA", category: "enterprise" },
-  { name: "Pacote Ultimate - 10000 créditos", originalPrice: 10000.00, discountPrice: 1999.90, credits: 10000, popular: true, tag: "ULTIMATE", category: "enterprise" },
+  { name: "Super Pack - 700 créditos", originalPrice: 750.00, discountPrice: 149.90, credits: 700, tag: "SUPER", category: "pro" },
 ];
 
 interface Product {
