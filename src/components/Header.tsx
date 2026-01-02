@@ -124,7 +124,11 @@ const Header = () => {
             <span className="hidden sm:inline text-sm">Entrar</span>
           </Button>
           
-          <Button size="sm" className="hidden md:flex h-9 px-4 bg-primary text-primary-foreground font-medium">
+          <Button 
+            size="sm" 
+            className="hidden md:flex h-9 px-4 bg-primary text-primary-foreground font-medium"
+            onClick={() => window.open('https://chat.whatsapp.com/LFYmqa09RCI5e7KecBQ8FG', '_blank')}
+          >
             Grupo VIP
           </Button>
         </div>
