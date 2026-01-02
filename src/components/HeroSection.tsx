@@ -38,13 +38,13 @@ const HeroSection = () => {
             </div>
             
             <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
-              <span className="text-foreground">Autoridade</span>
-              <span className="text-gradient-animated"> máxima</span>
+              <span className="text-foreground">Pague </span>
+              <span className="text-gradient-animated">barato</span>
               <br />
-              <span className="text-primary drop-shadow-[0_0_30px_rgba(34,197,94,0.5)]">Créditos Lovable</span>
+              <span className="text-primary drop-shadow-[0_0_30px_rgba(34,197,94,0.5)]">nos Créditos Lovable</span>
               <br />
               <span className="text-muted-foreground text-xl md:text-2xl lg:text-3xl font-medium mt-4 block">
-                Liberdade total para criar sem limites.
+                Liberdade total para criar que cabe no seu bolso!
               </span>
             </h1>
             
