@@ -9,8 +9,12 @@ const Header = () => {
       
       <div className="container mx-auto flex h-20 items-center justify-between px-4 py-4">
         {/* Logo */}
-        <div className="flex items-center gap-2 group cursor-pointer">
-          <img alt="Economiza.IA" className="h-14 w-auto object-contain transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-[0_0_15px_rgba(255,140,50,0.5)]" src="/lovable-uploads/d6d83b8a-054b-4418-b0eb-a7353be82c0d.png" />
+        <div className="flex flex-col items-start group cursor-pointer">
+          <img alt="Economiza.IA" className="h-10 w-auto object-contain transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-[0_0_15px_rgba(255,140,50,0.5)]" src="/lovable-uploads/d6d83b8a-054b-4418-b0eb-a7353be82c0d.png" />
+          <span className="text-xl font-bold tracking-tight mt-0.5">
+            <span className="text-foreground">Economiza.</span>
+            <span className="text-[#22c55e]">IA</span>
+          </span>
         </div>
 
         {/* Search Bar */}
