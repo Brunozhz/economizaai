@@ -102,7 +102,7 @@ const ProductGrid = () => {
                   <img 
                     src={lovableLogo} 
                     alt="Lovable" 
-                    className="relative h-14 rounded-sm hover:scale-105 transition-transform duration-300"
+                    className="relative h-20 rounded-sm hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               </div>
