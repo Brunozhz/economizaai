@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.remarketing-cron]
 verify_jwt = false
+
+[functions.send-push]
+verify_jwt = false
+
+[functions.send-promotion]
+verify_jwt = false

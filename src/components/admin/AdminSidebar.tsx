@@ -8,7 +8,8 @@ import {
   Settings,
   ChevronLeft,
   LogOut,
-  Brain
+  Brain,
+  Gift
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ interface AdminSidebarProps {
 const menuItems = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
   { path: '/admin/notifications', icon: Bell, label: 'Notificações' },
+  { path: '/admin/promotions', icon: Gift, label: 'Promoções' },
   { path: '/admin/users', icon: Users, label: 'Usuários' },
   { path: '/admin/orders', icon: ShoppingCart, label: 'Pedidos' },
   { path: '/admin/messages', icon: MessageSquare, label: 'Mensagens' },
