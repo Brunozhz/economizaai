@@ -85,24 +85,25 @@ const HeroSection = () => {
           <div className="w-full max-w-md pt-6">
           <Carousel 
               className="w-full" 
-              opts={{ loop: true, duration: 20 }}
-              plugins={[Autoplay({ delay: 2000, stopOnInteraction: false })]}
+              opts={{ loop: true, duration: 15, dragFree: true }}
+              plugins={[Autoplay({ delay: 2500, stopOnInteraction: false, stopOnMouseEnter: true })]}
             >
-              <CarouselContent>
+              <CarouselContent className="-ml-2">
                 {[carousel1, carousel2, carousel3, carousel4].map((image, index) => (
-                  <CarouselItem key={index}>
+                  <CarouselItem key={index} className="pl-2">
                     <div className="p-1">
                       <img 
                         src={image} 
                         alt={`Motivo ${index + 1}`} 
-                        className="w-full h-auto rounded-xl shadow-xl"
+                        className="w-full h-auto rounded-xl shadow-xl transition-transform duration-300 ease-out"
+                        loading="eager"
                       />
                     </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="left-2 bg-background/80 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" />
-              <CarouselNext className="right-2 bg-background/80 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" />
+              <CarouselPrevious className="left-2 bg-background/80 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200" />
+              <CarouselNext className="right-2 bg-background/80 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200" />
             </Carousel>
           </div>
         </div>
