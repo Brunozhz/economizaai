@@ -43,16 +43,14 @@ const HeroSection = () => {
           
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
             Acesso imediato, transparência total e uma experiência premium que cabe no seu bolso.
-            <span className="block mt-3 font-semibold text-foreground">
-              Não pague mais caro para criar sem limites.
-            </span>
           </p>
           
-          {/* Stats with enhanced styling */}
-          
+          <p className="text-lg font-semibold text-foreground">
+            Não pague mais caro para criar sem limites.
+          </p>
           
           {/* CTAs */}
-          <div className="flex flex-wrap justify-center gap-4 pt-4">
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
             <Button size="lg" className="h-14 px-8 bg-gradient-to-r from-primary via-emerald-500 to-primary text-primary-foreground font-bold text-base rounded-xl shadow-glow hover:shadow-glow-accent transition-all duration-500 hover:scale-105 animate-gradient" style={{
             backgroundSize: '200% auto'
           }} onClick={() => {
