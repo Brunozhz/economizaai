@@ -56,6 +56,27 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_usage: {
+        Row: {
+          coupon_code: string
+          email: string
+          id: string
+          used_at: string
+        }
+        Insert: {
+          coupon_code: string
+          email: string
+          id?: string
+          used_at?: string
+        }
+        Update: {
+          coupon_code?: string
+          email?: string
+          id?: string
+          used_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           coupon_code: string | null

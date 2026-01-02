@@ -216,7 +216,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   };
 
   // Apply manual coupon
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     const code = couponCode.toUpperCase().trim();
     
     if (!code) {
@@ -224,19 +224,38 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       return;
     }
 
-    if (VALID_COUPONS[code]) {
-      const discount = VALID_COUPONS[code];
-      setCouponApplied(true);
-      setDiscountPercent(discount);
-      setAppliedCouponCode(code);
-      setCouponError('');
-      toast({
-        title: "🎉 Cupom aplicado!",
-        description: `Desconto de ${discount}% aplicado com sucesso!`,
-      });
-    } else {
-      setCouponError('Cupom inválido ou expirado');
+    if (!email || !email.includes('@')) {
+      setCouponError('Preencha seu e-mail primeiro para validar o cupom');
+      return;
     }
+
+    if (!VALID_COUPONS[code]) {
+      setCouponError('Cupom inválido ou expirado');
+      return;
+    }
+
+    // Check if coupon was already used by this email
+    const { data: existingUsage } = await supabase
+      .from('coupon_usage')
+      .select('id')
+      .eq('email', email.toLowerCase().trim())
+      .eq('coupon_code', code)
+      .maybeSingle();
+
+    if (existingUsage) {
+      setCouponError('Você já utilizou este cupom');
+      return;
+    }
+
+    const discount = VALID_COUPONS[code];
+    setCouponApplied(true);
+    setDiscountPercent(discount);
+    setAppliedCouponCode(code);
+    setCouponError('');
+    toast({
+      title: "🎉 Cupom aplicado!",
+      description: `Desconto de ${discount}% aplicado com sucesso!`,
+    });
   };
 
   // Remove coupon
@@ -278,6 +297,18 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
         if (data.success && data.status === 'paid') {
           setStatus('paid');
+          
+          // Register coupon usage if a coupon was applied
+          if (couponApplied && appliedCouponCode && email) {
+            await supabase
+              .from('coupon_usage')
+              .insert({
+                email: email.toLowerCase().trim(),
+                coupon_code: appliedCouponCode,
+              })
+              .single();
+          }
+          
           toast({
             title: "Pagamento Confirmado! 🎉",
             description: `Seus ${product?.credits} créditos foram liberados!`,
