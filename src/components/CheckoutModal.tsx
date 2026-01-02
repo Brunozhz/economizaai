@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { X, Copy, Check, Loader2, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { X, Copy, Check, Loader2, CheckCircle, Clock, AlertCircle, Gift, Sparkles, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +32,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   } | null>(null);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
+  const [showExitOffer, setShowExitOffer] = useState(false);
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [hasSeenExitOffer, setHasSeenExitOffer] = useState(false);
   const { toast } = useToast();
+
+  const DISCOUNT_PERCENT = 15;
+  const discountedPrice = product ? product.discountPrice * (1 - DISCOUNT_PERCENT / 100) : 0;
 
   const formatPhone = (value: string) => {
     // Remove tudo que não for número
@@ -94,11 +100,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     setStatus('loading');
     setPixData(null);
     
+    const finalPrice = couponApplied ? discountedPrice : product.discountPrice;
+    
     try {
       const { data, error } = await supabase.functions.invoke('create-pix', {
         body: {
-          value: product.discountPrice,
-          productName: product.name,
+          value: finalPrice,
+          productName: couponApplied ? `${product.name} (com cupom 15%)` : product.name,
           productId: `credits-${product.credits}`,
           customerPhone: phone.replace(/\D/g, ''),
           customerEmail: email,
@@ -127,7 +135,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         variant: "destructive",
       });
     }
-  }, [product, phone, email, toast]);
+  }, [product, phone, email, toast, couponApplied, discountedPrice]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -139,8 +147,38 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setEmailError('');
       setPixData(null);
       setTimeLeft(900);
+      setShowExitOffer(false);
+      setCouponApplied(false);
+      setHasSeenExitOffer(false);
     }
   }, [isOpen, product]);
+
+  // Handle close with exit offer
+  const handleClose = () => {
+    // Show exit offer only if user hasn't seen it and hasn't applied coupon yet
+    if (!hasSeenExitOffer && !couponApplied && status !== 'paid' && status !== 'loading') {
+      setShowExitOffer(true);
+      setHasSeenExitOffer(true);
+    } else {
+      onClose();
+    }
+  };
+
+  // Apply coupon
+  const applyCoupon = () => {
+    setCouponApplied(true);
+    setShowExitOffer(false);
+    toast({
+      title: "🎉 Cupom aplicado!",
+      description: `Desconto de ${DISCOUNT_PERCENT}% aplicado com sucesso!`,
+    });
+  };
+
+  // Continue without coupon
+  const continueWithoutCoupon = () => {
+    setShowExitOffer(false);
+    onClose();
+  };
 
   // Check payment status periodically
   useEffect(() => {
@@ -222,19 +260,98 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={handleClose}
       />
+      
+      {/* Exit Offer Modal */}
+      {showExitOffer && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
+          <div className="relative w-full max-w-sm bg-card border-2 border-primary/50 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary via-emerald-400 to-primary rounded-2xl blur-lg opacity-30 animate-pulse" />
+            
+            <div className="relative bg-card rounded-2xl overflow-hidden">
+              {/* Header with gift icon */}
+              <div className="bg-gradient-to-r from-primary/20 via-emerald-500/20 to-primary/20 p-6 text-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,197,94,0.3),transparent_70%)]" />
+                <div className="relative">
+                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-primary to-emerald-500 mb-4 animate-bounce">
+                    <Gift className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-black text-foreground mb-1">Espera! 🎁</h3>
+                  <p className="text-muted-foreground text-sm">Temos um presente especial para você</p>
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="p-6 space-y-4">
+                <div className="text-center space-y-2">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
+                    <Tag className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-bold text-primary">CUPOM EXCLUSIVO</span>
+                    <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+                  </div>
+                  
+                  <p className="text-4xl font-black bg-gradient-to-r from-primary via-emerald-400 to-primary bg-clip-text text-transparent">
+                    {DISCOUNT_PERCENT}% OFF
+                  </p>
+                  
+                  <p className="text-muted-foreground text-sm">
+                    Aplicado automaticamente no seu pedido!
+                  </p>
+                  
+                  {product && (
+                    <div className="mt-4 p-3 rounded-xl bg-secondary/50 border border-border">
+                      <p className="text-sm text-muted-foreground">Novo valor:</p>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-lg text-muted-foreground line-through">R$ {product.discountPrice.toFixed(2)}</span>
+                        <span className="text-2xl font-black text-primary">R$ {discountedPrice.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-3">
+                  <Button
+                    onClick={applyCoupon}
+                    className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:scale-[1.02] transition-transform"
+                  >
+                    <Gift className="h-5 w-5 mr-2" />
+                    Aplicar Desconto!
+                  </Button>
+                  
+                  <button
+                    onClick={continueWithoutCoupon}
+                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                  >
+                    Não, obrigado. Sair mesmo assim.
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Modal */}
       <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in">
+        {/* Coupon Applied Badge */}
+        {couponApplied && (
+          <div className="absolute top-0 left-0 right-0 z-30 bg-gradient-to-r from-primary via-emerald-500 to-primary text-white text-xs font-bold py-2 text-center flex items-center justify-center gap-2">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>CUPOM DE {DISCOUNT_PERCENT}% APLICADO!</span>
+            <Sparkles className="h-3.5 w-3.5" />
+          </div>
+        )}
+        
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border">
+        <div className={`flex items-center justify-between p-5 border-b border-border ${couponApplied ? 'pt-10' : ''}`}>
           <div>
             <h2 className="text-xl font-bold text-foreground">Checkout</h2>
             <p className="text-sm text-muted-foreground">Pagamento via PIX</p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <X className="h-5 w-5" />
@@ -245,14 +362,27 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         <div className="p-5">
           {/* Product Info */}
           {product && (
-            <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 mb-5">
-              <div>
+            <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 mb-5 relative overflow-hidden">
+              {couponApplied && (
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-emerald-500/5" />
+              )}
+              <div className="relative">
                 <p className="font-semibold text-foreground">{product.name}</p>
                 <p className="text-sm text-muted-foreground">+{product.credits} créditos</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-price-old line-through">R$ {product.originalPrice.toFixed(2)}</p>
-                <p className="text-xl font-bold text-price-new">R$ {product.discountPrice.toFixed(2)}</p>
+              <div className="text-right relative">
+                {couponApplied ? (
+                  <>
+                    <p className="text-sm text-muted-foreground line-through">R$ {product.discountPrice.toFixed(2)}</p>
+                    <p className="text-xl font-bold text-primary">R$ {discountedPrice.toFixed(2)}</p>
+                    <span className="text-xs text-primary font-medium">-{DISCOUNT_PERCENT}%</span>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-price-old line-through">R$ {product.originalPrice.toFixed(2)}</p>
+                    <p className="text-xl font-bold text-price-new">R$ {product.discountPrice.toFixed(2)}</p>
+                  </>
+                )}
               </div>
             </div>
           )}
