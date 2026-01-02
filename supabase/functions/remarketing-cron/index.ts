@@ -148,15 +148,18 @@ serve(async (req) => {
 
     console.log("Starting remarketing cron job...");
 
-    // Get all non-converted leads that haven't received a message in the last 8 hours
-    // This ensures max 3 messages per day (24h / 8h = 3)
-    const eightHoursAgo = new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString();
+    // Get all non-converted leads that:
+    // 1. Never received remarketing and were created > 2 min ago, OR
+    // 2. Haven't received a message in the last 2 hours (for follow-ups)
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
     const { data: leads, error: fetchError } = await supabase
       .from("abandoned_carts")
       .select("*")
       .eq("is_converted", false)
-      .or(`last_remarketing_at.is.null,last_remarketing_at.lt.${eightHoursAgo}`);
+      .or(`last_remarketing_at.is.null,last_remarketing_at.lt.${twoHoursAgo}`)
+      .lt("created_at", twoMinutesAgo);
 
     if (fetchError) {
       console.error("Error fetching leads:", fetchError);
