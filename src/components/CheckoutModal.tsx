@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -25,7 +26,31 @@ const VALID_COUPONS: Record<string, number> = {
   'VIP10': 10,
 };
 
+// Check if coupon is a dynamic remarketing coupon (e.g., VOLTE20, DESCONTO25, ESPECIAL30)
+const isRemarketingCoupon = (code: string): number | null => {
+  const patterns = [
+    /^VOLTE(\d+)$/,
+    /^DESCONTO(\d+)$/,
+    /^ESPECIAL(\d+)$/,
+    /^PROMO(\d+)$/,
+    /^VIP(\d+)$/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = code.match(pattern);
+    if (match) {
+      const discount = parseInt(match[1]);
+      // Allow remarketing discounts from 10% to 30%
+      if (discount >= 10 && discount <= 30) {
+        return discount;
+      }
+    }
+  }
+  return null;
+};
+
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
+  const { profile } = useAuth();
   const [status, setStatus] = useState<PaymentStatus>('form');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -165,6 +190,29 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setRemarketingSent(false);
       setCouponError('');
 
+      // Check for remarketing offer first (priority)
+      const savedRemarketing = localStorage.getItem('remarketing_offer');
+      if (savedRemarketing) {
+        try {
+          const remarketing = JSON.parse(savedRemarketing);
+          if (remarketing.code && remarketing.discount) {
+            setCouponCode(remarketing.code);
+            setAppliedCouponCode(remarketing.code);
+            setDiscountPercent(remarketing.discount);
+            setCouponApplied(true);
+            toast({
+              title: "🎁 Cupom de remarketing aplicado!",
+              description: `Desconto de ${remarketing.discount}% foi aplicado automaticamente.`,
+            });
+            // Clear it after applying
+            localStorage.removeItem('remarketing_offer');
+            return;
+          }
+        } catch (e) {
+          console.error('Error parsing remarketing offer:', e);
+        }
+      }
+
       // Check for saved promo coupon from email capture
       const savedPromo = localStorage.getItem('promo_coupon');
       if (savedPromo) {
@@ -253,7 +301,15 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       return;
     }
 
-    if (!VALID_COUPONS[code]) {
+    // Check for static coupons first
+    let discount = VALID_COUPONS[code];
+    
+    // If not a static coupon, check for dynamic remarketing coupons
+    if (!discount) {
+      discount = isRemarketingCoupon(code) || 0;
+    }
+    
+    if (!discount) {
       setCouponError('Cupom inválido ou expirado');
       return;
     }
@@ -271,7 +327,6 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       return;
     }
 
-    const discount = VALID_COUPONS[code];
     setCouponApplied(true);
     setDiscountPercent(discount);
     setAppliedCouponCode(code);
@@ -381,6 +436,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               productName: product.name,
               productPrice: couponApplied ? discountedPrice : product.discountPrice,
               pixId: pixData.pixId,
+              userName: profile?.name || '',
             },
           });
           setRemarketingSent(true);
@@ -392,7 +448,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     }, 60000); // 1 minute
 
     return () => clearTimeout(remarketingTimer);
-  }, [status, remarketingSent, pixData?.pixId, product, email, phone, couponApplied, discountedPrice]);
+  }, [status, remarketingSent, pixData?.pixId, product, email, phone, couponApplied, discountedPrice, profile?.name]);
 
   const copyToClipboard = async () => {
     if (!pixData?.qrCode) return;

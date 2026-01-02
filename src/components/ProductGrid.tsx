@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Flame, TrendingUp, Rocket, Building2, Zap, Users, TrendingDown, Sparkles, Crown, Gift } from "lucide-react";
 import ProductCard from "./ProductCard";
 import CheckoutModal from "./CheckoutModal";
@@ -66,9 +67,32 @@ interface Product {
 }
 
 const ProductGrid = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEnterpriseChatOpen, setIsEnterpriseChatOpen] = useState(false);
+
+  // Check for remarketing redirect on mount
+  useEffect(() => {
+    const productParam = searchParams.get('produto');
+    const isRemarketing = searchParams.get('remarketing') === 'true';
+    
+    if (productParam && isRemarketing) {
+      // Find the product by name
+      const product = products.find(p => p.name.toLowerCase() === productParam.toLowerCase());
+      if (product) {
+        setSelectedProduct({
+          name: product.name,
+          credits: product.credits,
+          price: product.price
+        });
+        setIsCheckoutOpen(true);
+      }
+      
+      // Clear the URL params
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleBuy = (product: Product) => {
     setSelectedProduct(product);
@@ -78,6 +102,8 @@ const ProductGrid = () => {
   const handleCloseCheckout = () => {
     setIsCheckoutOpen(false);
     setSelectedProduct(null);
+    // Clear remarketing offer after closing
+    localStorage.removeItem('remarketing_offer');
   };
 
   return (
