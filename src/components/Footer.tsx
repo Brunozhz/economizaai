@@ -39,16 +39,9 @@ const Footer = () => {
               Preços imbatíveis, entrega instantânea e suporte dedicado.
             </p>
             
-            {/* Social Icons */}
             <div className="flex gap-2">
-              <a href="#" className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+              <a href="https://www.instagram.com/economiza.ia/" target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
                 <Instagram className="h-4 w-4" />
-              </a>
-              <a href="#" className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                <MessageCircle className="h-4 w-4" />
-              </a>
-              <a href="#" className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                <Mail className="h-4 w-4" />
               </a>
             </div>
           </div>
