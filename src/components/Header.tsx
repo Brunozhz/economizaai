@@ -9,39 +9,40 @@ const Header = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center gap-3 group cursor-pointer">
-          <div className="relative flex items-center justify-center group" style={{ perspective: '200px' }}>
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary via-emerald-400 to-cyan-500 rounded-xl blur-lg opacity-50 group-hover:opacity-80 transition-opacity duration-300" />
+          <div className="relative flex items-center justify-center group">
+            {/* Outer glow ring */}
+            <div className="absolute h-14 w-14 rounded-full bg-gradient-to-r from-primary via-emerald-400 to-cyan-500 opacity-20 blur-xl group-hover:opacity-40 transition-all duration-500" />
             
-            {/* 3D Container */}
+            {/* Rotating ring */}
             <div 
-              className="relative h-11 w-11 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
+              className="absolute h-12 w-12 rounded-full border border-primary/30 animate-[spin_8s_linear_infinite]"
               style={{
-                background: 'linear-gradient(145deg, rgba(34,197,94,0.3) 0%, rgba(20,184,166,0.2) 50%, rgba(6,182,212,0.3) 100%)',
-                boxShadow: `
-                  0 4px 6px -1px rgba(0,0,0,0.3),
-                  0 2px 4px -2px rgba(0,0,0,0.2),
-                  inset 0 1px 0 rgba(255,255,255,0.1),
-                  inset 0 -1px 0 rgba(0,0,0,0.2),
-                  0 0 20px rgba(34,197,94,0.3)
-                `,
-                border: '1px solid rgba(34,197,94,0.4)',
-                transform: 'rotateX(10deg) rotateY(-5deg)',
-                transformStyle: 'preserve-3d'
+                background: 'conic-gradient(from 0deg, transparent, rgba(34,197,94,0.3), transparent)'
               }}
-            >
-              {/* Inner glow */}
-              <div className="absolute inset-1 rounded-lg bg-gradient-to-br from-white/10 to-transparent" />
+            />
+            
+            {/* Main container */}
+            <div className="relative h-10 w-10 rounded-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-primary/40 shadow-lg shadow-primary/20">
+              {/* Inner highlight */}
+              <div className="absolute inset-0.5 rounded-full bg-gradient-to-br from-white/10 via-transparent to-transparent" />
               
-              {/* Brain icon with 3D effect */}
+              {/* Circuit lines decoration */}
+              <div className="absolute inset-0 rounded-full overflow-hidden">
+                <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent" />
+              </div>
+              
+              {/* Brain icon */}
               <Brain 
-                className="h-6 w-6 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                className="h-5 w-5 relative z-10 text-primary group-hover:text-emerald-400 transition-colors duration-300"
+                strokeWidth={1.5}
                 style={{
-                  color: '#22c55e',
-                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3)) drop-shadow(0 0 10px rgba(34,197,94,0.5))',
-                  transform: 'translateZ(10px)'
+                  filter: 'drop-shadow(0 0 6px rgba(34,197,94,0.6))'
                 }}
               />
+              
+              {/* Pulsing dot */}
+              <div className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-cyan-400 animate-pulse shadow-lg shadow-cyan-400/50" />
             </div>
           </div>
           <span className="font-display font-bold text-xl text-foreground">
