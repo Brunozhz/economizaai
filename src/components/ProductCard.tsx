@@ -1,21 +1,19 @@
-import { ExternalLink, Check, Zap, Crown, Flame, Sparkles } from "lucide-react";
+import { ExternalLink, Check, Zap, Crown, Clock, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ProductCardProps {
   name: string;
-  originalPrice: number;
-  discountPrice: number;
+  price: number;
   credits: number;
-  tag?: string;
+  duration: string;
+  usage: string;
   popular?: boolean;
-  onBuy: (product: { name: string; credits: number; originalPrice: number; discountPrice: number }) => void;
+  onBuy: (product: { name: string; credits: number; price: number }) => void;
 }
 
-const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECARGA", popular = false, onBuy }: ProductCardProps) => {
-  const discount = Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
-
+const ProductCard = ({ name, price, credits, duration, usage, popular = false, onBuy }: ProductCardProps) => {
   const handleBuy = () => {
-    onBuy({ name, credits, originalPrice, discountPrice });
+    onBuy({ name, credits, price });
   };
 
   return (
@@ -37,17 +35,6 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
             </div>
           </div>
         )}
-        
-        {/* Discount Badge */}
-        <div className={`absolute ${popular ? 'top-14' : 'top-4'} left-4 z-20`}>
-          <div className="relative">
-            <div className="absolute inset-0 bg-red-500 blur-lg opacity-60 rounded-xl" />
-            <div className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-black shadow-xl">
-              <Flame className="h-4 w-4" />
-              -{discount}% OFF
-            </div>
-          </div>
-        </div>
 
         {/* Product Preview */}
         <div className={`relative aspect-[4/3] p-8 flex items-center justify-center overflow-hidden ${popular ? 'pt-16' : ''}`}
@@ -62,22 +49,19 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border border-primary/10 group-hover:scale-110 transition-transform duration-700" />
           </div>
           
-          <div className="relative text-center space-y-5 z-10">
-            {/* Tag */}
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-xs font-bold text-primary backdrop-blur-sm shadow-inner">
-              <Sparkles className="h-3.5 w-3.5" />
-              {tag}
-            </span>
+          <div className="relative text-center space-y-4 z-10">
+            {/* Title */}
+            <h3 className="text-2xl font-bold text-foreground tracking-wide uppercase">{name}</h3>
             
             {/* Credits display */}
             <div className="relative">
               <div className="absolute inset-0 blur-3xl bg-primary/40 rounded-full scale-150" />
-              <p className="relative text-6xl md:text-7xl font-black font-display bg-gradient-to-r from-primary via-emerald-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-2xl">
-                +{credits}
+              <p className="relative text-5xl md:text-6xl font-black font-display bg-gradient-to-r from-primary via-emerald-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-2xl">
+                {credits}
               </p>
             </div>
             
-            <p className="text-sm font-bold text-muted-foreground uppercase tracking-[0.25em]">Créditos</p>
+            <p className="text-sm font-bold text-muted-foreground uppercase tracking-[0.25em]">Créditos Lovable</p>
           </div>
         </div>
 
@@ -86,24 +70,29 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
           {/* Divider with glow */}
           <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           
-          <h3 className="font-semibold text-foreground text-base line-clamp-2 min-h-[48px] group-hover:text-primary transition-colors duration-300">
-            {name}
-          </h3>
+          {/* Duration */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/50">
+            <Clock className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <span className="text-xs text-muted-foreground font-medium">Duração</span>
+              <p className="text-sm text-foreground font-semibold">{duration}</p>
+            </div>
+          </div>
+
+          {/* Usage */}
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/50 border border-border/50">
+            <Target className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div>
+              <span className="text-xs text-muted-foreground font-medium">Uso</span>
+              <p className="text-sm text-foreground font-medium leading-relaxed">{usage}</p>
+            </div>
+          </div>
 
           {/* Pricing */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-red-400/80 line-through font-medium">
-                R$ {originalPrice.toFixed(2)}
-              </p>
-              <span className="px-3 py-1.5 rounded-full bg-primary/15 text-primary text-xs font-bold border border-primary/20">
-                Economize R$ {(originalPrice - discountPrice).toFixed(2)}
-              </span>
-            </div>
-            
-            <div className="flex items-end gap-2">
+            <div className="flex items-end gap-2 justify-center">
               <p className="text-4xl font-black text-primary drop-shadow-[0_0_20px_rgba(34,197,94,0.6)]">
-                R$ {discountPrice.toFixed(2)}
+                R$ {price.toFixed(2).replace('.', ',')}
               </p>
             </div>
             

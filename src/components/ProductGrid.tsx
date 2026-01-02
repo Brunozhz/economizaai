@@ -1,56 +1,60 @@
 import { useState } from "react";
-import { Flame, TrendingUp, Sparkles, Crown, Zap, Gift, Star } from "lucide-react";
+import { Flame, TrendingUp } from "lucide-react";
 import ProductCard from "./ProductCard";
 import CheckoutModal from "./CheckoutModal";
 
-const categories = [
-  { id: "all", label: "Todos", icon: Sparkles },
-  { id: "popular", label: "Mais Vendidos", icon: Crown },
-  { id: "starter", label: "Iniciante", icon: Zap },
-  { id: "pro", label: "Profissional", icon: Star },
-  { id: "enterprise", label: "Empresarial", icon: Gift },
-];
-
 const products = [
-  // Starter
-  { name: "Pacote Iniciante - 25 créditos", originalPrice: 45.00, discountPrice: 9.90, credits: 25, tag: "INICIANTE", category: "starter" },
-  { name: "Recarga Básica - 50 créditos", originalPrice: 72.00, discountPrice: 14.89, credits: 50, tag: "RECARGA", category: "starter" },
-  { name: "Pacote Econômico - 75 créditos", originalPrice: 99.00, discountPrice: 19.90, credits: 75, tag: "ECONÔMICO", category: "starter" },
-  
-  // Popular
-  { name: "Recarga +100 créditos na sua conta", originalPrice: 157.00, discountPrice: 27.24, credits: 100, popular: true, tag: "MAIS VENDIDO", category: "popular" },
-  { name: "Pacote Premium - 150 créditos", originalPrice: 199.00, discountPrice: 39.90, credits: 150, tag: "PREMIUM", category: "popular" },
-  { name: "Recarga +200 créditos na sua conta", originalPrice: 250.00, discountPrice: 51.94, credits: 200, tag: "DESTAQUE", category: "popular" },
-  { name: "Mega Pack - 300 créditos", originalPrice: 350.00, discountPrice: 74.90, credits: 300, popular: true, tag: "MEGA PACK", category: "popular" },
-  { name: "Recarga +400 créditos na sua conta", originalPrice: 400.00, discountPrice: 97.44, credits: 400, popular: true, tag: "TOP VENDAS", category: "popular" },
-  
-  // Pro
-  { name: "Pacote Pro - 500 créditos", originalPrice: 550.00, discountPrice: 119.90, credits: 500, tag: "PRO", category: "pro" },
-  { name: "Ultra Pack - 600 créditos", originalPrice: 650.00, discountPrice: 139.90, credits: 600, tag: "ULTRA", category: "pro" },
-  { name: "Super Pack - 700 créditos", originalPrice: 750.00, discountPrice: 149.90, credits: 700, tag: "SUPER", category: "pro" },
-  
-  // Enterprise (preços até R$ 150 para compatibilidade com PIX)
-  { name: "Pacote Startup - 800 créditos", originalPrice: 899.00, discountPrice: 99.90, credits: 800, tag: "STARTUP", category: "enterprise" },
-  { name: "Pacote Business - 1000 créditos", originalPrice: 1200.00, discountPrice: 119.90, credits: 1000, popular: true, tag: "BUSINESS", category: "enterprise" },
-  { name: "Pacote Corporativo - 1200 créditos", originalPrice: 1500.00, discountPrice: 129.90, credits: 1200, tag: "CORPORATIVO", category: "enterprise" },
-  { name: "Pacote Enterprise - 1500 créditos", originalPrice: 1800.00, discountPrice: 139.90, credits: 1500, popular: true, tag: "ENTERPRISE", category: "enterprise" },
-  { name: "Pacote Ultimate - 2000 créditos", originalPrice: 2500.00, discountPrice: 149.90, credits: 2000, tag: "ULTIMATE", category: "enterprise" },
+  {
+    name: "Start",
+    price: 14.90,
+    credits: 50,
+    duration: "1 a 2 dias",
+    usage: "Pequenos ajustes de design, correções rápidas de bugs e testes iniciais de interface.",
+    popular: false,
+  },
+  {
+    name: "Basic",
+    price: 27.90,
+    credits: 100,
+    duration: "3 a 5 dias",
+    usage: "Criação de Landing Pages completas e desenvolvimento de MVPs (Mínimo Produto Viável) simples.",
+    popular: false,
+  },
+  {
+    name: "Plus",
+    price: 49.90,
+    credits: 200,
+    duration: "7 a 10 dias",
+    usage: "Desenvolvimento de aplicações multipáginas e protótipos funcionais intermediários.",
+    popular: false,
+  },
+  {
+    name: "Advanced",
+    price: 89.90,
+    credits: 400,
+    duration: "15 a 20 dias",
+    usage: "Projetos profissionais robustos e construção de estruturas completas para SaaS.",
+    popular: false,
+  },
+  {
+    name: "Elite",
+    price: 149.90,
+    credits: 800,
+    duration: "25 a 30 dias",
+    usage: "Nível Software House. Ideal para quem gerencia múltiplos projetos ou sistemas de alta complexidade.",
+    popular: true,
+  },
 ];
 
 interface Product {
   name: string;
   credits: number;
-  originalPrice: number;
-  discountPrice: number;
-  tag?: string;
-  popular?: boolean;
-  category?: string;
+  price: number;
 }
 
 const ProductGrid = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [activeCategory, setActiveCategory] = useState("all");
 
   const handleBuy = (product: Product) => {
     setSelectedProduct(product);
@@ -62,12 +66,6 @@ const ProductGrid = () => {
     setSelectedProduct(null);
   };
 
-  const filteredProducts = activeCategory === "all" 
-    ? products 
-    : activeCategory === "popular"
-    ? products.filter(p => p.popular)
-    : products.filter(p => p.category === activeCategory);
-
   return (
     <>
       <section id="catalogo" className="py-16 md:py-20 relative">
@@ -76,69 +74,39 @@ const ProductGrid = () => {
         
         <div className="container mx-auto px-4 relative">
           {/* Section Header */}
-          <div className="flex flex-col items-center text-center gap-4 mb-8">
+          <div className="flex flex-col items-center text-center gap-4 mb-12">
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-3">
                 <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
                   <Flame className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black text-foreground">
-                  Catálogo Completo
+                  Pacotes de Créditos
                 </h2>
               </div>
               <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-                Escolha o pacote ideal para você com os melhores descontos do mercado
+                Escolha o pacote ideal para o seu projeto
               </p>
             </div>
             
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <TrendingUp className="h-4 w-4 text-primary" />
-              <span><strong className="text-foreground">{filteredProducts.length}</strong> produtos disponíveis</span>
+              <span><strong className="text-foreground">{products.length}</strong> pacotes disponíveis</span>
             </div>
           </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 ${
-                    activeCategory === category.id
-                      ? 'bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground shadow-lg shadow-primary/30'
-                      : 'bg-card border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/50'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {category.label}
-                </button>
-              );
-            })}
-          </div>
-
           {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            {products.map((product, index) => (
               <div
                 key={index}
                 className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.05}s` }}
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <ProductCard {...product} onBuy={handleBuy} />
               </div>
             ))}
           </div>
-
-          {/* Load more hint */}
-          {filteredProducts.length > 8 && (
-            <div className="mt-10 text-center">
-              <p className="text-sm text-muted-foreground">
-                Mostrando todos os <strong className="text-primary">{filteredProducts.length}</strong> produtos disponíveis
-              </p>
-            </div>
-          )}
         </div>
       </section>
 
@@ -146,7 +114,12 @@ const ProductGrid = () => {
       <CheckoutModal
         isOpen={isCheckoutOpen}
         onClose={handleCloseCheckout}
-        product={selectedProduct}
+        product={selectedProduct ? {
+          name: selectedProduct.name,
+          credits: selectedProduct.credits,
+          originalPrice: selectedProduct.price,
+          discountPrice: selectedProduct.price,
+        } : null}
       />
     </>
   );
