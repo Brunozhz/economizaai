@@ -1,6 +1,6 @@
 import { ExternalLink, Check, TrendingDown, Zap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.jpeg";
+import logoTransparent from "@/assets/logo-transparent.png";
 
 interface ProductCardProps {
   name: string;
@@ -20,97 +20,85 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
   };
 
   return (
-    <div className={`group relative bg-card rounded-3xl border overflow-hidden hover-lift shadow-card ${popular ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border/50'}`}>
+    <div className={`group relative bg-card rounded-xl border overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${popular ? 'border-primary ring-1 ring-primary/20' : 'border-border/50'}`}>
       {/* Popular Badge */}
       {popular && (
         <div className="absolute top-0 left-0 right-0 z-10">
-          <div className="gradient-primary text-primary-foreground text-xs font-bold px-4 py-2 flex items-center justify-center gap-2">
-            <Sparkles className="h-3.5 w-3.5" />
+          <div className="bg-primary text-primary-foreground text-xs font-semibold px-4 py-1.5 flex items-center justify-center gap-1.5">
+            <Sparkles className="h-3 w-3" />
             MAIS VENDIDO
-            <Sparkles className="h-3.5 w-3.5" />
           </div>
         </div>
       )}
       
       {/* Discount Badge */}
-      <div className={`absolute ${popular ? 'top-12' : 'top-4'} left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold shadow-lg`}>
+      <div className={`absolute ${popular ? 'top-10' : 'top-3'} left-3 z-10 flex items-center gap-1 px-2 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold`}>
         <TrendingDown className="h-3 w-3" />
         -{discount}%
       </div>
 
-      {/* Product Image/Preview */}
-      <div className={`relative aspect-[4/3] gradient-card p-6 flex items-center justify-center overflow-hidden ${popular ? 'pt-12' : ''}`}>
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full orb-green group-hover:scale-150 transition-transform duration-700" />
-          <div className="absolute top-1/4 right-1/4 w-32 h-32 rounded-full orb-emerald blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-        </div>
-        
-        <div className="text-center space-y-3 relative">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/80 text-xs font-semibold text-muted-foreground border border-border/50">
+      {/* Product Preview */}
+      <div className={`relative aspect-[4/3] bg-secondary/50 p-6 flex items-center justify-center ${popular ? 'pt-10' : ''}`}>
+        <div className="text-center space-y-3">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background/80 text-xs font-medium text-muted-foreground">
             <Zap className="h-3 w-3 text-primary" />
             {tag}
           </span>
           
-          <p className="text-5xl md:text-6xl font-black font-display">
-            <span className="gradient-text">+{credits}</span>
+          <p className="text-4xl md:text-5xl font-black font-display text-primary">
+            +{credits}
           </p>
-          <p className="text-lg font-bold text-foreground/70 tracking-widest uppercase">Créditos</p>
+          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Créditos</p>
           
-          <div className="flex items-center justify-center pt-2">
+          <div className="flex items-center justify-center pt-1">
             <img 
-              src={logo} 
+              src={logoTransparent} 
               alt="Economiza.IA" 
-              className="h-8 w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+              className="h-6 w-auto object-contain opacity-50"
             />
           </div>
         </div>
       </div>
 
       {/* Product Info */}
-      <div className="p-5 space-y-4 border-t border-border/30 bg-gradient-to-b from-card to-secondary/20">
-        <h3 className="font-semibold text-foreground text-sm line-clamp-2 min-h-[40px]">
+      <div className="p-4 space-y-3 border-t border-border/30">
+        <h3 className="font-medium text-foreground text-sm line-clamp-2 min-h-[40px]">
           {name}
         </h3>
 
         {/* Pricing */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-price-old line-through">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-muted-foreground line-through">
               R$ {originalPrice.toFixed(2)}
             </p>
-            <span className="px-2.5 py-1 rounded-lg bg-pix-badge/15 text-pix-badge text-xs font-bold border border-pix-badge/30">
+            <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">
               -R$ {(originalPrice - discountPrice).toFixed(2)}
             </span>
           </div>
           
-          <div className="flex items-end gap-2">
-            <p className="text-3xl font-black gradient-text font-display">
-              R$ {discountPrice.toFixed(2)}
-            </p>
-          </div>
+          <p className="text-2xl font-bold text-primary">
+            R$ {discountPrice.toFixed(2)}
+          </p>
           
-          <div className="flex items-center gap-2 pt-1">
-            <span className="h-5 w-5 rounded-full bg-pix-badge flex items-center justify-center">
-              <Check className="h-3 w-3 text-primary-foreground" />
+          <div className="flex items-center gap-2">
+            <span className="h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+              <Check className="h-2.5 w-2.5 text-primary-foreground" />
             </span>
-            <span className="text-sm text-muted-foreground">À vista no <span className="text-pix-badge font-semibold">Pix</span></span>
+            <span className="text-sm text-muted-foreground">À vista no <span className="text-primary font-medium">Pix</span></span>
           </div>
         </div>
 
         {/* Action Button */}
         <Button 
           onClick={handleBuy}
-          className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:shadow-glow hover:scale-[1.02] transition-all duration-300 group/btn"
+          className="w-full h-10 bg-primary text-primary-foreground font-semibold"
         >
           <Zap className="mr-2 h-4 w-4" />
-          <span>Comprar Agora</span>
-          <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+          Comprar Agora
+          <ExternalLink className="ml-2 h-4 w-4" />
         </Button>
       </div>
-      
-      {/* Hover glow effect */}
-      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none border-glow" />
     </div>
   );
 };
