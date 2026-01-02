@@ -3,6 +3,7 @@ import { Smartphone, Monitor, Apple, Download, Check, ArrowLeft, Zap, Wifi, Shie
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Link } from "react-router-dom";
+import InstallAnimation from "@/components/InstallAnimation";
 
 type Platform = 'android' | 'ios' | 'desktop';
 
@@ -98,12 +99,17 @@ const Install = () => {
           </div>
         )}
 
-        {/* Platform Selector */}
-        <div className="mb-8">
-          <h2 className="text-lg font-bold text-foreground mb-4 text-center">
-            Ou siga as instruções para seu dispositivo:
+        {/* Animated Tutorial */}
+        <div className="mb-12">
+          <h2 className="text-xl font-bold text-foreground mb-2 text-center">
+            Veja como é fácil instalar
           </h2>
-          <div className="flex justify-center gap-2">
+          <p className="text-muted-foreground text-sm text-center mb-8">
+            Selecione seu dispositivo e acompanhe o passo a passo
+          </p>
+          
+          {/* Platform Selector */}
+          <div className="flex justify-center gap-2 mb-8">
             {platforms.map((platform) => (
               <button
                 key={platform.id}
@@ -119,6 +125,18 @@ const Install = () => {
               </button>
             ))}
           </div>
+
+          {/* Animation */}
+          <div className="bg-card border border-border/50 rounded-2xl p-8">
+            <InstallAnimation platform={selectedPlatform} />
+          </div>
+        </div>
+
+        {/* Detailed Text Instructions */}
+        <div className="mb-8">
+          <h2 className="text-lg font-bold text-foreground mb-4 text-center">
+            Instruções detalhadas:
+          </h2>
         </div>
 
         {/* Instructions */}
