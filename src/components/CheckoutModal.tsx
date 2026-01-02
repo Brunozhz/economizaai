@@ -19,6 +19,12 @@ interface CheckoutModalProps {
 
 type PaymentStatus = 'form' | 'loading' | 'created' | 'paid' | 'expired' | 'error';
 
+const VALID_COUPONS: Record<string, number> = {
+  'BEMVINDO20': 20,
+  'DESCONTO15': 15,
+  'VIP10': 10,
+};
+
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [status, setStatus] = useState<PaymentStatus>('form');
   const [phone, setPhone] = useState('');
@@ -37,11 +43,15 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [hasSeenExitOffer, setHasSeenExitOffer] = useState(false);
   const [couponTimeLeft, setCouponTimeLeft] = useState(120); // 2 minutes countdown
   const [remarketingSent, setRemarketingSent] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [appliedCouponCode, setAppliedCouponCode] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(15);
   const { toast } = useToast();
 
-  const DISCOUNT_PERCENT = 15;
+  const EXIT_OFFER_DISCOUNT = 15;
   const COUPON_EXPIRE_SECONDS = 120; // 2 minutes
-  const discountedPrice = product ? product.discountPrice * (1 - DISCOUNT_PERCENT / 100) : 0;
+  const discountedPrice = product ? product.discountPrice * (1 - discountPercent / 100) : 0;
 
   const formatPhone = (value: string) => {
     // Remove tudo que não for número
@@ -104,12 +114,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     setPixData(null);
     
     const finalPrice = couponApplied ? discountedPrice : product.discountPrice;
+    const couponLabel = appliedCouponCode ? `(cupom ${appliedCouponCode})` : '(com cupom 15%)';
     
     try {
       const { data, error } = await supabase.functions.invoke('create-pix', {
         body: {
           value: finalPrice,
-          productName: couponApplied ? `${product.name} (com cupom 15%)` : product.name,
+          productName: couponApplied ? `${product.name} ${couponLabel}` : product.name,
           productId: `credits-${product.credits}`,
           customerPhone: phone.replace(/\D/g, ''),
           customerEmail: email,
@@ -154,6 +165,10 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setCouponApplied(false);
       setHasSeenExitOffer(false);
       setRemarketingSent(false);
+      setCouponCode('');
+      setCouponError('');
+      setAppliedCouponCode('');
+      setDiscountPercent(15);
     }
   }, [isOpen, product]);
 
@@ -188,13 +203,51 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     return () => clearInterval(timer);
   }, [showExitOffer, couponTimeLeft, onClose]);
 
-  // Apply coupon
-  const applyCoupon = () => {
+  // Apply exit offer coupon
+  const applyExitCoupon = () => {
     setCouponApplied(true);
     setShowExitOffer(false);
+    setDiscountPercent(EXIT_OFFER_DISCOUNT);
+    setAppliedCouponCode('SAIANAO15');
     toast({
       title: "🎉 Cupom aplicado!",
-      description: `Desconto de ${DISCOUNT_PERCENT}% aplicado com sucesso!`,
+      description: `Desconto de ${EXIT_OFFER_DISCOUNT}% aplicado com sucesso!`,
+    });
+  };
+
+  // Apply manual coupon
+  const handleApplyCoupon = () => {
+    const code = couponCode.toUpperCase().trim();
+    
+    if (!code) {
+      setCouponError('Digite um código de cupom');
+      return;
+    }
+
+    if (VALID_COUPONS[code]) {
+      const discount = VALID_COUPONS[code];
+      setCouponApplied(true);
+      setDiscountPercent(discount);
+      setAppliedCouponCode(code);
+      setCouponError('');
+      toast({
+        title: "🎉 Cupom aplicado!",
+        description: `Desconto de ${discount}% aplicado com sucesso!`,
+      });
+    } else {
+      setCouponError('Cupom inválido ou expirado');
+    }
+  };
+
+  // Remove coupon
+  const handleRemoveCoupon = () => {
+    setCouponApplied(false);
+    setCouponCode('');
+    setAppliedCouponCode('');
+    setDiscountPercent(15);
+    toast({
+      title: "Cupom removido",
+      description: "O desconto foi removido do seu pedido.",
     });
   };
 
@@ -360,7 +413,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                   </div>
                   
                   <p className="text-4xl font-black bg-gradient-to-r from-primary via-emerald-400 to-primary bg-clip-text text-transparent">
-                    {DISCOUNT_PERCENT}% OFF
+                    {EXIT_OFFER_DISCOUNT}% OFF
                   </p>
                   
                   <p className="text-muted-foreground text-sm">
@@ -383,7 +436,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 
                 <div className="space-y-3">
                   <Button
-                    onClick={applyCoupon}
+                    onClick={applyExitCoupon}
                     className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:scale-[1.02] transition-transform animate-pulse"
                   >
                     <Gift className="h-5 w-5 mr-2" />
@@ -409,7 +462,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         {couponApplied && (
           <div className="absolute top-0 left-0 right-0 z-30 bg-gradient-to-r from-primary via-emerald-500 to-primary text-white text-xs font-bold py-2 text-center flex items-center justify-center gap-2">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>CUPOM DE {DISCOUNT_PERCENT}% APLICADO!</span>
+            <span>CUPOM DE {discountPercent}% APLICADO!</span>
             <Sparkles className="h-3.5 w-3.5" />
           </div>
         )}
@@ -445,7 +498,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                   <>
                     <p className="text-sm text-muted-foreground line-through">R$ {product.discountPrice.toFixed(2)}</p>
                     <p className="text-xl font-bold text-primary">R$ {discountedPrice.toFixed(2)}</p>
-                    <span className="text-xs text-primary font-medium">-{DISCOUNT_PERCENT}%</span>
+                    <span className="text-xs text-primary font-medium">-{discountPercent}%</span>
                   </>
                 ) : (
                   <>
@@ -487,6 +540,56 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 />
                 {emailError && (
                   <p className="text-xs text-destructive">{emailError}</p>
+                )}
+              </div>
+
+              {/* Coupon Area */}
+              <div className="space-y-2">
+                <Label className="text-foreground flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-primary" />
+                  Tem um cupom?
+                </Label>
+                
+                {!couponApplied ? (
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Digite o código"
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value.toUpperCase());
+                        setCouponError('');
+                      }}
+                      className={`flex-1 uppercase ${couponError ? 'border-destructive' : ''}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleApplyCoupon}
+                      className="border-primary/50 text-primary hover:bg-primary/10"
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/30">
+                    <div className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-primary">{appliedCouponCode}</span>
+                      <span className="text-sm text-primary">(-{discountPercent}%)</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                )}
+                
+                {couponError && (
+                  <p className="text-xs text-destructive">{couponError}</p>
                 )}
               </div>
 
