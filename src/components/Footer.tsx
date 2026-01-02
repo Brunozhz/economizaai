@@ -1,7 +1,6 @@
-import { Mail, MessageCircle, Instagram, Heart, ArrowRight } from "lucide-react";
+import { Mail, MessageCircle, Instagram, Heart, ArrowRight, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import logoTransparent from "@/assets/logo-transparent.png";
 
 const Footer = () => {
   return (
@@ -31,11 +30,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
           <div className="lg:col-span-2 space-y-4">
-            <img 
-              src={logoTransparent} 
-              alt="Economiza.IA" 
-              className="h-12 w-auto object-contain"
-            />
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-emerald-500/20 border border-primary/30 flex items-center justify-center">
+                <Brain className="h-5 w-5 text-primary" style={{ filter: 'drop-shadow(0 0 6px rgba(34,197,94,0.6))' }} />
+              </div>
+              <span className="font-display font-bold text-xl text-foreground">
+                Economiza<span className="text-primary">.IA</span>
+              </span>
+            </div>
             <p className="text-sm text-muted-foreground max-w-md">
               A primeira loja de produtos digitais do Brasil com Inteligência Artificial. 
               Preços imbatíveis, entrega instantânea e suporte dedicado.
