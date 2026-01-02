@@ -1,12 +1,16 @@
-import { Search, Menu, Brain, Download, X, Share, Plus, Monitor, Smartphone } from "lucide-react";
+import { Search, Menu, Brain, Download, X, Share, Plus, Monitor, Smartphone, User, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 type DeviceType = 'android' | 'ios' | 'desktop-chrome' | 'desktop-edge' | 'desktop-other';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { isInstallable, isInstalled, isIOS, installApp, canShowInstall } = usePWAInstall();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop-other');
@@ -217,6 +221,29 @@ const Header = () => {
               >
                 <Download className="h-3.5 w-3.5 mr-1.5" />
                 Baixar App
+              </Button>
+            )}
+
+            {/* User/Auth Button */}
+            {user ? (
+              <Button 
+                size="sm"
+                variant="outline"
+                onClick={() => navigate('/purchases')}
+                className="h-9 px-3 gap-1.5"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                <span className="hidden md:inline">Compras</span>
+              </Button>
+            ) : (
+              <Button 
+                size="sm"
+                variant="outline"
+                onClick={() => navigate('/auth')}
+                className="h-9 px-3 gap-1.5"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden md:inline">Entrar</span>
               </Button>
             )}
             
