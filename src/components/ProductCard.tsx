@@ -88,14 +88,16 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         </div>
       )}
       
-      {/* Standard border - more visible */}
+      {/* Standard border - more visible with pulse */}
       {!isElite && (
-        <div className={`absolute inset-0 rounded-2xl border-2 ${
+        <div className={`absolute inset-0 rounded-2xl border-2 animate-pulse-border ${
           isAdvanced ? 'border-purple-500/70' :
           tier === 'plus' ? 'border-purple-500/60' :
           tier === 'basic' ? 'border-cyan-400/50' :
           'border-emerald-400/50'
-        }`} />
+        }`} style={{
+          animation: 'border-pulse 2.5s ease-in-out infinite',
+        }} />
       )}
       
       {/* Card content */}

@@ -410,4 +410,16 @@
       background-position: 0% 50%;
     }
   }
+
+  /* Subtle border pulse for cards */
+  @keyframes border-pulse {
+    0%, 100% {
+      opacity: 0.5;
+      box-shadow: 0 0 15px currentColor;
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 25px currentColor;
+    }
+  }
 }
