@@ -9,9 +9,11 @@ const Header = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center gap-3 group cursor-pointer">
-          <div className="relative">
-            <Brain className="h-8 w-8 text-primary" />
-            <div className="absolute inset-0 bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 opacity-50 blur-sm -z-10 rounded-full" />
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary via-emerald-400 to-cyan-500 rounded-xl blur-md opacity-60 animate-pulse" />
+            <div className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-emerald-500/20 border border-primary/30 flex items-center justify-center backdrop-blur-sm">
+              <Brain className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+            </div>
           </div>
           <span className="font-display font-bold text-xl text-foreground">
             Economiza<span className="text-primary">.IA</span>
