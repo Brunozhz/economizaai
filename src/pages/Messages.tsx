@@ -13,8 +13,23 @@ interface Message {
   is_read: boolean;
   product_name: string | null;
   product_price: number | null;
+  pix_id: string | null;
   created_at: string;
 }
+
+// Extract coupon code from message content
+const extractCouponFromContent = (content: string): { code: string; discount: number } | null => {
+  // Look for patterns like "Cupom: VOLTE20" or "Use o cupom: DESCONTO25"
+  const couponMatch = content.match(/[Cc]upom[:\s]+([A-Z]+\d+)/);
+  if (couponMatch) {
+    const code = couponMatch[1];
+    const discountMatch = code.match(/\d+/);
+    if (discountMatch) {
+      return { code, discount: parseInt(discountMatch[0]) };
+    }
+  }
+  return null;
+};
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -171,11 +186,35 @@ const Messages = () => {
                 )}
 
                 <Button
-                  onClick={() => navigate("/")}
+                  onClick={() => {
+                    // Extract coupon from content if exists
+                    const couponData = extractCouponFromContent(selectedMessage.content);
+                    
+                    if (couponData && selectedMessage.product_name && selectedMessage.product_price) {
+                      // Save coupon and product info for auto-apply in checkout
+                      localStorage.setItem('remarketing_offer', JSON.stringify({
+                        code: couponData.code,
+                        discount: couponData.discount,
+                        productName: selectedMessage.product_name,
+                        productPrice: selectedMessage.product_price,
+                        pixId: selectedMessage.pix_id
+                      }));
+                    } else if (selectedMessage.product_name && selectedMessage.product_price) {
+                      // Save just product info without coupon
+                      localStorage.setItem('remarketing_offer', JSON.stringify({
+                        productName: selectedMessage.product_name,
+                        productPrice: selectedMessage.product_price,
+                        pixId: selectedMessage.pix_id
+                      }));
+                    }
+                    
+                    // Navigate to home with product param to open checkout
+                    navigate(`/?produto=${encodeURIComponent(selectedMessage.product_name || '')}&remarketing=true`);
+                  }}
                   className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl"
                 >
                   <Gift className="h-5 w-5 mr-2" />
-                  Ver Ofertas
+                  {selectedMessage.product_name ? 'Ver Esta Oferta' : 'Ver Ofertas'}
                 </Button>
               </div>
             </div>
