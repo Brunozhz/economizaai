@@ -1,8 +1,9 @@
-import { Search, Menu, Brain, Download, X, Share, Plus, Monitor, Smartphone, User, ShoppingBag, MessageCircle } from "lucide-react";
+import { Search, Menu, Brain, Download, X, Share, Plus, Monitor, Smartphone, User, ShoppingBag, MessageCircle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +16,7 @@ const Header = () => {
   const { user } = useAuth();
   const { isInstallable, isInstalled, isIOS, installApp, canShowInstall } = usePWAInstall();
   const { playNotificationSound } = useNotificationSound();
+  const { isAdmin } = useAdminCheck();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop-other');
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -284,6 +286,19 @@ const Header = () => {
                     {unreadMessages > 9 ? '9+' : unreadMessages}
                   </span>
                 )}
+              </Button>
+            )}
+
+            {/* Admin Panel Button */}
+            {isAdmin && (
+              <Button 
+                size="sm"
+                variant="ghost"
+                onClick={() => navigate('/admin')}
+                className="h-9 w-9 p-0"
+                title="Painel Admin"
+              >
+                <Settings className="h-5 w-5" />
               </Button>
             )}
 
