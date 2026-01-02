@@ -16,47 +16,98 @@ interface RemarketingRequest {
 }
 
 const remarketingMessages = [
+  // Manhã - Motivacional
   {
-    title: "Ei, você esqueceu algo... 🎁",
-    content: `Oi! Percebi que você estava quase lá... 
+    title: "Bom dia! ☀️ Seu sucesso te espera",
+    content: `Bom dia! ☀️
 
-O PIX que você gerou ainda não foi pago, e eu entendo - às vezes a gente se distrai, né?
+Acordei pensando em você... e na oportunidade que está esperando sua decisão!
 
-Mas olha, eu não quero que você perca essa oportunidade! Os créditos que você escolheu vão te ajudar a turbinar seus resultados.
+Sabe aquele momento em que a gente sente que precisa dar um passo? **Esse momento é AGORA.**
 
-⏰ **Seu PIX ainda está válido!**
+Os créditos que você escolheu podem ser o combustível que faltava para você decolar. Imagine daqui a uma semana, olhando para trás e pensando: "Ainda bem que eu fiz isso!"
 
-Aproveita que ainda dá tempo, copia o código e finaliza. Eu prometo que você não vai se arrepender! 
+🌟 **Hoje é o dia perfeito para começar.**
 
-Qualquer dúvida, estou aqui para ajudar. 💚`
+Não deixe o medo te impedir de alcançar o que você merece. Bora junto?`
   },
   {
-    title: "Não deixe escapar! 🚀",
-    content: `Opa, tudo bem?
+    title: "Rise and shine! 🚀 Oportunidade batendo na porta",
+    content: `Oi! Tudo bem? ☀️
 
-Vi aqui que você começou uma compra mas não finalizou... 
+Passou pela minha cabeça agora cedo que você ainda não finalizou sua compra...
 
-Eu sei que às vezes a gente fica na dúvida, mas deixa eu te contar um segredo: **quem investe em si mesmo, colhe os resultados.**
+Olha, eu sei que às vezes a gente precisa de um empurrãozinho. Então deixa eu te lembrar: **você já deu o primeiro passo escolhendo investir em você.**
 
-Os créditos que você ia comprar podem ser exatamente o que falta para você dar aquele próximo passo!
+O que falta agora é só o clique final! 
 
-💡 **Dica:** O PIX que você gerou ainda está ativo. É só copiar o código e pagar pelo app do seu banco!
+💡 **Pensa comigo:** Qual versão de você vai existir daqui a um mês? A que tomou atitude ou a que deixou passar?
 
-Bora finalizar? Estou torcendo por você! ✨`
+Estou aqui torcendo por você! 🙌`
+  },
+  // Tarde - Urgência
+  {
+    title: "⚡ Não deixe para amanhã!",
+    content: `Ei! Passando rapidinho aqui...
+
+Já é tarde e você ainda não garantiu seus créditos! 😱
+
+Eu entendo que a vida é corrida, mas pensa comigo: **quanto tempo você já perdeu pensando nisso?**
+
+Enquanto você hesita, outras pessoas estão lá na frente colhendo resultados. Não deixe o "depois" roubar suas conquistas!
+
+⏰ **O melhor momento era ontem. O segundo melhor é AGORA.**
+
+Vamos fazer acontecer? Estou aqui esperando você do outro lado! 💚`
   },
   {
-    title: "Última chance! ⚡",
-    content: `Ei, voltei aqui rapidinho...
+    title: "🔥 Você está perdendo tempo precioso!",
+    content: `Opa! Tudo bem?
 
-Seu PIX está prestes a expirar e eu ficaria muito triste se você perdesse essa chance!
+Olha, vou ser direto com você: **cada minuto que passa é uma oportunidade escapando.**
 
-Pensa comigo: você já deu o primeiro passo ao escolher os créditos. Agora só falta o último - o pagamento.
+Eu sei que você veio até aqui porque quer algo melhor. Você não é alguém que fica parado esperando as coisas acontecerem, né?
 
-🔥 **Não deixe para depois o que pode mudar seu jogo hoje!**
+Então por que ainda não finalizou? 🤔
 
-Copia o código PIX e finaliza agora. Vai por mim, você merece isso!
+Seja qual for o motivo, saiba que **os melhores resultados vêm para quem age rápido.**
 
-Te espero do outro lado! 🎯`
+Bora transformar essa vontade em ação? 🚀`
+  },
+  // Noite - Reflexão
+  {
+    title: "🌙 Antes de dormir... uma reflexão",
+    content: `Boa noite! 🌙
+
+Antes de você encerrar o dia, quero deixar uma perguntinha:
+
+**O que você fez hoje para chegar mais perto dos seus objetivos?**
+
+Às vezes, um pequeno passo pode mudar tudo. E esse passo pode ser finalizar a compra que você começou.
+
+Imagina acordar amanhã sabendo que você tomou uma decisão importante hoje... Que sensação boa, né?
+
+✨ **Não vá dormir com arrependimento. Vá dormir com a certeza de que agiu.**
+
+Te espero! 💚`
+  },
+  {
+    title: "💭 Última mensagem do dia...",
+    content: `Ei, tudo bem? 🌙
+
+O dia foi longo, eu sei. Mas antes de descansar, deixa eu te fazer uma pergunta sincera:
+
+**O que está te impedindo?**
+
+Medo? Dúvida? Procrastinação? 
+
+Seja o que for, saiba que **as pessoas que vencem são as que agem mesmo com medo.**
+
+Você já demonstrou interesse, já escolheu o que quer... Só falta o último passo!
+
+🌟 **Amanhã pode ser tarde demais. Hoje ainda dá tempo.**
+
+Durma bem, mas antes... pensa nisso! 💭`
   }
 ];
 
@@ -73,28 +124,60 @@ serve(async (req) => {
 
     const { email, phone, productName, productPrice, pixId, userId }: RemarketingRequest = await req.json();
 
-    console.log(`Sending remarketing message for email: ${email}, pix: ${pixId}`);
+    console.log(`Processing remarketing for email: ${email}, pix: ${pixId}`);
 
-    // Check if we already sent a message for this PIX
-    const { data: existingMessage } = await supabase
-      .from("messages")
-      .select("id")
+    // Check if this lead already exists
+    const { data: existingLead } = await supabase
+      .from("abandoned_carts")
+      .select("id, is_converted")
+      .eq("email", email)
       .eq("pix_id", pixId)
       .single();
 
-    if (existingMessage) {
-      console.log("Message already sent for this PIX");
+    if (existingLead?.is_converted) {
+      console.log("Lead already converted, skipping");
       return new Response(
-        JSON.stringify({ success: true, message: "Already sent" }),
+        JSON.stringify({ success: true, message: "Already converted" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Pick a random remarketing message
-    const randomMessage = remarketingMessages[Math.floor(Math.random() * remarketingMessages.length)];
+    // If lead doesn't exist, create it
+    if (!existingLead) {
+      const { error: insertError } = await supabase
+        .from("abandoned_carts")
+        .insert({
+          email,
+          phone,
+          product_name: productName,
+          product_price: productPrice,
+          pix_id: pixId,
+          user_id: userId || null,
+          remarketing_count: 1,
+          last_remarketing_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        console.error("Error inserting abandoned cart:", insertError);
+        throw insertError;
+      }
+    }
+
+    // Pick a random message based on time of day
+    const hour = new Date().getHours();
+    let messagePool;
+    if (hour >= 6 && hour < 12) {
+      messagePool = remarketingMessages.slice(0, 2); // Morning
+    } else if (hour >= 12 && hour < 18) {
+      messagePool = remarketingMessages.slice(2, 4); // Afternoon
+    } else {
+      messagePool = remarketingMessages.slice(4, 6); // Evening
+    }
+    
+    const randomMessage = messagePool[Math.floor(Math.random() * messagePool.length)];
 
     // Insert the message
-    const { error: insertError } = await supabase
+    const { error: messageError } = await supabase
       .from("messages")
       .insert({
         email,
@@ -108,9 +191,9 @@ serve(async (req) => {
         pix_id: pixId,
       });
 
-    if (insertError) {
-      console.error("Error inserting message:", insertError);
-      throw insertError;
+    if (messageError) {
+      console.error("Error inserting message:", messageError);
+      throw messageError;
     }
 
     console.log("Remarketing message sent successfully");
