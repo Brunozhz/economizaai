@@ -93,7 +93,7 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
           {/* Pricing */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground line-through decoration-red-400">
+              <p className="text-sm text-red-400 line-through font-medium">
                 R$ {originalPrice.toFixed(2)}
               </p>
               <span className="px-2.5 py-1 rounded-full bg-primary/15 text-primary text-xs font-bold border border-primary/20">
@@ -102,7 +102,7 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
             </div>
             
             <div className="flex items-end gap-2">
-              <p className="text-3xl font-black bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">
+              <p className="text-3xl font-black text-primary drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]">
                 R$ {discountPrice.toFixed(2)}
               </p>
             </div>
