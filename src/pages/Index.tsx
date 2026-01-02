@@ -5,8 +5,11 @@ import BenefitsBar from "@/components/BenefitsBar";
 import ProductGrid from "@/components/ProductGrid";
 import Footer from "@/components/Footer";
 import InstallAppBanner from "@/components/InstallAppBanner";
+import { useGreeting } from "@/hooks/useGreeting";
 
 const Index = () => {
+  useGreeting();
+  
   return (
     <div className="min-h-screen bg-background">
       <TopBar />
