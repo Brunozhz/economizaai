@@ -4,6 +4,7 @@ import HeroSection from "@/components/HeroSection";
 import BenefitsBar from "@/components/BenefitsBar";
 import ProductGrid from "@/components/ProductGrid";
 import Footer from "@/components/Footer";
+import InstallAppBanner from "@/components/InstallAppBanner";
 
 const Index = () => {
   return (
@@ -16,6 +17,7 @@ const Index = () => {
         <BenefitsBar />
       </main>
       <Footer />
+      <InstallAppBanner />
     </div>
   );
 };
