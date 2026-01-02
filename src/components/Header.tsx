@@ -1,4 +1,4 @@
-import { Search, User, ShoppingBag, Menu, Brain } from "lucide-react";
+import { Search, User, Menu, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logoNew from "@/assets/logo-new.jpeg";
@@ -112,12 +112,6 @@ const Header = () => {
             <Menu className="h-5 w-5" />
           </Button>
           
-          <Button variant="ghost" size="icon" className="hidden sm:flex h-9 w-9 relative">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-bold flex items-center justify-center text-primary-foreground">
-              0
-            </span>
-          </Button>
           
           <Button variant="ghost" size="sm" className="h-9 px-3 gap-2">
             <User className="h-4 w-4" />

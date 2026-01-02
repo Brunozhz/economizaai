@@ -1,6 +1,5 @@
 import { Mail, MessageCircle, Instagram, Heart, ArrowRight, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 const Footer = () => {
   return (
@@ -14,16 +13,13 @@ const Footer = () => {
               <p className="text-sm text-muted-foreground">Seja o primeiro a saber das promoções</p>
             </div>
             
-            <div className="flex w-full md:w-auto gap-2">
-              <Input 
-                placeholder="seu@email.com" 
-                className="h-10 bg-background border-border/50 min-w-[220px]"
-              />
-              <Button className="h-10 px-4 bg-primary text-primary-foreground font-medium">
-                Inscrever
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+            <Button 
+              className="h-10 px-6 bg-primary text-primary-foreground font-medium"
+              onClick={() => window.open('https://chat.whatsapp.com/LFYmqa09RCI5e7KecBQ8FG', '_blank')}
+            >
+              Entrar no Grupo VIP
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </div>
         
