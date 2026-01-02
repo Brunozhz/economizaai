@@ -98,17 +98,37 @@ const ProductGrid = () => {
                   Pacotes de Créditos
                 </h2>
               </div>
-              {/* Logo com glow premium */}
-              <div className="flex items-center justify-center mt-4">
-                <div className="relative group">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 rounded-2xl blur-xl opacity-60 group-hover:opacity-90 animate-pulse transition-all duration-500" />
-                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-xl blur-md opacity-40 group-hover:opacity-70 transition-all duration-500" />
+              {/* Logo com glow premium e animação */}
+              <div className="flex items-center justify-center mt-6">
+                <a 
+                  href="https://lovable.dev" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="relative group animate-float"
+                >
+                  {/* Glow externo pulsante */}
+                  <div className="absolute -inset-4 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 rounded-3xl blur-2xl opacity-50 group-hover:opacity-100 animate-pulse transition-all duration-700" />
+                  
+                  {/* Glow intermediário */}
+                  <div className="absolute -inset-2 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-2xl blur-lg opacity-40 group-hover:opacity-80 transition-all duration-500" />
+                  
+                  {/* Borda animada */}
+                  <div 
+                    className="absolute -inset-[3px] rounded-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{
+                      background: 'linear-gradient(90deg, #f97316, #ec4899, #8b5cf6, #06b6d4, #8b5cf6, #ec4899, #f97316)',
+                      backgroundSize: '300% 100%',
+                      animation: 'gradient-x 3s linear infinite'
+                    }}
+                  />
+                  
+                  {/* Imagem da logo */}
                   <img 
                     src={lovableLogo} 
                     alt="Lovable" 
-                    className="relative h-16 rounded-xl shadow-2xl hover:scale-110 transition-all duration-500 cursor-pointer"
+                    className="relative h-20 rounded-2xl shadow-2xl group-hover:scale-105 transition-all duration-500 z-10"
                   />
-                </div>
+                </a>
               </div>
               <p className="text-muted-foreground text-lg max-w-lg mx-auto">
                 Escolha o pacote ideal para o seu projeto

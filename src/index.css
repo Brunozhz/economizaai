@@ -394,4 +394,17 @@
       box-shadow: 0 4px 30px rgba(34, 197, 94, 0.8), 0 0 40px rgba(0, 255, 255, 0.4);
     }
   }
+
+  /* Animated gradient border for logo */
+  @keyframes gradient-x {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }
