@@ -99,8 +99,7 @@ const ProductGrid = () => {
                 </h2>
               </div>
               {/* Logo com glow premium */}
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Powered by</span>
+              <div className="flex items-center justify-center mt-4">
                 <div className="relative group">
                   <div className="absolute -inset-2 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 rounded-2xl blur-xl opacity-60 group-hover:opacity-90 animate-pulse transition-all duration-500" />
                   <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-xl blur-md opacity-40 group-hover:opacity-70 transition-all duration-500" />
