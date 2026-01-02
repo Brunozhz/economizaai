@@ -1,4 +1,5 @@
 import { Mail, MessageCircle, Instagram, Heart } from "lucide-react";
+import logo from "@/assets/logo.jpeg";
 
 const Footer = () => {
   return (
@@ -8,13 +9,11 @@ const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-2 space-y-5">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
-                <span className="text-2xl font-black text-primary-foreground">E</span>
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-foreground">Economiza.IA</span>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">Produtos Digitais</p>
-              </div>
+              <img 
+                src={logo} 
+                alt="Economiza.IA" 
+                className="h-16 w-auto object-contain"
+              />
             </div>
             <p className="text-muted-foreground max-w-md leading-relaxed">
               A melhor loja de produtos digitais do Brasil. Preços imbatíveis, entrega instantânea e suporte dedicado para você.

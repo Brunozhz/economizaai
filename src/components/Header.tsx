@@ -1,20 +1,19 @@
 import { Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import logo from "@/assets/logo.jpeg";
 
 const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full glass glass-border">
       <div className="container mx-auto flex h-18 items-center justify-between px-4 py-4">
         {/* Logo */}
-        <div className="flex items-center gap-3 group cursor-pointer">
-          <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm transition-all duration-300 group-hover:shadow-glow group-hover:scale-110">
-            <span className="text-2xl font-black text-primary-foreground">E</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold text-foreground tracking-tight">Economiza.IA</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Produtos Digitais</span>
-          </div>
+        <div className="flex items-center gap-2 group cursor-pointer">
+          <img 
+            src={logo} 
+            alt="Economiza.IA" 
+            className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          />
         </div>
 
         {/* Search Bar */}
