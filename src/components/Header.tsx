@@ -1,7 +1,7 @@
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import logoTransparent from "@/assets/logo-transparent.png";
+import logoNew from "@/assets/logo-new.jpeg";
 
 const Header = () => {
   return (
@@ -12,7 +12,7 @@ const Header = () => {
           <img 
             alt="Economiza.IA" 
             className="h-8 w-auto object-contain" 
-            src={logoTransparent} 
+            src={logoNew} 
           />
         </div>
 
