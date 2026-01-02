@@ -32,8 +32,21 @@ const EmailCaptureModal = ({ open, onOpenChange }: EmailCaptureModalProps) => {
     setIsSubmitting(true);
     
     try {
-      // Save email to push_subscriptions or a leads table
-      // For now we'll just show the coupon
+      // Save lead to database
+      const { error } = await supabase
+        .from('leads')
+        .upsert(
+          { 
+            email: email.toLowerCase().trim(), 
+            source: 'popup_cupom',
+            coupon_code: COUPON_CODE,
+            user_id: user?.id || null
+          },
+          { onConflict: 'email' }
+        );
+
+      if (error) throw error;
+
       setShowCoupon(true);
       toast.success('Cupom liberado! 🎉');
     } catch (error) {
