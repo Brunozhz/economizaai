@@ -129,8 +129,17 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             
             {/* Credits display */}
             <div className="relative">
-              <p className={`text-4xl font-black font-display bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>
-                {credits}
+              <p className={`text-4xl font-black font-display ${colors.textClass}`}
+                style={{
+                  background: `linear-gradient(to right, var(--tw-gradient-stops))`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>
+                  {credits}
+                </span>
               </p>
             </div>
             
