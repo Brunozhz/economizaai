@@ -8,19 +8,19 @@ const Footer = () => {
     <footer className="relative border-t border-border/30 pt-20 pb-8 overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 orb-purple blur-[200px] opacity-20" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 orb-orange blur-[200px] opacity-15" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 orb-green blur-[200px] opacity-20" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 orb-emerald blur-[200px] opacity-15" />
       
       <div className="container mx-auto px-4 relative">
         {/* Newsletter Section */}
-        <div className="mb-16 p-8 rounded-3xl glass-purple border border-accent/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 orb-orange blur-[100px] opacity-30" />
+        <div className="mb-16 p-8 rounded-3xl glass-green border border-primary/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 orb-green blur-[100px] opacity-30" />
           
           <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                <Sparkles className="h-5 w-5 text-accent" />
-                <span className="text-accent font-semibold text-sm uppercase tracking-wider">Newsletter VIP</span>
+                <Sparkles className="h-5 w-5 text-primary" />
+                <span className="text-primary font-semibold text-sm uppercase tracking-wider">Newsletter VIP</span>
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-1">Receba ofertas exclusivas</h3>
               <p className="text-muted-foreground">Seja o primeiro a saber das promoções</p>
@@ -31,7 +31,7 @@ const Footer = () => {
                 placeholder="seu@email.com" 
                 className="h-12 bg-background/50 border-border/50 rounded-xl min-w-[250px]"
               />
-              <Button className="h-12 px-6 gradient-mixed rounded-xl font-bold shadow-glow-sm hover:shadow-glow transition-all">
+              <Button className="h-12 px-6 gradient-primary rounded-xl font-bold shadow-glow-sm hover:shadow-glow transition-all">
                 Inscrever
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -64,13 +64,13 @@ const Footer = () => {
               </a>
               <a
                 href="#"
-                className="h-11 w-11 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary-foreground hover:bg-green-600 border border-border/50 hover:border-green-500/30 transition-all duration-300"
+                className="h-11 w-11 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary-foreground hover:bg-primary border border-border/50 hover:border-primary/30 transition-all duration-300"
               >
                 <MessageCircle className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="h-11 w-11 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary-foreground hover:gradient-purple border border-border/50 hover:border-accent/30 transition-all duration-300 hover:shadow-glow-purple"
+                className="h-11 w-11 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary-foreground hover:gradient-mixed border border-border/50 hover:border-accent/30 transition-all duration-300 hover:shadow-glow-accent"
               >
                 <Mail className="h-5 w-5" />
               </a>
@@ -98,14 +98,14 @@ const Footer = () => {
           {/* Contact */}
           <div className="space-y-5">
             <h4 className="font-bold text-foreground text-lg flex items-center gap-2">
-              <span className="h-1 w-6 gradient-purple rounded-full" />
+              <span className="h-1 w-6 gradient-mixed rounded-full" />
               Suporte
             </h4>
             <ul className="space-y-3">
               <li>
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center gap-3 group">
-                  <div className="h-9 w-9 rounded-xl bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
-                    <MessageCircle className="h-4 w-4 text-green-500" />
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <MessageCircle className="h-4 w-4 text-primary" />
                   </div>
                   <div>
                     <span className="block font-medium">WhatsApp</span>
@@ -135,7 +135,7 @@ const Footer = () => {
               © {new Date().getFullYear()} Economiza.IA. Todos os direitos reservados.
             </p>
             <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              Feito com <Heart className="h-4 w-4 text-destructive fill-destructive animate-pulse" /> no Brasil
+              Feito com <Heart className="h-4 w-4 text-primary fill-primary animate-pulse" /> no Brasil
               <span className="ml-2 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">v2.0</span>
             </p>
           </div>

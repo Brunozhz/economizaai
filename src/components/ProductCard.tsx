@@ -20,11 +20,11 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
   };
 
   return (
-    <div className={`group relative bg-card rounded-3xl border overflow-hidden hover-lift shadow-card ${popular ? 'border-accent/50 ring-1 ring-accent/20' : 'border-border/50'}`}>
+    <div className={`group relative bg-card rounded-3xl border overflow-hidden hover-lift shadow-card ${popular ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border/50'}`}>
       {/* Popular Badge */}
       {popular && (
         <div className="absolute top-0 left-0 right-0 z-10">
-          <div className="gradient-purple text-accent-foreground text-xs font-bold px-4 py-2 flex items-center justify-center gap-2">
+          <div className="gradient-primary text-primary-foreground text-xs font-bold px-4 py-2 flex items-center justify-center gap-2">
             <Sparkles className="h-3.5 w-3.5" />
             MAIS VENDIDO
             <Sparkles className="h-3.5 w-3.5" />
@@ -42,8 +42,8 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
       <div className={`relative aspect-[4/3] gradient-card p-6 flex items-center justify-center overflow-hidden ${popular ? 'pt-12' : ''}`}>
         {/* Background decoration */}
         <div className="absolute inset-0 opacity-40">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full orb-orange group-hover:scale-150 transition-transform duration-700" />
-          <div className="absolute top-1/4 right-1/4 w-32 h-32 rounded-full orb-purple blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full orb-green group-hover:scale-150 transition-transform duration-700" />
+          <div className="absolute top-1/4 right-1/4 w-32 h-32 rounded-full orb-emerald blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
         </div>
         
         <div className="text-center space-y-3 relative">
@@ -53,7 +53,7 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
           </span>
           
           <p className="text-5xl md:text-6xl font-black font-display">
-            <span className="gradient-text-mixed">+{credits}</span>
+            <span className="gradient-text">+{credits}</span>
           </p>
           <p className="text-lg font-bold text-foreground/70 tracking-widest uppercase">Créditos</p>
           
@@ -101,7 +101,7 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
         {/* Action Button */}
         <Button 
           onClick={handleBuy}
-          className="w-full h-12 gradient-mixed text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:shadow-glow hover:scale-[1.02] transition-all duration-300 group/btn"
+          className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:shadow-glow hover:scale-[1.02] transition-all duration-300 group/btn"
         >
           <Zap className="mr-2 h-4 w-4" />
           <span>Comprar Agora</span>
