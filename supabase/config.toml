@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.send-promotion]
 verify_jwt = false
+
+[functions.daily-promotion-cron]
+verify_jwt = false
