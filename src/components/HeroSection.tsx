@@ -1,6 +1,5 @@
-import { Sparkles, ArrowRight, Zap, Star } from "lucide-react";
+import { Sparkles, ArrowRight, Zap, Star, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoTransparent from "@/assets/logo-transparent.png";
 
 const HeroSection = () => {
   return (
@@ -76,11 +75,9 @@ const HeroSection = () => {
                 </div>
                 
                 <div className="flex items-center justify-center">
-                  <img 
-                    src={logoTransparent} 
-                    alt="Economiza.IA" 
-                    className="h-16 w-auto object-contain"
-                  />
+                  <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/20 to-emerald-500/20 border border-primary/30 flex items-center justify-center">
+                    <Brain className="h-8 w-8 text-primary" style={{ filter: 'drop-shadow(0 0 8px rgba(34,197,94,0.6))' }} />
+                  </div>
                 </div>
                 
                 <p className="text-sm text-muted-foreground">
