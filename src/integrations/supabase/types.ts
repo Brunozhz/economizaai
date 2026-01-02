@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_carts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_converted: boolean
+          last_remarketing_at: string | null
+          phone: string | null
+          pix_id: string | null
+          product_name: string
+          product_price: number
+          remarketing_count: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_converted?: boolean
+          last_remarketing_at?: string | null
+          phone?: string | null
+          pix_id?: string | null
+          product_name: string
+          product_price: number
+          remarketing_count?: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_converted?: boolean
+          last_remarketing_at?: string | null
+          phone?: string | null
+          pix_id?: string | null
+          product_name?: string
+          product_price?: number
+          remarketing_count?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
