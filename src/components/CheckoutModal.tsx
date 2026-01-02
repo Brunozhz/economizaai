@@ -306,15 +306,19 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               </div>
               <div className="text-center space-y-2">
                 <h3 className="text-2xl font-bold text-foreground">Erro ao Gerar PIX</h3>
-                <p className="text-muted-foreground">
-                  Não foi possível criar o pagamento.
+                <p className="text-muted-foreground text-sm px-4">
+                  {product && product.discountPrice > 150 
+                    ? "Valor máximo para PIX é R$ 150,00. Escolha um pacote menor."
+                    : "Não foi possível criar o pagamento. Tente novamente."
+                  }
                 </p>
               </div>
               <Button
-                onClick={createPix}
-                className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl mt-4"
+                onClick={onClose}
+                variant="outline"
+                className="w-full h-12 font-bold rounded-xl mt-4"
               >
-                Tentar Novamente
+                Escolher Outro Pacote
               </Button>
             </div>
           )}

@@ -24,11 +24,29 @@ serve(async (req) => {
     
     console.log('Creating PIX payment:', { value, productName, productId });
 
+    // PushinPay has a limit of R$ 150.00
+    if (value > 150) {
+      console.error('Value exceeds PushinPay limit:', value);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Valor máximo para PIX é R$ 150,00. Escolha um pacote menor ou entre em contato com o suporte.'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // PushinPay expects value in centavos (cents)
     const valueInCentavos = Math.round(value * 100);
 
     if (valueInCentavos < 50) {
-      throw new Error('Valor mínimo é R$ 0,50');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Valor mínimo é R$ 0,50'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const response = await fetch('https://api.pushinpay.com.br/api/pix/cashIn', {
@@ -50,7 +68,14 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error('PushinPay error:', data);
-      throw new Error(data.message || 'Erro ao criar PIX');
+      const errorMsg = data.error || data.message || 'Erro ao criar PIX';
+      return new Response(JSON.stringify({
+        success: false,
+        error: errorMsg
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     return new Response(JSON.stringify({
