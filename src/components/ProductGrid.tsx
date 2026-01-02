@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Flame, TrendingUp } from "lucide-react";
 import ProductCard from "./ProductCard";
 import CheckoutModal from "./CheckoutModal";
+import lovableLogo from "@/assets/lovable-logo.png";
 
 const products = [
   {
@@ -93,6 +94,14 @@ const ProductGrid = () => {
                 <h2 className="text-3xl md:text-4xl font-black text-foreground">
                   Pacotes de Créditos
                 </h2>
+              </div>
+              {/* Logo sutil */}
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <img 
+                  src={lovableLogo} 
+                  alt="Lovable" 
+                  className="h-6 opacity-70 hover:opacity-100 transition-opacity"
+                />
               </div>
               <p className="text-muted-foreground text-lg max-w-lg mx-auto">
                 Escolha o pacote ideal para o seu projeto
