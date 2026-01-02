@@ -107,10 +107,10 @@ const ProductGrid = () => {
           {/* Section Header - Enhanced */}
           <div className="flex flex-col items-center text-center gap-8 mb-20">
             {/* Badge */}
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-sm shadow-lg shadow-primary/10">
-              <Gift className="h-5 w-5 text-primary animate-pulse" />
-              <span className="text-base font-bold text-primary tracking-wide">Oferta Especial por Tempo Limitado</span>
-              <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/25 backdrop-blur-sm">
+              <Gift className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-primary tracking-wide">Oferta Especial por Tempo Limitado</span>
+              <Sparkles className="h-4 w-4 text-primary" />
             </div>
             
             {/* Title */}
@@ -163,25 +163,25 @@ const ProductGrid = () => {
               </p>
             </div>
             
-            {/* Stats - Enhanced */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
-              <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-yellow-500/10 border border-yellow-500/30 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
-                <Crown className="h-6 w-6 text-yellow-500" />
-                <span className="text-base font-bold text-foreground">Até 86% de desconto</span>
+            {/* Stats - Refined */}
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+              <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-yellow-500/8 border border-yellow-500/20 backdrop-blur-sm hover:bg-yellow-500/12 transition-colors cursor-default">
+                <Crown className="h-5 w-5 text-yellow-500" />
+                <span className="text-sm font-semibold text-foreground">Até 86% OFF</span>
               </div>
-              <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-primary/10 border border-primary/30 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
-                <TrendingUp className="h-6 w-6 text-primary" />
-                <span className="text-base font-bold"><span className="text-primary">{products.length + 1}</span> <span className="text-foreground">pacotes</span></span>
+              <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-primary/8 border border-primary/20 backdrop-blur-sm hover:bg-primary/12 transition-colors cursor-default">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <span className="text-sm font-semibold"><span className="text-primary">{products.length + 1}</span> <span className="text-foreground">pacotes</span></span>
               </div>
-              <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-orange-500/10 border border-orange-500/30 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
-                <Zap className="h-6 w-6 text-orange-500" />
-                <span className="text-base font-bold text-foreground">Entrega imediata</span>
+              <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-orange-500/8 border border-orange-500/20 backdrop-blur-sm hover:bg-orange-500/12 transition-colors cursor-default">
+                <Zap className="h-5 w-5 text-orange-500" />
+                <span className="text-sm font-semibold text-foreground">Entrega imediata</span>
               </div>
             </div>
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5 xl:gap-4">
             {products.map((product, index) => (
               <div
                 key={index}

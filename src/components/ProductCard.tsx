@@ -64,18 +64,18 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
 
   return (
     <div 
-      className={`group relative rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-3 ${
-        isElite ? 'shadow-[0_0_60px_rgba(250,204,21,0.6)]' :
-        isAdvanced ? 'shadow-[0_0_45px_rgba(168,85,247,0.5)]' :
-        tier === 'plus' ? 'shadow-[0_0_35px_rgba(168,85,247,0.4)]' :
-        tier === 'basic' ? 'shadow-[0_0_30px_rgba(0,255,255,0.4)]' :
-        'shadow-[0_0_30px_rgba(0,255,136,0.4)]'
+      className={`group relative rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-2 ${
+        isElite ? 'shadow-[0_8px_40px_rgba(250,204,21,0.35)]' :
+        isAdvanced ? 'shadow-[0_8px_35px_rgba(168,85,247,0.3)]' :
+        tier === 'plus' ? 'shadow-[0_8px_30px_rgba(168,85,247,0.25)]' :
+        tier === 'basic' ? 'shadow-[0_8px_25px_rgba(0,255,255,0.25)]' :
+        'shadow-[0_8px_25px_rgba(0,255,136,0.25)]'
       } ${
-        isElite ? 'hover:shadow-[0_0_80px_rgba(250,204,21,0.7)]' :
-        isAdvanced ? 'hover:shadow-[0_0_60px_rgba(168,85,247,0.6)]' :
-        tier === 'plus' ? 'hover:shadow-[0_0_50px_rgba(168,85,247,0.5)]' :
-        tier === 'basic' ? 'hover:shadow-[0_0_45px_rgba(0,255,255,0.5)]' :
-        'hover:shadow-[0_0_45px_rgba(0,255,136,0.5)]'
+        isElite ? 'hover:shadow-[0_16px_60px_rgba(250,204,21,0.5)]' :
+        isAdvanced ? 'hover:shadow-[0_16px_50px_rgba(168,85,247,0.45)]' :
+        tier === 'plus' ? 'hover:shadow-[0_16px_45px_rgba(168,85,247,0.4)]' :
+        tier === 'basic' ? 'hover:shadow-[0_16px_40px_rgba(0,255,255,0.35)]' :
+        'hover:shadow-[0_16px_40px_rgba(0,255,136,0.35)]'
       }`}
     >
       {/* Animated gradient border for Elite */}
@@ -113,109 +113,103 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
           </div>
         )}
 
-        {/* Product Preview - More compact */}
-        <div className={`relative p-5 flex items-center justify-center overflow-hidden ${popular ? 'pt-12' : ''}`}
+        {/* Product Preview */}
+        <div className={`relative px-5 py-6 flex items-center justify-center overflow-hidden ${popular ? 'pt-14' : ''}`}
           style={{
-            background: `radial-gradient(ellipse at top, ${colors.glow} 0%, transparent 70%), linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%)`
+            background: `radial-gradient(ellipse at top, ${colors.glow} 0%, transparent 65%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)`
           }}
         >
           {/* Subtle background glow */}
           <div className="absolute inset-0 overflow-hidden">
-            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl opacity-40`}
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full blur-3xl opacity-30`}
               style={{ backgroundColor: colors.primary }}
             />
           </div>
           
-          <div className="relative text-center space-y-2 z-10">
+          <div className="relative text-center space-y-3 z-10">
             {/* Title */}
-            <h3 className={`text-lg font-bold tracking-wide uppercase ${colors.textClass}`}>{name}</h3>
+            <h3 className={`text-base font-bold tracking-wider uppercase ${colors.textClass} drop-shadow-sm`}>{name}</h3>
             
             {/* Credits display */}
-            <div className="relative">
-              <p className={`text-4xl font-black font-display ${colors.textClass}`}
-                style={{
-                  background: `linear-gradient(to right, var(--tw-gradient-stops))`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>
+            <div className="relative py-1">
+              <p className={`text-5xl font-black font-display leading-none ${colors.textClass}`}>
+                <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent drop-shadow-lg`}>
                   {credits}
                 </span>
               </p>
             </div>
             
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Créditos</p>
+            <p className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-[0.2em]">Créditos</p>
           </div>
         </div>
 
-        {/* Product Info - More compact */}
-        <div className="relative p-4 space-y-3 bg-gradient-to-b from-card to-background/80">
-          {/* Duration & Usage combined */}
-          <div className={`p-2.5 rounded-lg border text-xs ${
-            isElite ? 'bg-yellow-500/10 border-yellow-500/20' :
-            isAdvanced ? 'bg-purple-500/10 border-purple-500/20' :
-            tier === 'plus' ? 'bg-purple-500/10 border-purple-500/20' :
-            tier === 'basic' ? 'bg-cyan-500/10 border-cyan-500/20' :
-            'bg-emerald-500/10 border-emerald-500/20'
+        {/* Product Info */}
+        <div className="relative px-4 py-5 space-y-4 bg-gradient-to-b from-card via-card to-background/90">
+          {/* Duration & Usage */}
+          <div className={`p-3 rounded-xl border text-xs ${
+            isElite ? 'bg-yellow-500/8 border-yellow-500/25' :
+            isAdvanced ? 'bg-purple-500/8 border-purple-500/25' :
+            tier === 'plus' ? 'bg-purple-500/8 border-purple-500/25' :
+            tier === 'basic' ? 'bg-cyan-500/8 border-cyan-500/25' :
+            'bg-emerald-500/8 border-emerald-500/25'
           }`}>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Clock className={`h-3.5 w-3.5 ${colors.textClass}`} />
-              <span className="text-foreground font-semibold">{duration}</span>
+            <div className="flex items-center gap-2.5 mb-2">
+              <Clock className={`h-3.5 w-3.5 ${colors.textClass} opacity-80`} />
+              <span className="text-foreground font-semibold text-[13px]">{duration}</span>
             </div>
-            <div className="flex items-start gap-2">
-              <Target className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${colors.textClass}`} />
-              <p className="text-muted-foreground leading-relaxed line-clamp-2">{usage}</p>
+            <div className="flex items-start gap-2.5">
+              <Target className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${colors.textClass} opacity-80`} />
+              <p className="text-muted-foreground/90 leading-relaxed line-clamp-2 text-[12px]">{usage}</p>
             </div>
           </div>
 
-          {/* Pricing with comparison */}
-          <div className="space-y-2 text-center">
-            {/* Original price crossed out */}
-            <div className="flex items-center justify-center gap-1.5">
-              <X className="h-4 w-4 text-red-500" />
-              <span className="text-red-500 line-through text-sm font-medium">
+          {/* Pricing */}
+          <div className="space-y-3 text-center py-1">
+            {/* Original price */}
+            <div className="flex items-center justify-center gap-2">
+              <X className="h-3.5 w-3.5 text-red-400/80" />
+              <span className="text-red-400/90 line-through text-sm font-medium">
                 R$ {originalPrice.toFixed(2).replace('.', ',')}
               </span>
-              <span className="text-red-400 text-[10px]">(Oficial)</span>
+              <span className="text-red-400/60 text-[10px] font-medium">(Oficial)</span>
             </div>
             
-            {/* Our price */}
-            <p className={`text-3xl font-black bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}
+            {/* Our price - Destacado */}
+            <p className={`text-[32px] font-black leading-none bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}
               style={isHot ? {
-                textShadow: `0 0 20px ${colors.glow}`,
+                filter: `drop-shadow(0 0 12px ${colors.glow})`,
               } : {}}
             >
               R$ {price.toFixed(2).replace('.', ',')}
             </p>
             
-            <div className={`flex items-center justify-center gap-2 p-2 rounded-lg ${
-              isElite ? 'bg-yellow-500/10' :
-              isAdvanced ? 'bg-purple-500/10' :
-              tier === 'plus' ? 'bg-purple-500/10' :
-              tier === 'basic' ? 'bg-cyan-500/10' :
-              'bg-emerald-500/10'
+            {/* Pix badge */}
+            <div className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg ${
+              isElite ? 'bg-yellow-500/12 border border-yellow-500/20' :
+              isAdvanced ? 'bg-purple-500/12 border border-purple-500/20' :
+              tier === 'plus' ? 'bg-purple-500/12 border border-purple-500/20' :
+              tier === 'basic' ? 'bg-cyan-500/12 border border-cyan-500/20' :
+              'bg-emerald-500/12 border border-emerald-500/20'
             }`}>
-              <span className={`h-5 w-5 rounded-full flex items-center justify-center ${colors.bgClass}`}>
-                <Check className="h-3 w-3 text-white" />
+              <span className={`h-4 w-4 rounded-full flex items-center justify-center ${colors.bgClass}`}>
+                <Check className="h-2.5 w-2.5 text-white" />
               </span>
-              <span className="text-xs text-foreground font-medium">À vista no <span className={`font-bold ${colors.textClass}`}>Pix</span></span>
+              <span className="text-[11px] text-foreground/90 font-medium">À vista no <span className={`font-bold ${colors.textClass}`}>Pix</span></span>
             </div>
           </div>
 
-          {/* Action Button */}
+          {/* Action Button - Premium */}
           <Button 
             onClick={handleBuy}
-            className={`w-full h-11 font-bold text-sm rounded-xl transition-all duration-300 bg-gradient-to-r ${colors.gradient} hover:scale-[1.02] ${
-              isElite ? 'shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:shadow-[0_0_30px_rgba(250,204,21,0.6)]' :
-              isAdvanced ? 'shadow-lg hover:shadow-xl' :
-              ''
+            className={`w-full h-12 font-bold text-[13px] rounded-xl transition-all duration-300 ease-out bg-gradient-to-r ${colors.gradient} hover:scale-[1.03] active:scale-[0.98] ${
+              isElite ? 'shadow-[0_4px_20px_rgba(250,204,21,0.35)] hover:shadow-[0_8px_30px_rgba(250,204,21,0.5)]' :
+              isAdvanced ? 'shadow-[0_4px_16px_rgba(168,85,247,0.3)] hover:shadow-[0_8px_24px_rgba(168,85,247,0.45)]' :
+              'shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.4)]'
             }`}
           >
-            <Zap className="mr-1.5 h-4 w-4" />
+            <Zap className="mr-2 h-4 w-4" />
             Comprar Agora
-            <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+            <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-70" />
           </Button>
         </div>
       </div>

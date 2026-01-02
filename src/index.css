@@ -411,15 +411,41 @@
     }
   }
 
-  /* Subtle border pulse for cards */
+  /* Subtle border pulse for cards - Refined */
   @keyframes border-pulse {
     0%, 100% {
-      opacity: 0.5;
-      box-shadow: 0 0 15px currentColor;
+      opacity: 0.4;
+      box-shadow: 0 0 8px currentColor;
     }
     50% {
-      opacity: 1;
-      box-shadow: 0 0 25px currentColor;
+      opacity: 0.7;
+      box-shadow: 0 0 16px currentColor;
     }
+  }
+
+  /* Smooth card transitions */
+  .card-transition {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  /* Premium button glow */
+  .btn-premium {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-premium:hover::before {
+    left: 100%;
   }
 }
