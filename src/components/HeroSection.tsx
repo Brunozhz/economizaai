@@ -38,20 +38,20 @@ const HeroSection = () => {
             </div>
             
             <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
-              <span className="text-foreground">Pague </span>
-              <span className="text-gradient-animated">barato</span>
+              <span className="text-foreground">Créditos Lovable com o </span>
+              <span className="text-gradient-animated">Melhor Preço</span>
               <br />
-              <span className="text-primary drop-shadow-[0_0_30px_rgba(34,197,94,0.5)]">nos Créditos Lovable</span>
-              <br />
-              <span className="text-muted-foreground text-xl md:text-2xl lg:text-3xl font-medium mt-4 block">
-                Liberdade total para criar que cabe no seu bolso!
-              </span>
+              <span className="text-primary drop-shadow-[0_0_30px_rgba(34,197,94,0.5)]">do Brasil.</span>
             </h1>
             
+            <p className="text-xl md:text-2xl font-semibold text-foreground">
+              Economize agora e desbloqueie seu potencial criativo.
+            </p>
+            
             <p className="text-lg md:text-xl text-muted-foreground max-w-lg leading-relaxed">
-              Créditos Lovable com acesso imediato, transparência total e experiência premium.
+              Acesso imediato, transparência total e uma experiência premium que cabe no seu bolso.
               <span className="block mt-3 font-semibold text-foreground">
-                Crie sem interrupções. Escale sem limites.
+                Não pague mais caro para criar sem limites.
               </span>
             </p>
             
