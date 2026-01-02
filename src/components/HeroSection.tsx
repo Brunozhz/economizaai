@@ -17,9 +17,11 @@ const HeroSection = () => {
             </div>
             
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
-              <span className="text-foreground">Produtos Digitais</span>
+              <span className="text-foreground">Autoridade máxima</span>
               <br />
-              <span className="text-primary">com Inteligência</span>
+              <span className="text-primary">Créditos Lovable no varejo.</span>
+              <br />
+              <span className="text-muted-foreground text-2xl md:text-3xl lg:text-4xl">Liberdade total para criar sem limites.</span>
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-lg">
