@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flame, TrendingUp, Rocket, Building2, Zap, Users, TrendingDown } from "lucide-react";
+import { Flame, TrendingUp, Rocket, Building2, Zap, Users, TrendingDown, Sparkles, Crown, Gift } from "lucide-react";
 import ProductCard from "./ProductCard";
 import CheckoutModal from "./CheckoutModal";
 import EnterpriseChatModal from "./EnterpriseChatModal";
@@ -82,24 +82,48 @@ const ProductGrid = () => {
 
   return (
     <>
-      <section id="catalogo" className="py-16 md:py-20 relative">
-        {/* Background decoration */}
-        <div className="absolute inset-0 gradient-glow opacity-30" />
+      <section id="catalogo" className="py-20 md:py-28 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0">
+          {/* Gradient base */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card/50" />
+          
+          {/* Orbs decorativos */}
+          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-[100px] animate-pulse-soft" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/15 rounded-full blur-[120px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
+          
+          {/* Grid pattern */}
+          <div 
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: 'linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)',
+              backgroundSize: '60px 60px'
+            }}
+          />
+        </div>
         
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-4 relative z-10">
           {/* Section Header */}
-          <div className="flex flex-col items-center text-center gap-4 mb-12">
-            <div className="space-y-2">
-              <div className="flex items-center justify-center gap-3">
-                <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
-                  <Flame className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <h2 className="text-3xl md:text-4xl font-black text-foreground">
-                  Pacotes de Créditos
-                </h2>
-              </div>
+          <div className="flex flex-col items-center text-center gap-6 mb-16">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+              <Gift className="h-4 w-4 text-primary animate-pulse" />
+              <span className="text-sm font-semibold text-primary">Oferta Especial</span>
+              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+            </div>
+            
+            {/* Title */}
+            <div className="space-y-4">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black">
+                <span className="text-foreground">Pacotes de </span>
+                <span className="bg-gradient-to-r from-primary via-emerald-400 to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
+                  Créditos
+                </span>
+              </h2>
+              
               {/* Logo com glow premium e animação */}
-              <div className="flex items-center justify-center mt-6">
+              <div className="flex items-center justify-center mt-8">
                 <a 
                   href="https://lovable.dev" 
                   target="_blank" 
@@ -130,14 +154,26 @@ const ProductGrid = () => {
                   />
                 </a>
               </div>
-              <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-                Escolha o pacote ideal para o seu projeto
+              
+              <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+                Escolha o pacote ideal para transformar suas ideias em realidade
               </p>
             </div>
             
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <span><strong className="text-foreground">{products.length}</strong> pacotes disponíveis</span>
+            {/* Stats */}
+            <div className="flex flex-wrap items-center justify-center gap-6 mt-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm">
+                <Crown className="h-5 w-5 text-yellow-500" />
+                <span className="text-sm font-medium text-foreground">Até 86% de desconto</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <span className="text-sm font-medium"><strong className="text-foreground">{products.length + 1}</strong> <span className="text-muted-foreground">pacotes disponíveis</span></span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm">
+                <Zap className="h-5 w-5 text-orange-500" />
+                <span className="text-sm font-medium text-foreground">Entrega imediata</span>
+              </div>
             </div>
           </div>
 
