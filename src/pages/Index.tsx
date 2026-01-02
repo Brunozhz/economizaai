@@ -3,7 +3,6 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import BenefitsBar from "@/components/BenefitsBar";
 import ProductGrid from "@/components/ProductGrid";
-import EnterpriseCard from "@/components/EnterpriseCard";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -14,7 +13,6 @@ const Index = () => {
       <main>
         <HeroSection />
         <ProductGrid />
-        <EnterpriseCard />
         <BenefitsBar />
       </main>
       <Footer />
