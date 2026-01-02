@@ -348,4 +348,50 @@
   .orb-emerald {
     background: radial-gradient(circle, hsl(160, 85%, 40%, 0.4) 0%, transparent 70%);
   }
+
+  /* Elite card animated border */
+  @keyframes border-glow-animation {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-border-glow {
+    animation: border-glow-animation 3s linear infinite;
+  }
+
+  /* Pulse glow for Plus tier */
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.3;
+      transform: scale(1.02);
+    }
+  }
+
+  /* Energy flow effect for Elite */
+  @keyframes energy-flow {
+    0% {
+      background-position: 200% 200%;
+    }
+    100% {
+      background-position: -200% -200%;
+    }
+  }
+
+  /* Badge pulse for Elite */
+  @keyframes badge-pulse {
+    0%, 100% {
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.5);
+    }
+    50% {
+      box-shadow: 0 4px 30px rgba(34, 197, 94, 0.8), 0 0 40px rgba(0, 255, 255, 0.4);
+    }
+  }
 }
