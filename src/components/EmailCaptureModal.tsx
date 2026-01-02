@@ -47,6 +47,13 @@ const EmailCaptureModal = ({ open, onOpenChange }: EmailCaptureModalProps) => {
 
       if (error) throw error;
 
+      // Save coupon and email to localStorage for auto-apply in checkout
+      localStorage.setItem('promo_coupon', JSON.stringify({
+        code: COUPON_CODE,
+        discount: 20,
+        email: email.toLowerCase().trim()
+      }));
+
       setShowCoupon(true);
       toast.success('Cupom liberado! 🎉');
     } catch (error) {

@@ -156,21 +156,45 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     if (isOpen && product) {
       setStatus('form');
       setPhone('');
-      setEmail('');
       setPhoneError('');
       setEmailError('');
       setPixData(null);
       setTimeLeft(900);
       setShowExitOffer(false);
-      setCouponApplied(false);
       setHasSeenExitOffer(false);
       setRemarketingSent(false);
-      setCouponCode('');
       setCouponError('');
+
+      // Check for saved promo coupon from email capture
+      const savedPromo = localStorage.getItem('promo_coupon');
+      if (savedPromo) {
+        try {
+          const promo = JSON.parse(savedPromo);
+          if (promo.code && promo.discount && promo.email) {
+            setEmail(promo.email);
+            setCouponCode(promo.code);
+            setAppliedCouponCode(promo.code);
+            setDiscountPercent(promo.discount);
+            setCouponApplied(true);
+            toast({
+              title: "🎁 Cupom aplicado automaticamente!",
+              description: `Seu desconto de ${promo.discount}% foi aplicado.`,
+            });
+            return;
+          }
+        } catch (e) {
+          console.error('Error parsing promo coupon:', e);
+        }
+      }
+
+      // Reset coupon state if no saved promo
+      setEmail('');
+      setCouponApplied(false);
+      setCouponCode('');
       setAppliedCouponCode('');
       setDiscountPercent(15);
     }
-  }, [isOpen, product]);
+  }, [isOpen, product, toast]);
 
   // Handle close with exit offer
   const handleClose = () => {
