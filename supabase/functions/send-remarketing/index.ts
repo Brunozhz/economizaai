@@ -196,6 +196,31 @@ serve(async (req) => {
       throw messageError;
     }
 
+    // Send push notification to the user
+    try {
+      const pushResponse = await fetch(
+        `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify({
+            email,
+            user_id: userId,
+            title: randomMessage.title,
+            body: `Você tem uma oferta exclusiva para ${productName}!`,
+            data: { url: "/messages" },
+          }),
+        }
+      );
+      console.log("Push notification response:", pushResponse.status);
+    } catch (pushError) {
+      console.error("Error sending push notification:", pushError);
+      // Don't throw, just log - push is optional
+    }
+
     console.log("Remarketing message sent successfully");
 
     return new Response(

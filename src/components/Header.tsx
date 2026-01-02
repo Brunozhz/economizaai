@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import PushNotificationToggle from "./PushNotificationToggle";
 type DeviceType = 'android' | 'ios' | 'desktop-chrome' | 'desktop-edge' | 'desktop-other';
 
 const Header = () => {
@@ -265,6 +266,9 @@ const Header = () => {
                 Baixar App
               </Button>
             )}
+
+            {/* Push Notifications Toggle */}
+            {user && <PushNotificationToggle />}
 
             {/* Messages Button */}
             {user && (

@@ -59,9 +59,16 @@ export default defineConfig(({ mode }) => ({
               }
             }
           }
-        ]
-      }
-    })
+        ],
+        // Add push notification support to service worker
+        additionalManifestEntries: [],
+        navigateFallback: null,
+      },
+      injectManifest: undefined,
+      devOptions: {
+        enabled: false,
+      },
+    }),
   ].filter(Boolean),
   resolve: {
     alias: {
