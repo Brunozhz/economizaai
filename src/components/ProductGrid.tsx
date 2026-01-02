@@ -4,7 +4,7 @@ import ProductCard from "./ProductCard";
 import CheckoutModal from "./CheckoutModal";
 import EnterpriseChatModal from "./EnterpriseChatModal";
 import { Button } from "@/components/ui/button";
-import lovableLogo from "@/assets/lovable-logo.png";
+import lovableLogo from "@/assets/lovable-logo-new.png";
 
 const products = [
   {
