@@ -1,10 +1,35 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Function to notify admins
+async function notifyAdmins(supabaseUrl: string, supabaseKey: string, title: string, body: string, data?: Record<string, unknown>) {
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        body,
+        admin_only: true,
+        data,
+      }),
+    });
+    
+    const result = await response.json();
+    console.log('Admin notification result:', result);
+  } catch (error) {
+    console.error('Error sending admin notification:', error);
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -14,15 +39,17 @@ serve(async (req) => {
 
   try {
     const apiKey = Deno.env.get('PUSHINPAY_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
     if (!apiKey) {
       console.error('PUSHINPAY_API_KEY not configured');
       throw new Error('API key not configured');
     }
 
-    const { value, productName, productId } = await req.json();
+    const { value, productName, productId, customerName, customerEmail } = await req.json();
     
-    console.log('Creating PIX payment:', { value, productName, productId });
+    console.log('Creating PIX payment:', { value, productName, productId, customerName, customerEmail });
 
     // PushinPay has a limit of R$ 150.00
     if (value > 150) {
@@ -77,6 +104,26 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // 🔔 Send push notification to admins about new PIX generated
+    const formattedValue = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+
+    await notifyAdmins(
+      supabaseUrl,
+      supabaseKey,
+      '💰 PIX Gerado!',
+      `${customerName || 'Cliente'} gerou um PIX de ${formattedValue} para ${productName}`,
+      {
+        type: 'pix_generated',
+        pixId: data.id,
+        productName,
+        value,
+        customerEmail,
+      }
+    );
 
     return new Response(JSON.stringify({
       success: true,
