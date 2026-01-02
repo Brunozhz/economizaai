@@ -3,56 +3,63 @@ import { Button } from "@/components/ui/button";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border/50 pt-16 pb-8 bg-secondary/20">
-      <div className="container mx-auto px-4">
-        {/* Newsletter Section */}
-        <div className="mb-12 p-6 rounded-xl bg-card border border-border/50">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+    <footer className="relative border-t border-primary/20 pt-20 pb-10 bg-gradient-to-b from-background to-card/50 overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-emerald-500/5 rounded-full blur-[120px]" />
+      </div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Newsletter Section - Enhanced */}
+        <div className="mb-16 p-8 rounded-3xl bg-gradient-to-r from-primary/10 via-card to-primary/10 border border-primary/30 shadow-lg shadow-primary/5">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
-              <h3 className="text-lg font-semibold text-foreground mb-1">Receba ofertas exclusivas</h3>
-              <p className="text-sm text-muted-foreground">Seja o primeiro a saber das promoções</p>
+              <h3 className="text-2xl font-bold text-foreground mb-2">🎁 Receba ofertas exclusivas</h3>
+              <p className="text-muted-foreground">Seja o primeiro a saber das promoções e novidades</p>
             </div>
             
             <Button 
-              className="h-10 px-6 bg-primary text-primary-foreground font-medium"
+              className="h-14 px-8 bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground font-bold text-base rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 transition-all duration-300"
               onClick={() => window.open('https://chat.whatsapp.com/LFYmqa09RCI5e7KecBQ8FG', '_blank')}
             >
               Entrar no Grupo VIP
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-          {/* Brand */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-emerald-500/20 border border-primary/30 flex items-center justify-center">
-                <Brain className="h-5 w-5 text-primary" style={{ filter: 'drop-shadow(0 0 6px rgba(34,197,94,0.6))' }} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+          {/* Brand - Enhanced */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-emerald-500/20 border border-primary/30 flex items-center justify-center shadow-lg">
+                <Brain className="h-7 w-7 text-primary" style={{ filter: 'drop-shadow(0 0 8px rgba(34,197,94,0.8))' }} />
               </div>
-              <span className="font-display font-bold text-xl text-foreground">
+              <span className="font-display font-black text-2xl text-foreground">
                 Economiza<span className="text-primary">.IA</span>
               </span>
             </div>
-            <p className="text-sm text-muted-foreground max-w-md">
+            <p className="text-base text-muted-foreground max-w-md leading-relaxed">
               A primeira loja de produtos digitais do Brasil com Inteligência Artificial. 
               Preços imbatíveis, entrega instantânea e suporte dedicado.
             </p>
             
-            <div className="flex gap-2">
-              <a href="https://www.instagram.com/economiza.ia/" target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                <Instagram className="h-4 w-4" />
+            <div className="flex gap-3">
+              <a href="https://www.instagram.com/economiza.ia/" target="_blank" rel="noopener noreferrer" className="h-12 w-12 rounded-xl bg-card border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/50 hover:scale-110 transition-all duration-300">
+                <Instagram className="h-5 w-5" />
               </a>
             </div>
           </div>
 
-          {/* Links */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-foreground">Links Úteis</h4>
-            <ul className="space-y-2">
+          {/* Links - Enhanced */}
+          <div className="space-y-5">
+            <h4 className="font-bold text-lg text-foreground">Links Úteis</h4>
+            <ul className="space-y-3">
               {['Catálogo', 'Meus Pedidos', 'FAQ', 'Termos de Uso'].map((item) => (
                 <li key={item}>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <a href="#" className="text-base text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/50 group-hover:bg-primary transition-colors" />
                     {item}
                   </a>
                 </li>
@@ -60,19 +67,23 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-foreground">Suporte</h4>
-            <ul className="space-y-3">
+          {/* Contact - Enhanced */}
+          <div className="space-y-5">
+            <h4 className="font-bold text-lg text-foreground">Suporte</h4>
+            <ul className="space-y-4">
               <li>
-                <a href="#" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <MessageCircle className="h-4 w-4 text-primary" />
+                <a href="#" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <MessageCircle className="h-5 w-5 text-primary" />
+                  </div>
                   <span>WhatsApp</span>
                 </a>
               </li>
               <li>
-                <a href="#" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <Mail className="h-4 w-4 text-primary" />
+                <a href="#" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
                   <span>contato@economiza.ia</span>
                 </a>
               </li>
@@ -80,14 +91,14 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom */}
-        <div className="pt-6 border-t border-border/50">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">
+        {/* Bottom - Enhanced */}
+        <div className="pt-8 border-t border-border/30">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} Economiza.IA. Todos os direitos reservados.
             </p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              Feito com <Heart className="h-3 w-3 text-primary fill-primary" /> no Brasil
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              Feito com <Heart className="h-4 w-4 text-red-500 fill-red-500 animate-pulse" /> no Brasil 🇧🇷
             </p>
           </div>
         </div>
