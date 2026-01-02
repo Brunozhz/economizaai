@@ -98,7 +98,7 @@ const ProductGrid = () => {
           </div>
 
           {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-8">
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
             {categories.map((category) => {
               const Icon = category.icon;
               return (
