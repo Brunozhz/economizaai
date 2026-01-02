@@ -1,6 +1,5 @@
 import { ExternalLink, Check, TrendingDown, Zap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoTransparent from "@/assets/logo-transparent.png";
 
 interface ProductCardProps {
   name: string;
@@ -49,14 +48,6 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
             +{credits}
           </p>
           <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Créditos</p>
-          
-          <div className="flex items-center justify-center pt-1">
-            <img 
-              src={logoTransparent} 
-              alt="Economiza.IA" 
-              className="h-6 w-auto object-contain opacity-50"
-            />
-          </div>
         </div>
       </div>
 
