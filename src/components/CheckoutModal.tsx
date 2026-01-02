@@ -36,6 +36,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [couponApplied, setCouponApplied] = useState(false);
   const [hasSeenExitOffer, setHasSeenExitOffer] = useState(false);
   const [couponTimeLeft, setCouponTimeLeft] = useState(120); // 2 minutes countdown
+  const [remarketingSent, setRemarketingSent] = useState(false);
   const { toast } = useToast();
 
   const DISCOUNT_PERCENT = 15;
@@ -152,6 +153,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setShowExitOffer(false);
       setCouponApplied(false);
       setHasSeenExitOffer(false);
+      setRemarketingSent(false);
     }
   }, [isOpen, product]);
 
@@ -255,6 +257,34 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
     return () => clearInterval(timer);
   }, [status, timeLeft]);
+
+  // Remarketing timer - sends message after 1 minute if not paid
+  useEffect(() => {
+    if (status !== 'created' || remarketingSent || !pixData?.pixId || !product) return;
+
+    const remarketingTimer = setTimeout(async () => {
+      if (status === 'created' && !remarketingSent) {
+        console.log('Sending remarketing message...');
+        try {
+          await supabase.functions.invoke('send-remarketing', {
+            body: {
+              email,
+              phone: phone.replace(/\D/g, ''),
+              productName: product.name,
+              productPrice: couponApplied ? discountedPrice : product.discountPrice,
+              pixId: pixData.pixId,
+            },
+          });
+          setRemarketingSent(true);
+          console.log('Remarketing message sent');
+        } catch (error) {
+          console.error('Error sending remarketing:', error);
+        }
+      }
+    }, 60000); // 1 minute
+
+    return () => clearTimeout(remarketingTimer);
+  }, [status, remarketingSent, pixData?.pixId, product, email, phone, couponApplied, discountedPrice]);
 
   const copyToClipboard = async () => {
     if (!pixData?.qrCode) return;

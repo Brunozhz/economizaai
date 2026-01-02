@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          email: string | null
+          id: string
+          is_read: boolean
+          phone: string | null
+          pix_id: string | null
+          product_name: string | null
+          product_price: number | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_read?: boolean
+          phone?: string | null
+          pix_id?: string | null
+          product_name?: string | null
+          product_price?: number | null
+          title: string
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_read?: boolean
+          phone?: string | null
+          pix_id?: string | null
+          product_name?: string | null
+          product_price?: number | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
