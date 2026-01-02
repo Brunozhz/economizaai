@@ -3,7 +3,18 @@ import { useCallback, useRef } from 'react';
 export const useNotificationSound = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
+  const vibrate = useCallback(() => {
+    // Check if Vibration API is available
+    if ('vibrate' in navigator) {
+      // Pattern: vibrate 200ms, pause 100ms, vibrate 200ms
+      navigator.vibrate([200, 100, 200]);
+    }
+  }, []);
+
   const playNotificationSound = useCallback(() => {
+    // Trigger vibration
+    vibrate();
+
     try {
       // Create or reuse AudioContext
       if (!audioContextRef.current) {
@@ -60,7 +71,7 @@ export const useNotificationSound = () => {
     } catch (error) {
       console.log('Could not play notification sound:', error);
     }
-  }, []);
+  }, [vibrate]);
 
-  return { playNotificationSound };
+  return { playNotificationSound, vibrate };
 };
