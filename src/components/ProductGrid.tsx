@@ -76,9 +76,9 @@ const ProductGrid = () => {
         
         <div className="container mx-auto px-4 relative">
           {/* Section Header */}
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+          <div className="flex flex-col items-center text-center gap-4 mb-8">
             <div className="space-y-2">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center gap-3">
                 <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
                   <Flame className="h-5 w-5 text-primary-foreground" />
                 </div>
@@ -86,7 +86,7 @@ const ProductGrid = () => {
                   Catálogo Completo
                 </h2>
               </div>
-              <p className="text-muted-foreground text-lg max-w-lg">
+              <p className="text-muted-foreground text-lg max-w-lg mx-auto">
                 Escolha o pacote ideal para você com os melhores descontos do mercado
               </p>
             </div>
