@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Package, ShoppingBag, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Package, ShoppingBag, Clock, CheckCircle, XCircle, Sparkles, Settings } from 'lucide-react';
 import logoImage from '@/assets/logo-new.jpeg';
 
 interface Purchase {
@@ -21,7 +21,7 @@ interface Purchase {
 
 const Purchases = () => {
   const navigate = useNavigate();
-  const { user, loading, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loadingPurchases, setLoadingPurchases] = useState(true);
 
@@ -99,6 +99,20 @@ const Purchases = () => {
     return price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
+
+  const getUserName = () => {
+    if (profile?.name) {
+      return profile.name.split(' ')[0];
+    }
+    return 'amigo(a)';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -124,17 +138,48 @@ const Purchases = () => {
               <div className="w-8 h-8 rounded-lg overflow-hidden">
                 <img src={logoImage} alt="EconomizaAI" className="w-full h-full object-cover" />
               </div>
-              <span className="font-semibold text-foreground">Minhas Compras</span>
+              <span className="font-semibold text-foreground">Minha Conta</span>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            Sair
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
+              <Settings className="w-5 h-5" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              Sair
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Welcome Message */}
       <div className="p-4 max-w-2xl mx-auto">
+        <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20 mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">
+                  {getGreeting()}, {getUserName()}! 👋
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Bem-vindo(a) ao <span className="font-semibold text-primary">EconomizaAI</span>
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Purchases Section */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5" />
+            Minhas Compras
+          </h3>
+        </div>
+
         {loadingPurchases ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

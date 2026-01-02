@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone } from 'lucide-react';
 import logoImage from '@/assets/logo-new.jpeg';
 
 const Auth = () => {
@@ -23,6 +23,7 @@ const Auth = () => {
   
   // Signup form
   const [signupName, setSignupName] = useState('');
+  const [signupPhone, setSignupPhone] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
@@ -32,6 +33,19 @@ const Auth = () => {
       navigate('/');
     }
   }, [user, loading, navigate]);
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    }
+    return value;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    setSignupPhone(formatted);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +66,7 @@ const Auth = () => {
         toast.error('Erro ao fazer login. Tente novamente.');
       }
     } else {
-      toast.success('Login realizado com sucesso!');
+      toast.success('Bem-vindo(a) de volta ao EconomizaAI! 🎉');
       navigate('/');
     }
   };
@@ -76,7 +90,7 @@ const Auth = () => {
     }
     
     setIsLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupName);
+    const { error } = await signUp(signupEmail, signupPassword, signupName, signupPhone);
     setIsLoading(false);
     
     if (error) {
@@ -86,7 +100,8 @@ const Auth = () => {
         toast.error('Erro ao criar conta. Tente novamente.');
       }
     } else {
-      toast.success('Conta criada com sucesso!');
+      const welcomeName = signupName ? signupName.split(' ')[0] : 'amigo(a)';
+      toast.success(`Bem-vindo(a) ao EconomizaAI, ${welcomeName}! 🎉`);
       navigate('/');
     }
   };
@@ -184,15 +199,31 @@ const Auth = () => {
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Nome (opcional)</Label>
+                    <Label htmlFor="signup-name">Nome</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         id="signup-name"
                         type="text"
-                        placeholder="Seu nome"
+                        placeholder="Seu nome completo"
                         value={signupName}
                         onChange={(e) => setSignupName(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-phone">Telefone</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="signup-phone"
+                        type="tel"
+                        placeholder="(00) 00000-0000"
+                        value={signupPhone}
+                        onChange={handlePhoneChange}
+                        maxLength={15}
                         className="pl-10"
                       />
                     </div>
