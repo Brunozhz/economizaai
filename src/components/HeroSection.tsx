@@ -1,4 +1,4 @@
-import { Sparkles, ArrowRight, Zap, Star, Brain, Crown, Shield, Rocket } from "lucide-react";
+import { Sparkles, ArrowRight, Zap, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -7,10 +7,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import carousel1 from "@/assets/carousel-1.png";
 import carousel2 from "@/assets/carousel-2.png";
 import carousel3 from "@/assets/carousel-3.png";
 import carousel4 from "@/assets/carousel-4.png";
+
 const HeroSection = () => {
   return <section className="relative py-20 md:py-32 overflow-hidden bg-background">
       {/* Animated mesh gradient background */}
@@ -80,8 +82,12 @@ const HeroSection = () => {
           </div>
 
           {/* Carousel */}
-          <div className="w-full max-w-3xl pt-8">
-            <Carousel className="w-full" opts={{ loop: true }}>
+          <div className="w-full max-w-md pt-6">
+            <Carousel 
+              className="w-full" 
+              opts={{ loop: true }}
+              plugins={[Autoplay({ delay: 3000, stopOnInteraction: false })]}
+            >
               <CarouselContent>
                 {[carousel1, carousel2, carousel3, carousel4].map((image, index) => (
                   <CarouselItem key={index}>
@@ -89,7 +95,7 @@ const HeroSection = () => {
                       <img 
                         src={image} 
                         alt={`Motivo ${index + 1}`} 
-                        className="w-full h-auto rounded-2xl shadow-2xl"
+                        className="w-full h-auto rounded-xl shadow-xl"
                       />
                     </div>
                   </CarouselItem>
