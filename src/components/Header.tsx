@@ -2,35 +2,18 @@ import { Search, Menu, Brain, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const Header = () => {
   const { isInstallable, isInstalled, isIOS, installApp, canShowInstall } = usePWAInstall();
-  const [showHeaderInstall, setShowHeaderInstall] = useState(false);
   const [showIOSModal, setShowIOSModal] = useState(false);
-
-  useEffect(() => {
-    // Check if first visit
-    const hasVisited = localStorage.getItem('economiza_visited');
-    if (!hasVisited && canShowInstall) {
-      setShowHeaderInstall(true);
-      localStorage.setItem('economiza_visited', 'true');
-    }
-  }, [canShowInstall]);
 
   const handleInstall = async () => {
     if (isIOS) {
       setShowIOSModal(true);
     } else {
-      const success = await installApp();
-      if (success) {
-        setShowHeaderInstall(false);
-      }
+      await installApp();
     }
-  };
-
-  const dismissInstall = () => {
-    setShowHeaderInstall(false);
   };
 
   return (
@@ -142,24 +125,16 @@ const Header = () => {
               <Menu className="h-5 w-5" />
             </Button>
             
-            {/* Install App Button - First Visit Only */}
-            {showHeaderInstall && (
-              <div className="hidden md:flex items-center gap-1.5 animate-fade-in">
-                <Button 
-                  size="sm"
-                  onClick={handleInstall}
-                  className="h-9 px-3 bg-gradient-to-r from-cyan-500 to-primary hover:from-cyan-600 hover:to-primary/90 text-white font-semibold text-xs rounded-lg shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
-                >
-                  <Download className="h-3.5 w-3.5 mr-1.5" />
-                  Baixar App
-                </Button>
-                <button 
-                  onClick={dismissInstall}
-                  className="p-1 rounded-full hover:bg-muted/50 transition-colors"
-                >
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </div>
+            {/* Install App Button - Always visible when available */}
+            {canShowInstall && (
+              <Button 
+                size="sm"
+                onClick={handleInstall}
+                className="h-9 px-3 bg-gradient-to-r from-cyan-500 to-primary hover:from-cyan-600 hover:to-primary/90 text-white font-semibold text-xs rounded-lg shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
+              >
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                Baixar App
+              </Button>
             )}
             
             <Button 
@@ -209,7 +184,7 @@ const Header = () => {
             </div>
 
             <Button 
-              onClick={() => { setShowIOSModal(false); setShowHeaderInstall(false); }}
+              onClick={() => setShowIOSModal(false)}
               className="w-full h-10 bg-gradient-to-r from-primary to-emerald-600 text-white font-semibold rounded-xl"
             >
               Entendi
