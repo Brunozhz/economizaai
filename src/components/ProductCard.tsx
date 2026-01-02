@@ -1,4 +1,4 @@
-import { ExternalLink, Check, Zap, Crown, Clock, Target, X } from "lucide-react";
+import { Check, Clock, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ProductCardProps {
@@ -18,220 +18,87 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
     onBuy({ name, credits, price });
   };
 
-  // Tier-based color schemes: green/cyan → purple → purple
-  const tierColors = {
-    start: {
-      primary: 'rgb(0, 255, 136)', // green neon
-      glow: 'rgba(0, 255, 136, 0.4)',
-      gradient: 'from-emerald-400 to-cyan-400',
-      textClass: 'text-emerald-400',
-      bgClass: 'bg-emerald-500',
-    },
-    basic: {
-      primary: 'rgb(0, 255, 255)', // cyan
-      glow: 'rgba(0, 255, 255, 0.4)',
-      gradient: 'from-cyan-400 via-teal-400 to-emerald-400',
-      textClass: 'text-cyan-400',
-      bgClass: 'bg-cyan-500',
-    },
-    plus: {
-      primary: 'rgb(168, 85, 247)', // purple-500
-      glow: 'rgba(168, 85, 247, 0.4)',
-      gradient: 'from-purple-500 via-fuchsia-500 to-pink-500',
-      textClass: 'text-purple-400',
-      bgClass: 'bg-purple-500',
-    },
-    advanced: {
-      primary: 'rgb(168, 85, 247)', // purple-500
-      glow: 'rgba(168, 85, 247, 0.5)',
-      gradient: 'from-purple-500 via-violet-500 to-fuchsia-500',
-      textClass: 'text-purple-400',
-      bgClass: 'bg-purple-500',
-    },
-    elite: {
-      primary: 'rgb(250, 204, 21)', // yellow-400
-      glow: 'rgba(250, 204, 21, 0.6)',
-      gradient: 'from-yellow-400 via-amber-500 to-orange-500',
-      textClass: 'text-yellow-400',
-      bgClass: 'bg-gradient-to-r from-yellow-400 to-orange-500',
-    },
-  };
-
-  const colors = tierColors[tier];
-  const isElite = tier === 'elite';
-  const isAdvanced = tier === 'advanced';
-  const isHot = isElite || isAdvanced;
+  const discount = Math.round(((originalPrice - price) / originalPrice) * 100);
 
   return (
-    <div 
-      className={`group relative rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-3 ${
-        isElite ? 'shadow-[0_0_60px_rgba(250,204,21,0.6)]' :
-        isAdvanced ? 'shadow-[0_0_45px_rgba(168,85,247,0.5)]' :
-        tier === 'plus' ? 'shadow-[0_0_35px_rgba(168,85,247,0.4)]' :
-        tier === 'basic' ? 'shadow-[0_0_30px_rgba(0,255,255,0.4)]' :
-        'shadow-[0_0_30px_rgba(0,255,136,0.4)]'
-      } ${
-        isElite ? 'hover:shadow-[0_0_80px_rgba(250,204,21,0.7)]' :
-        isAdvanced ? 'hover:shadow-[0_0_60px_rgba(168,85,247,0.6)]' :
-        tier === 'plus' ? 'hover:shadow-[0_0_50px_rgba(168,85,247,0.5)]' :
-        tier === 'basic' ? 'hover:shadow-[0_0_45px_rgba(0,255,255,0.5)]' :
-        'hover:shadow-[0_0_45px_rgba(0,255,136,0.5)]'
-      }`}
-    >
-      {/* Animated gradient border for Elite */}
-      {isElite && (
-        <div className="absolute inset-0 rounded-2xl p-[3px] animate-border-glow" style={{
-          background: 'linear-gradient(90deg, #facc15, #f59e0b, #f97316, #f59e0b, #facc15)',
-          backgroundSize: '300% 100%',
-        }}>
-          <div className="absolute inset-[3px] rounded-2xl bg-card" />
+    <div className={`group relative flex flex-col h-full rounded-2xl transition-all duration-300 hover:-translate-y-1 ${
+      popular 
+        ? 'bg-gradient-to-b from-[hsl(220,20%,10%)] to-[hsl(220,20%,6%)] ring-2 ring-[hsl(185,80%,45%)] shadow-[0_0_40px_hsl(185,80%,45%,0.2)]' 
+        : 'bg-gradient-to-b from-[hsl(220,20%,9%)] to-[hsl(220,20%,5%)] ring-1 ring-[hsl(220,15%,18%)] hover:ring-[hsl(220,15%,25%)]'
+    }`}>
+      
+      {/* Popular Badge */}
+      {popular && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <div className="px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-gradient-to-r from-[hsl(160,84%,39%)] via-[hsl(185,80%,45%)] to-[hsl(215,85%,55%)]">
+            ⭐ Mais Vendido
+          </div>
         </div>
       )}
-      
-      {/* Standard border - more visible with pulse */}
-      {!isElite && (
-        <div className={`absolute inset-0 rounded-2xl border-2 animate-pulse-border ${
-          isAdvanced ? 'border-purple-500/70' :
-          tier === 'plus' ? 'border-purple-500/60' :
-          tier === 'basic' ? 'border-cyan-400/50' :
-          'border-emerald-400/50'
-        }`} style={{
-          animation: 'border-pulse 2.5s ease-in-out infinite',
-        }} />
-      )}
-      
-      {/* Card content */}
-      <div className={`relative bg-card rounded-2xl overflow-hidden ${isElite ? 'm-[2px]' : ''}`}>
-        {/* Popular Badge - Elite only */}
-        {popular && (
-          <div className="absolute top-0 left-0 right-0 z-20">
-            <div className="bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-2 flex items-center justify-center gap-1.5 shadow-[0_4px_20px_rgba(250,204,21,0.5)]">
-              <Crown className="h-3.5 w-3.5" />
-              <span className="tracking-wider">⚡ MAIS VENDIDO ⚡</span>
-              <Crown className="h-3.5 w-3.5" />
-            </div>
-          </div>
-        )}
 
-        {/* Product Preview - More compact */}
-        <div className={`relative p-5 flex items-center justify-center overflow-hidden ${popular ? 'pt-12' : ''}`}
-          style={{
-            background: `radial-gradient(ellipse at top, ${colors.glow} 0%, transparent 70%), linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%)`
-          }}
+      {/* Card Content */}
+      <div className={`flex flex-col h-full p-5 ${popular ? 'pt-8' : ''}`}>
+        
+        {/* Header */}
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-1">{name}</h3>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[hsl(160,84%,39%,0.1)] text-[hsl(160,84%,45%)] text-xs font-medium">
+            <span>-{discount}% OFF</span>
+          </div>
+        </div>
+
+        {/* Credits */}
+        <div className="text-center mb-4">
+          <div className="text-4xl font-bold text-gradient-lovable mb-1">
+            {credits}
+          </div>
+          <div className="text-sm text-muted-foreground">créditos</div>
+        </div>
+
+        {/* Info */}
+        <div className="space-y-2.5 mb-5 flex-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4 text-[hsl(185,80%,45%)]" />
+            <span>Entrega: {duration}</span>
+          </div>
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <Check className="h-4 w-4 text-[hsl(160,84%,45%)] mt-0.5 shrink-0" />
+            <span className="line-clamp-2">{usage}</span>
+          </div>
+        </div>
+
+        {/* Pricing */}
+        <div className="text-center mb-4">
+          <div className="text-sm text-muted-foreground line-through mb-1">
+            R$ {originalPrice.toFixed(2).replace('.', ',')}
+          </div>
+          <div className="text-3xl font-bold text-foreground">
+            R$ {price.toFixed(2).replace('.', ',')}
+          </div>
+          <div className="text-xs text-[hsl(160,84%,45%)] font-medium mt-1">
+            via Pix
+          </div>
+        </div>
+
+        {/* CTA Button */}
+        <Button 
+          onClick={handleBuy}
+          className={`w-full h-11 font-semibold text-sm rounded-xl transition-all duration-300 ${
+            popular 
+              ? 'bg-gradient-to-r from-[hsl(160,84%,39%)] via-[hsl(185,80%,45%)] to-[hsl(215,85%,55%)] hover:opacity-90 shadow-[0_4px_20px_hsl(185,80%,45%,0.3)]' 
+              : 'bg-[hsl(220,20%,15%)] hover:bg-[hsl(220,20%,20%)] text-foreground'
+          }`}
         >
-          {/* Subtle background glow */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl opacity-40`}
-              style={{ backgroundColor: colors.primary }}
-            />
-          </div>
-          
-          <div className="relative text-center space-y-2 z-10">
-            {/* Title */}
-            <h3 className={`text-lg font-bold tracking-wide uppercase ${colors.textClass}`}>{name}</h3>
-            
-            {/* Credits display */}
-            <div className="relative">
-              <p className={`text-4xl font-black font-display ${colors.textClass}`}
-                style={{
-                  background: `linear-gradient(to right, var(--tw-gradient-stops))`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>
-                  {credits}
-                </span>
-              </p>
-            </div>
-            
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Créditos</p>
-          </div>
-        </div>
+          <Zap className="mr-2 h-4 w-4" />
+          Comprar agora
+        </Button>
 
-        {/* Product Info - More compact */}
-        <div className="relative p-4 space-y-3 bg-gradient-to-b from-card to-background/80">
-          {/* Duration & Usage combined */}
-          <div className={`p-2.5 rounded-lg border text-xs ${
-            isElite ? 'bg-yellow-500/10 border-yellow-500/20' :
-            isAdvanced ? 'bg-purple-500/10 border-purple-500/20' :
-            tier === 'plus' ? 'bg-purple-500/10 border-purple-500/20' :
-            tier === 'basic' ? 'bg-cyan-500/10 border-cyan-500/20' :
-            'bg-emerald-500/10 border-emerald-500/20'
-          }`}>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Clock className={`h-3.5 w-3.5 ${colors.textClass}`} />
-              <span className="text-foreground font-semibold">{duration}</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <Target className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${colors.textClass}`} />
-              <p className="text-muted-foreground leading-relaxed line-clamp-2">{usage}</p>
-            </div>
-          </div>
-
-          {/* Pricing with comparison */}
-          <div className="space-y-2 text-center">
-            {/* Original price crossed out */}
-            <div className="flex items-center justify-center gap-1.5">
-              <X className="h-4 w-4 text-red-500" />
-              <span className="text-red-500 line-through text-sm font-medium">
-                R$ {originalPrice.toFixed(2).replace('.', ',')}
-              </span>
-              <span className="text-red-400 text-[10px]">(Oficial)</span>
-            </div>
-            
-            {/* Our price */}
-            <p className={`text-3xl font-black bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}
-              style={isHot ? {
-                textShadow: `0 0 20px ${colors.glow}`,
-              } : {}}
-            >
-              R$ {price.toFixed(2).replace('.', ',')}
-            </p>
-            
-            <div className={`flex items-center justify-center gap-2 p-2 rounded-lg ${
-              isElite ? 'bg-yellow-500/10' :
-              isAdvanced ? 'bg-purple-500/10' :
-              tier === 'plus' ? 'bg-purple-500/10' :
-              tier === 'basic' ? 'bg-cyan-500/10' :
-              'bg-emerald-500/10'
-            }`}>
-              <span className={`h-5 w-5 rounded-full flex items-center justify-center ${colors.bgClass}`}>
-                <Check className="h-3 w-3 text-white" />
-              </span>
-              <span className="text-xs text-foreground font-medium">À vista no <span className={`font-bold ${colors.textClass}`}>Pix</span></span>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <Button 
-            onClick={handleBuy}
-            className={`w-full h-11 font-bold text-sm rounded-xl transition-all duration-300 bg-gradient-to-r ${colors.gradient} hover:scale-[1.02] ${
-              isElite ? 'shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:shadow-[0_0_30px_rgba(250,204,21,0.6)]' :
-              isAdvanced ? 'shadow-lg hover:shadow-xl' :
-              ''
-            }`}
-          >
-            <Zap className="mr-1.5 h-4 w-4" />
-            Comprar Agora
-            <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-          </Button>
+        {/* Trust badges */}
+        <div className="flex items-center justify-center gap-3 mt-3 text-[10px] text-muted-foreground">
+          <span>✓ Créditos oficiais</span>
+          <span>✓ Pagamento seguro</span>
         </div>
       </div>
-
-      {/* Elite energized effect */}
-      {isElite && (
-        <div className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
-          <div className="absolute inset-0 opacity-20"
-            style={{
-              background: 'linear-gradient(45deg, transparent 40%, rgba(250,204,21,0.2) 50%, transparent 60%)',
-              backgroundSize: '200% 200%',
-              animation: 'energy-flow 3s linear infinite',
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 };

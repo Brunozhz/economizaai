@@ -1,106 +1,66 @@
-import { Mail, MessageCircle, Instagram, Heart, ArrowRight, Brain } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Mail, MessageCircle } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="relative border-t border-primary/20 pt-20 pb-10 bg-gradient-to-b from-background to-card/50 overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-emerald-500/5 rounded-full blur-[120px]" />
-      </div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Newsletter Section - Enhanced */}
-        <div className="mb-16 p-8 rounded-3xl bg-gradient-to-r from-primary/10 via-card to-primary/10 border border-primary/30 shadow-lg shadow-primary/5">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold text-foreground mb-2">🎁 Receba ofertas exclusivas</h3>
-              <p className="text-muted-foreground">Seja o primeiro a saber das promoções e novidades</p>
+    <footer className="py-12 border-t border-[hsl(220,15%,12%)]">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8">
+              <svg viewBox="0 0 32 32" className="w-full h-full">
+                <defs>
+                  <linearGradient id="footer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="hsl(160, 84%, 39%)" />
+                    <stop offset="35%" stopColor="hsl(185, 80%, 45%)" />
+                    <stop offset="65%" stopColor="hsl(215, 85%, 55%)" />
+                    <stop offset="100%" stopColor="hsl(265, 75%, 55%)" />
+                  </linearGradient>
+                </defs>
+                <path 
+                  d="M16 28.5C16 28.5 3.5 20 3.5 11.5C3.5 6.5 7.5 3 12 3C14.5 3 16 4.5 16 4.5C16 4.5 17.5 3 20 3C24.5 3 28.5 6.5 28.5 11.5C28.5 20 16 28.5 16 28.5Z"
+                  fill="url(#footer-gradient)"
+                />
+              </svg>
             </div>
-            
-            <Button 
-              className="h-14 px-8 bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground font-bold text-base rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 transition-all duration-300"
-              onClick={() => window.open('https://chat.whatsapp.com/LFYmqa09RCI5e7KecBQ8FG', '_blank')}
+            <span className="font-semibold text-foreground">
+              Créditos<span className="text-gradient-lovable">Lovable</span>
+            </span>
+          </div>
+
+          {/* Links */}
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <a href="#catalogo" className="hover:text-foreground transition-colors">
+              Catálogo
+            </a>
+            <a href="#beneficios" className="hover:text-foreground transition-colors">
+              Benefícios
+            </a>
+          </div>
+
+          {/* Contact */}
+          <div className="flex items-center gap-4">
+            <a 
+              href="#" 
+              className="w-9 h-9 rounded-lg bg-[hsl(220,20%,10%)] border border-[hsl(220,15%,15%)] flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-[hsl(220,15%,20%)] transition-colors"
             >
-              Entrar no Grupo VIP
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-          {/* Brand - Enhanced */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-emerald-500/20 border border-primary/30 flex items-center justify-center shadow-lg">
-                <Brain className="h-7 w-7 text-primary" style={{ filter: 'drop-shadow(0 0 8px rgba(34,197,94,0.8))' }} />
-              </div>
-              <span className="font-display font-black text-2xl text-foreground">
-                Economiza<span className="text-primary">.IA</span>
-              </span>
-            </div>
-            <p className="text-base text-muted-foreground max-w-md leading-relaxed">
-              A primeira loja de produtos digitais do Brasil com Inteligência Artificial. 
-              Preços imbatíveis, entrega instantânea e suporte dedicado.
-            </p>
-            
-            <div className="flex gap-3">
-              <a href="https://www.instagram.com/economiza.ia/" target="_blank" rel="noopener noreferrer" className="h-12 w-12 rounded-xl bg-card border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/50 hover:scale-110 transition-all duration-300">
-                <Instagram className="h-5 w-5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Links - Enhanced */}
-          <div className="space-y-5">
-            <h4 className="font-bold text-lg text-foreground">Links Úteis</h4>
-            <ul className="space-y-3">
-              {['Catálogo', 'Meus Pedidos', 'FAQ', 'Termos de Uso'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-base text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary/50 group-hover:bg-primary transition-colors" />
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact - Enhanced */}
-          <div className="space-y-5">
-            <h4 className="font-bold text-lg text-foreground">Suporte</h4>
-            <ul className="space-y-4">
-              <li>
-                <a href="#" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <MessageCircle className="h-5 w-5 text-primary" />
-                  </div>
-                  <span>WhatsApp</span>
-                </a>
-              </li>
-              <li>
-                <a href="#" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Mail className="h-5 w-5 text-primary" />
-                  </div>
-                  <span>contato@economiza.ia</span>
-                </a>
-              </li>
-            </ul>
+              <MessageCircle className="h-4 w-4" />
+            </a>
+            <a 
+              href="#" 
+              className="w-9 h-9 rounded-lg bg-[hsl(220,20%,10%)] border border-[hsl(220,15%,15%)] flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-[hsl(220,15%,20%)] transition-colors"
+            >
+              <Mail className="h-4 w-4" />
+            </a>
           </div>
         </div>
 
-        {/* Bottom - Enhanced */}
-        <div className="pt-8 border-t border-border/30">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Economiza.IA. Todos os direitos reservados.
-            </p>
-            <p className="text-sm text-muted-foreground flex items-center gap-2">
-              Feito com <Heart className="h-4 w-4 text-red-500 fill-red-500 animate-pulse" /> no Brasil 🇧🇷
-            </p>
-          </div>
+        {/* Bottom */}
+        <div className="mt-8 pt-6 border-t border-[hsl(220,15%,10%)] text-center">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} CréditosLovable. Revenda autorizada.
+          </p>
         </div>
       </div>
     </footer>
