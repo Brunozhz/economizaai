@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Flame, TrendingUp, Rocket, Building2, Zap, Users, TrendingDown, Heart } from "lucide-react";
+import { Flame, TrendingUp, Rocket, Building2, Zap, Users, TrendingDown } from "lucide-react";
 import ProductCard from "./ProductCard";
 import CheckoutModal from "./CheckoutModal";
 import EnterpriseChatModal from "./EnterpriseChatModal";
 import { Button } from "@/components/ui/button";
+import lovableLogo from "@/assets/lovable-logo.png";
 
 const products = [
   {
@@ -97,13 +98,15 @@ const ProductGrid = () => {
                   Pacotes de Créditos
                 </h2>
               </div>
-              {/* Coração Lovable com glow e levitação */}
+              {/* Logo sutil com glow e levitação */}
               <div className="flex items-center justify-center gap-2 mt-2">
                 <div className="relative group animate-float">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-orange-500 to-blue-500 rounded-full blur-xl opacity-60 group-hover:opacity-90 animate-pulse transition-opacity duration-500" />
-                  <div className="relative p-4 rounded-full bg-gradient-to-br from-purple-500 via-orange-500 to-blue-500 hover:scale-110 transition-transform duration-300 shadow-[0_0_30px_rgba(168,85,247,0.5)]">
-                    <Heart className="h-12 w-12 text-white fill-white" />
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-lg blur-lg opacity-50 group-hover:opacity-80 animate-pulse transition-opacity duration-500" />
+                  <img 
+                    src={lovableLogo} 
+                    alt="Lovable" 
+                    className="relative h-20 rounded-sm hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
               </div>
               <p className="text-muted-foreground text-lg max-w-lg mx-auto">
