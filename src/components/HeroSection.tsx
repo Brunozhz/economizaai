@@ -23,7 +23,8 @@ const HeroSection = () => {
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-lg">
-              A primeira loja do Brasil que usa IA para encontrar os melhores preços em produtos digitais. PIX instantâneo.
+              Créditos Lovable com acesso imediato, transparência total e experiência premium.
+              <span className="block mt-2 font-medium text-foreground/80">Crie sem interrupções. Escale sem limites desnecessários.</span>
             </p>
             
             {/* Stats */}
