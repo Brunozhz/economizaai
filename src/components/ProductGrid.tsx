@@ -95,13 +95,16 @@ const ProductGrid = () => {
                   Pacotes de Créditos
                 </h2>
               </div>
-              {/* Logo sutil */}
+              {/* Logo sutil com glow */}
               <div className="flex items-center justify-center gap-2 mt-2">
-                <img 
-                  src={lovableLogo} 
-                  alt="Lovable" 
-                  className="h-6 opacity-70 hover:opacity-100 transition-opacity"
-                />
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-lg blur-md opacity-50 group-hover:opacity-80 animate-pulse transition-opacity duration-500" />
+                  <img 
+                    src={lovableLogo} 
+                    alt="Lovable" 
+                    className="relative h-8 rounded-sm hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
               </div>
               <p className="text-muted-foreground text-lg max-w-lg mx-auto">
                 Escolha o pacote ideal para o seu projeto
