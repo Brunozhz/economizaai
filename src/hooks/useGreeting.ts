@@ -92,10 +92,10 @@ export const useGreeting = () => {
 
   useEffect(() => {
     if (hasShownGreeting.current) return;
-    if (!user) return;
+    if (!user || !profile) return;
 
     const greeting = getGreeting();
-    const name = profile?.name?.split(' ')[0] || 'amigo(a)';
+    const name = profile.name?.split(' ')[0] || 'amigo(a)';
     const motivationalMessage = getRandomMessage();
 
     toast.success(
