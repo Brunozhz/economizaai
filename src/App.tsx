@@ -12,8 +12,16 @@ import Auth from "./pages/Auth";
 import Purchases from "./pages/Purchases";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
-import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+
+// Admin pages
+import AdminLayout from "./components/admin/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import Notifications from "./pages/admin/Notifications";
+import AdminUsers from "./pages/admin/AdminUsers";
+import Orders from "./pages/admin/Orders";
+import AdminMessages from "./pages/admin/AdminMessages";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +46,17 @@ const App = () => (
               <Route path="/purchases" element={<Purchases />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/messages" element={<Messages />} />
-              <Route path="/admin" element={<Admin />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="notifications" element={<Notifications />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="orders" element={<Orders />} />
+                <Route path="messages" element={<AdminMessages />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
+
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
