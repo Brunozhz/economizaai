@@ -28,6 +28,13 @@ const products = [
   { name: "Pacote Pro - 500 créditos", originalPrice: 550.00, discountPrice: 119.90, credits: 500, tag: "PRO", category: "pro" },
   { name: "Ultra Pack - 600 créditos", originalPrice: 650.00, discountPrice: 139.90, credits: 600, tag: "ULTRA", category: "pro" },
   { name: "Super Pack - 700 créditos", originalPrice: 750.00, discountPrice: 149.90, credits: 700, tag: "SUPER", category: "pro" },
+  
+  // Enterprise (preços até R$ 150 para compatibilidade com PIX)
+  { name: "Pacote Startup - 800 créditos", originalPrice: 899.00, discountPrice: 99.90, credits: 800, tag: "STARTUP", category: "enterprise" },
+  { name: "Pacote Business - 1000 créditos", originalPrice: 1200.00, discountPrice: 119.90, credits: 1000, popular: true, tag: "BUSINESS", category: "enterprise" },
+  { name: "Pacote Corporativo - 1200 créditos", originalPrice: 1500.00, discountPrice: 129.90, credits: 1200, tag: "CORPORATIVO", category: "enterprise" },
+  { name: "Pacote Enterprise - 1500 créditos", originalPrice: 1800.00, discountPrice: 139.90, credits: 1500, popular: true, tag: "ENTERPRISE", category: "enterprise" },
+  { name: "Pacote Ultimate - 2000 créditos", originalPrice: 2500.00, discountPrice: 149.90, credits: 2000, tag: "ULTIMATE", category: "enterprise" },
 ];
 
 interface Product {
