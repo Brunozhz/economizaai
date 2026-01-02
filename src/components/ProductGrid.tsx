@@ -104,26 +104,29 @@ const ProductGrid = () => {
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          {/* Section Header */}
-          <div className="flex flex-col items-center text-center gap-6 mb-16">
+          {/* Section Header - Enhanced */}
+          <div className="flex flex-col items-center text-center gap-8 mb-20">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
-              <Gift className="h-4 w-4 text-primary animate-pulse" />
-              <span className="text-sm font-semibold text-primary">Oferta Especial</span>
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/10 border border-primary/30 backdrop-blur-sm shadow-lg shadow-primary/10">
+              <Gift className="h-5 w-5 text-primary animate-pulse" />
+              <span className="text-base font-bold text-primary tracking-wide">Oferta Especial por Tempo Limitado</span>
+              <Sparkles className="h-5 w-5 text-primary animate-pulse" />
             </div>
             
             {/* Title */}
-            <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black">
+            <div className="space-y-6">
+              <h2 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight">
                 <span className="text-foreground">Pacotes de </span>
-                <span className="bg-gradient-to-r from-primary via-emerald-400 to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-                  Créditos
+                <span className="relative inline-block">
+                  <span className="bg-gradient-to-r from-primary via-emerald-400 to-cyan-400 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
+                    Créditos
+                  </span>
+                  <div className="absolute -inset-2 bg-primary/20 blur-2xl rounded-full -z-10" />
                 </span>
               </h2>
               
               {/* Logo com glow premium e animação */}
-              <div className="flex items-center justify-center mt-8">
+              <div className="flex items-center justify-center mt-10">
                 <a 
                   href="https://lovable.dev" 
                   target="_blank" 
@@ -131,14 +134,14 @@ const ProductGrid = () => {
                   className="relative group animate-float"
                 >
                   {/* Glow externo pulsante */}
-                  <div className="absolute -inset-4 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 rounded-3xl blur-2xl opacity-50 group-hover:opacity-100 animate-pulse transition-all duration-700" />
+                  <div className="absolute -inset-6 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 rounded-3xl blur-3xl opacity-50 group-hover:opacity-100 animate-pulse transition-all duration-700" />
                   
                   {/* Glow intermediário */}
-                  <div className="absolute -inset-2 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-2xl blur-lg opacity-40 group-hover:opacity-80 transition-all duration-500" />
+                  <div className="absolute -inset-3 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-2xl blur-xl opacity-40 group-hover:opacity-80 transition-all duration-500" />
                   
                   {/* Borda animada */}
                   <div 
-                    className="absolute -inset-[3px] rounded-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500"
+                    className="absolute -inset-[4px] rounded-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500"
                     style={{
                       background: 'linear-gradient(90deg, #f97316, #ec4899, #8b5cf6, #06b6d4, #8b5cf6, #ec4899, #f97316)',
                       backgroundSize: '300% 100%',
@@ -150,29 +153,29 @@ const ProductGrid = () => {
                   <img 
                     src={lovableLogo} 
                     alt="Lovable" 
-                    className="relative h-20 rounded-2xl shadow-2xl group-hover:scale-105 transition-all duration-500 z-10"
+                    className="relative h-24 rounded-2xl shadow-2xl group-hover:scale-110 transition-all duration-500 z-10"
                   />
                 </a>
               </div>
               
-              <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+              <p className="text-muted-foreground text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed">
                 Escolha o pacote ideal para transformar suas ideias em realidade
               </p>
             </div>
             
-            {/* Stats */}
-            <div className="flex flex-wrap items-center justify-center gap-6 mt-4">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm">
-                <Crown className="h-5 w-5 text-yellow-500" />
-                <span className="text-sm font-medium text-foreground">Até 86% de desconto</span>
+            {/* Stats - Enhanced */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
+              <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-yellow-500/10 border border-yellow-500/30 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
+                <Crown className="h-6 w-6 text-yellow-500" />
+                <span className="text-base font-bold text-foreground">Até 86% de desconto</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium"><strong className="text-foreground">{products.length + 1}</strong> <span className="text-muted-foreground">pacotes disponíveis</span></span>
+              <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-primary/10 border border-primary/30 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
+                <TrendingUp className="h-6 w-6 text-primary" />
+                <span className="text-base font-bold"><span className="text-primary">{products.length + 1}</span> <span className="text-foreground">pacotes</span></span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm">
-                <Zap className="h-5 w-5 text-orange-500" />
-                <span className="text-sm font-medium text-foreground">Entrega imediata</span>
+              <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-orange-500/10 border border-orange-500/30 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
+                <Zap className="h-6 w-6 text-orange-500" />
+                <span className="text-base font-bold text-foreground">Entrega imediata</span>
               </div>
             </div>
           </div>
