@@ -83,10 +83,10 @@ const HeroSection = () => {
 
           {/* Carousel */}
           <div className="w-full max-w-md pt-6">
-            <Carousel 
+          <Carousel 
               className="w-full" 
-              opts={{ loop: true }}
-              plugins={[Autoplay({ delay: 3000, stopOnInteraction: false })]}
+              opts={{ loop: true, duration: 20 }}
+              plugins={[Autoplay({ delay: 2000, stopOnInteraction: false })]}
             >
               <CarouselContent>
                 {[carousel1, carousel2, carousel3, carousel4].map((image, index) => (
