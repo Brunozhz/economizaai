@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Flame, TrendingUp } from "lucide-react";
+import { Flame, TrendingUp, Rocket, Building2, Zap, Users, TrendingDown } from "lucide-react";
 import ProductCard from "./ProductCard";
 import CheckoutModal from "./CheckoutModal";
+import EnterpriseChatModal from "./EnterpriseChatModal";
+import { Button } from "@/components/ui/button";
 import lovableLogo from "@/assets/lovable-logo.png";
 
 const products = [
@@ -66,6 +68,7 @@ interface Product {
 const ProductGrid = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isEnterpriseChatOpen, setIsEnterpriseChatOpen] = useState(false);
 
   const handleBuy = (product: Product) => {
     setSelectedProduct(product);
@@ -118,7 +121,7 @@ const ProductGrid = () => {
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             {products.map((product, index) => (
               <div
                 key={index}
@@ -128,6 +131,91 @@ const ProductGrid = () => {
                 <ProductCard {...product} onBuy={handleBuy} />
               </div>
             ))}
+            
+            {/* Enterprise Card - Inline */}
+            <div
+              className="animate-fade-in"
+              style={{ animationDelay: `${products.length * 0.1}s` }}
+            >
+              <div className="group relative rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 shadow-[0_0_30px_rgba(6,182,212,0.3)] hover:shadow-[0_0_50px_rgba(6,182,212,0.5)] h-full">
+                {/* Animated gradient border */}
+                <div className="absolute inset-0 rounded-2xl p-[2px] animate-border-glow" style={{
+                  background: 'linear-gradient(90deg, #06b6d4, #8b5cf6, #3b82f6, #8b5cf6, #06b6d4)',
+                  backgroundSize: '300% 100%',
+                }}>
+                  <div className="absolute inset-[2px] rounded-2xl bg-card" />
+                </div>
+                
+                {/* Card content */}
+                <div className="relative bg-card rounded-2xl overflow-hidden m-[2px] h-full flex flex-col">
+                  {/* Header Badge */}
+                  <div className="absolute top-0 left-0 right-0 z-20">
+                    <div className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-2 flex items-center justify-center gap-1.5 shadow-[0_4px_20px_rgba(6,182,212,0.5)]">
+                      <Building2 className="h-3.5 w-3.5" />
+                      <span className="tracking-wider">ENTERPRISE</span>
+                      <Building2 className="h-3.5 w-3.5" />
+                    </div>
+                  </div>
+
+                  {/* Product Preview */}
+                  <div className="relative p-5 pt-12 flex items-center justify-center overflow-hidden"
+                    style={{
+                      background: 'radial-gradient(ellipse at top, rgba(6,182,212,0.4) 0%, transparent 70%), linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%)'
+                    }}
+                  >
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl opacity-40 bg-cyan-500" />
+                    </div>
+                    
+                    <div className="relative text-center space-y-2 z-10">
+                      <h3 className="text-lg font-bold tracking-wide uppercase text-cyan-400">Atacado</h3>
+                      <div className="relative">
+                        <p className="text-4xl font-black font-display bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                          1000+
+                        </p>
+                      </div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Créditos</p>
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="relative p-4 space-y-3 bg-gradient-to-b from-card to-background/80 flex-1 flex flex-col">
+                    {/* Features */}
+                    <div className="p-2.5 rounded-lg border bg-cyan-500/10 border-cyan-500/20 text-xs space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-3.5 w-3.5 text-cyan-400" />
+                        <span className="text-foreground font-semibold">A partir de 1.000</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TrendingDown className="h-3.5 w-3.5 text-green-400" />
+                        <span className="text-green-400 font-bold">R$ 0,20/crédito</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-3.5 w-3.5 text-purple-400" />
+                        <span className="text-muted-foreground">Atendimento VIP</span>
+                      </div>
+                    </div>
+
+                    {/* Pricing */}
+                    <div className="space-y-2 text-center flex-1 flex flex-col justify-center">
+                      <p className="text-sm text-muted-foreground">Preço negociável</p>
+                      <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        Sob consulta
+                      </p>
+                    </div>
+
+                    {/* Action Button */}
+                    <Button 
+                      onClick={() => setIsEnterpriseChatOpen(true)}
+                      className="w-full h-11 font-bold text-sm rounded-xl transition-all duration-300 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 hover:scale-[1.02] shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)]"
+                    >
+                      <Rocket className="mr-1.5 h-4 w-4" />
+                      Solicitar Cotação
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -142,6 +230,12 @@ const ProductGrid = () => {
           originalPrice: selectedProduct.price,
           discountPrice: selectedProduct.price,
         } : null}
+      />
+
+      {/* Enterprise Chat Modal */}
+      <EnterpriseChatModal 
+        isOpen={isEnterpriseChatOpen} 
+        onClose={() => setIsEnterpriseChatOpen(false)} 
       />
     </>
   );
