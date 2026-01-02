@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, User, Phone, MapPin, Building2, Hash, Save } from 'lucide-react';
@@ -218,40 +217,14 @@ const Profile = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="state">Estado</Label>
-                      <Select value={state} onValueChange={setState}>
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="UF" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border z-50">
-                          <SelectItem value="AC">AC</SelectItem>
-                          <SelectItem value="AL">AL</SelectItem>
-                          <SelectItem value="AP">AP</SelectItem>
-                          <SelectItem value="AM">AM</SelectItem>
-                          <SelectItem value="BA">BA</SelectItem>
-                          <SelectItem value="CE">CE</SelectItem>
-                          <SelectItem value="DF">DF</SelectItem>
-                          <SelectItem value="ES">ES</SelectItem>
-                          <SelectItem value="GO">GO</SelectItem>
-                          <SelectItem value="MA">MA</SelectItem>
-                          <SelectItem value="MT">MT</SelectItem>
-                          <SelectItem value="MS">MS</SelectItem>
-                          <SelectItem value="MG">MG</SelectItem>
-                          <SelectItem value="PA">PA</SelectItem>
-                          <SelectItem value="PB">PB</SelectItem>
-                          <SelectItem value="PR">PR</SelectItem>
-                          <SelectItem value="PE">PE</SelectItem>
-                          <SelectItem value="PI">PI</SelectItem>
-                          <SelectItem value="RJ">RJ</SelectItem>
-                          <SelectItem value="RN">RN</SelectItem>
-                          <SelectItem value="RS">RS</SelectItem>
-                          <SelectItem value="RO">RO</SelectItem>
-                          <SelectItem value="RR">RR</SelectItem>
-                          <SelectItem value="SC">SC</SelectItem>
-                          <SelectItem value="SP">SP</SelectItem>
-                          <SelectItem value="SE">SE</SelectItem>
-                          <SelectItem value="TO">TO</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        id="state"
+                        type="text"
+                        placeholder="UF"
+                        value={state}
+                        onChange={(e) => setState(e.target.value.toUpperCase())}
+                        maxLength={2}
+                      />
                     </div>
                   </div>
                 </div>
