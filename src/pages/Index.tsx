@@ -12,8 +12,8 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
-        <BenefitsBar />
         <ProductGrid />
+        <BenefitsBar />
       </main>
       <Footer />
     </div>
