@@ -1,4 +1,4 @@
-import { Search, User, ShoppingBag, Menu } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logoNew from "@/assets/logo-new.jpeg";
@@ -9,11 +9,10 @@ const Header = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center gap-3 group cursor-pointer">
-          <img 
-            alt="Economiza.IA" 
-            className="h-10 w-auto object-contain" 
-            src={logoNew} 
-          />
+          <div className="relative">
+            <Brain className="h-8 w-8 text-primary" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 opacity-50 blur-sm -z-10 rounded-full" />
+          </div>
           <span className="font-display font-bold text-xl text-foreground">
             Economiza<span className="text-primary">.IA</span>
           </span>
