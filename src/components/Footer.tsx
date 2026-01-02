@@ -1,89 +1,97 @@
-import { Mail, MessageCircle, Instagram, ExternalLink } from "lucide-react";
+import { Mail, MessageCircle, Instagram, Heart } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border bg-secondary/20 py-12">
+    <footer className="border-t border-border/30 bg-gradient-to-b from-background to-secondary/20 pt-16 pb-8">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           {/* Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
-                <span className="text-xl font-bold text-primary-foreground">D</span>
+          <div className="lg:col-span-2 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center shadow-glow-sm">
+                <span className="text-2xl font-black text-primary-foreground">D</span>
               </div>
-              <span className="text-lg font-semibold text-foreground">Digital Store</span>
+              <div>
+                <span className="text-2xl font-bold text-foreground">Digital Store</span>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Premium Products</p>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              A melhor loja de produtos digitais com preços imbatíveis e entrega instantânea.
+            <p className="text-muted-foreground max-w-md leading-relaxed">
+              A melhor loja de produtos digitais do Brasil. Preços imbatíveis, entrega instantânea e suporte dedicado para você.
             </p>
-          </div>
-
-          {/* Links */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-foreground">Links Úteis</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Catálogo
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Meus Pedidos
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  FAQ
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Suporte */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-foreground">Suporte</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  WhatsApp
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  E-mail
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-foreground">Redes Sociais</h4>
-            <div className="flex gap-3">
+            
+            {/* Social Icons */}
+            <div className="flex gap-3 pt-2">
               <a
                 href="#"
-                className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-secondary/80 transition-colors"
+                className="h-11 w-11 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 hover:border-primary/30 transition-all duration-300"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-secondary/80 transition-colors"
+                className="h-11 w-11 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 hover:border-primary/30 transition-all duration-300"
               >
-                <ExternalLink className="h-5 w-5" />
+                <MessageCircle className="h-5 w-5" />
+              </a>
+              <a
+                href="#"
+                className="h-11 w-11 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 hover:border-primary/30 transition-all duration-300"
+              >
+                <Mail className="h-5 w-5" />
               </a>
             </div>
+          </div>
+
+          {/* Links */}
+          <div className="space-y-5">
+            <h4 className="font-bold text-foreground text-lg">Links Úteis</h4>
+            <ul className="space-y-3">
+              {['Catálogo', 'Meus Pedidos', 'FAQ', 'Termos de Uso'].map((item) => (
+                <li key={item}>
+                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-200 flex items-center gap-2 group">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/50 group-hover:bg-primary transition-colors" />
+                    {item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div className="space-y-5">
+            <h4 className="font-bold text-foreground text-lg">Suporte</h4>
+            <ul className="space-y-3">
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-200 flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                    <MessageCircle className="h-4 w-4 text-green-500" />
+                  </div>
+                  WhatsApp
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-200 flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Mail className="h-4 w-4 text-blue-500" />
+                  </div>
+                  E-mail
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 pt-8 border-t border-border">
-          <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Digital Store. Todos os direitos reservados.
-          </p>
+        <div className="pt-8 border-t border-border/30">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Digital Store. Todos os direitos reservados.
+            </p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              Feito com <Heart className="h-4 w-4 text-destructive fill-destructive" /> no Brasil
+            </p>
+          </div>
         </div>
       </div>
     </footer>
