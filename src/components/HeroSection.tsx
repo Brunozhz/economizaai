@@ -55,7 +55,12 @@ const HeroSection = () => {
                 Ver Catálogo
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button size="lg" variant="outline" className="h-12 px-6 border-primary/30 text-primary hover:bg-primary/5">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="h-12 px-6 border-primary/30 text-primary hover:bg-primary/5"
+                onClick={() => window.open('https://chat.whatsapp.com/LFYmqa09RCI5e7KecBQ8FG', '_blank')}
+              >
                 <Sparkles className="mr-2 h-5 w-5" />
                 Grupo VIP
               </Button>
