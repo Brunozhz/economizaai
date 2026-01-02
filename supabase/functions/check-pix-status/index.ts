@@ -24,7 +24,7 @@ serve(async (req) => {
     
     console.log('Checking PIX status for:', pixId);
 
-    const response = await fetch(`https://api.pushinpay.com.br/api/pix/cashIn/${pixId}`, {
+    const response = await fetch(`https://api.pushinpay.com.br/api/transactions/${pixId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
