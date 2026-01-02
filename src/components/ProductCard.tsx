@@ -114,7 +114,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         )}
 
         {/* Product Preview */}
-        <div className={`relative px-5 py-6 flex items-center justify-center overflow-hidden ${popular ? 'pt-14' : ''}`}
+        <div className={`relative px-5 py-8 md:py-6 flex items-center justify-center overflow-hidden ${popular ? 'pt-16 md:pt-14' : ''}`}
           style={{
             background: `radial-gradient(ellipse at top, ${colors.glow} 0%, transparent 65%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)`
           }}
@@ -126,27 +126,27 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             />
           </div>
           
-          <div className="relative text-center space-y-3 z-10">
+          <div className="relative text-center space-y-3 md:space-y-3 z-10">
             {/* Title */}
-            <h3 className={`text-base font-bold tracking-wider uppercase ${colors.textClass} drop-shadow-sm`}>{name}</h3>
+            <h3 className={`text-lg md:text-base font-bold tracking-wider uppercase ${colors.textClass} drop-shadow-sm`}>{name}</h3>
             
             {/* Credits display */}
-            <div className="relative py-1">
-              <p className={`text-5xl font-black font-display leading-none ${colors.textClass}`}>
+            <div className="relative py-2 md:py-1">
+              <p className={`text-6xl md:text-5xl font-black font-display leading-none ${colors.textClass}`}>
                 <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent drop-shadow-lg`}>
                   {credits}
                 </span>
               </p>
             </div>
             
-            <p className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-[0.2em]">Créditos</p>
+            <p className="text-sm md:text-[11px] font-bold text-muted-foreground/80 uppercase tracking-[0.2em]">Créditos</p>
           </div>
         </div>
 
         {/* Product Info */}
-        <div className="relative px-4 py-5 space-y-4 bg-gradient-to-b from-card via-card to-background/90">
+        <div className="relative px-5 md:px-4 py-6 md:py-5 space-y-5 md:space-y-4 bg-gradient-to-b from-card via-card to-background/90">
           {/* Duration & Usage */}
-          <div className={`p-3 rounded-xl border text-xs ${
+          <div className={`p-4 md:p-3 rounded-xl border text-sm md:text-xs ${
             isElite ? 'bg-yellow-500/8 border-yellow-500/25' :
             isAdvanced ? 'bg-purple-500/8 border-purple-500/25' :
             tier === 'plus' ? 'bg-purple-500/8 border-purple-500/25' :
@@ -154,28 +154,28 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             'bg-emerald-500/8 border-emerald-500/25'
           }`}>
             <div className="flex items-center gap-2.5 mb-2">
-              <Clock className={`h-3.5 w-3.5 ${colors.textClass} opacity-80`} />
-              <span className="text-foreground font-semibold text-[13px]">{duration}</span>
+              <Clock className={`h-4 w-4 md:h-3.5 md:w-3.5 ${colors.textClass} opacity-80`} />
+              <span className="text-foreground font-semibold text-base md:text-[13px]">{duration}</span>
             </div>
             <div className="flex items-start gap-2.5">
-              <Target className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${colors.textClass} opacity-80`} />
-              <p className="text-muted-foreground/90 leading-relaxed line-clamp-2 text-[12px]">{usage}</p>
+              <Target className={`h-4 w-4 md:h-3.5 md:w-3.5 mt-0.5 shrink-0 ${colors.textClass} opacity-80`} />
+              <p className="text-muted-foreground/90 leading-relaxed line-clamp-2 text-sm md:text-[12px]">{usage}</p>
             </div>
           </div>
 
           {/* Pricing */}
-          <div className="space-y-3 text-center py-1">
+          <div className="space-y-4 md:space-y-3 text-center py-2 md:py-1">
             {/* Original price */}
             <div className="flex items-center justify-center gap-2">
-              <X className="h-3.5 w-3.5 text-red-400/80" />
-              <span className="text-red-400/90 line-through text-sm font-medium">
+              <X className="h-4 w-4 md:h-3.5 md:w-3.5 text-red-400/80" />
+              <span className="text-red-400/90 line-through text-base md:text-sm font-medium">
                 R$ {originalPrice.toFixed(2).replace('.', ',')}
               </span>
-              <span className="text-red-400/60 text-[10px] font-medium">(Oficial)</span>
+              <span className="text-red-400/60 text-xs md:text-[10px] font-medium">(Oficial)</span>
             </div>
             
             {/* Our price - Destacado */}
-            <p className={`text-[32px] font-black leading-none bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}
+            <p className={`text-4xl md:text-[32px] font-black leading-none bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}
               style={isHot ? {
                 filter: `drop-shadow(0 0 12px ${colors.glow})`,
               } : {}}
@@ -184,32 +184,32 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             </p>
             
             {/* Pix badge */}
-            <div className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg ${
+            <div className={`inline-flex items-center justify-center gap-2.5 md:gap-2 px-5 md:px-4 py-2.5 md:py-2 rounded-lg ${
               isElite ? 'bg-yellow-500/12 border border-yellow-500/20' :
               isAdvanced ? 'bg-purple-500/12 border border-purple-500/20' :
               tier === 'plus' ? 'bg-purple-500/12 border border-purple-500/20' :
               tier === 'basic' ? 'bg-cyan-500/12 border border-cyan-500/20' :
               'bg-emerald-500/12 border border-emerald-500/20'
             }`}>
-              <span className={`h-4 w-4 rounded-full flex items-center justify-center ${colors.bgClass}`}>
-                <Check className="h-2.5 w-2.5 text-white" />
+              <span className={`h-5 w-5 md:h-4 md:w-4 rounded-full flex items-center justify-center ${colors.bgClass}`}>
+                <Check className="h-3 w-3 md:h-2.5 md:w-2.5 text-white" />
               </span>
-              <span className="text-[11px] text-foreground/90 font-medium">À vista no <span className={`font-bold ${colors.textClass}`}>Pix</span></span>
+              <span className="text-sm md:text-[11px] text-foreground/90 font-medium">À vista no <span className={`font-bold ${colors.textClass}`}>Pix</span></span>
             </div>
           </div>
 
           {/* Action Button - Premium */}
           <Button 
             onClick={handleBuy}
-            className={`w-full h-12 font-bold text-[13px] rounded-xl transition-all duration-300 ease-out bg-gradient-to-r ${colors.gradient} hover:scale-[1.03] active:scale-[0.98] ${
+            className={`w-full h-14 md:h-12 font-bold text-base md:text-[13px] rounded-xl transition-all duration-300 ease-out bg-gradient-to-r ${colors.gradient} hover:scale-[1.03] active:scale-[0.98] ${
               isElite ? 'shadow-[0_4px_20px_rgba(250,204,21,0.35)] hover:shadow-[0_8px_30px_rgba(250,204,21,0.5)]' :
               isAdvanced ? 'shadow-[0_4px_16px_rgba(168,85,247,0.3)] hover:shadow-[0_8px_24px_rgba(168,85,247,0.45)]' :
               'shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.4)]'
             }`}
           >
-            <Zap className="mr-2 h-4 w-4" />
+            <Zap className="mr-2 h-5 w-5 md:h-4 md:w-4" />
             Comprar Agora
-            <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-70" />
+            <ExternalLink className="ml-2 h-4 w-4 md:h-3.5 md:w-3.5 opacity-70" />
           </Button>
         </div>
       </div>

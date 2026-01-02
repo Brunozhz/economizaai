@@ -103,19 +103,19 @@ const ProductGrid = () => {
           />
         </div>
         
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-3 md:px-4 relative z-10">
           {/* Section Header - Enhanced */}
-          <div className="flex flex-col items-center text-center gap-8 mb-20">
+          <div className="flex flex-col items-center text-center gap-6 md:gap-8 mb-12 md:mb-20">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/25 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 md:gap-2.5 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-primary/10 border border-primary/25 backdrop-blur-sm">
               <Gift className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-primary tracking-wide">Oferta Especial por Tempo Limitado</span>
+              <span className="text-xs md:text-sm font-semibold text-primary tracking-wide">Oferta Especial por Tempo Limitado</span>
               <Sparkles className="h-4 w-4 text-primary" />
             </div>
             
             {/* Title */}
-            <div className="space-y-6">
-              <h2 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight">
+            <div className="space-y-4 md:space-y-6">
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight">
                 <span className="text-foreground">Pacotes de </span>
                 <span className="relative inline-block">
                   <span className="bg-gradient-to-r from-primary via-emerald-400 to-cyan-400 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
@@ -126,7 +126,7 @@ const ProductGrid = () => {
               </h2>
               
               {/* Logo com glow premium e animação */}
-              <div className="flex items-center justify-center mt-10">
+              <div className="flex items-center justify-center mt-6 md:mt-10">
                 <a 
                   href="https://lovable.dev" 
                   target="_blank" 
@@ -153,35 +153,35 @@ const ProductGrid = () => {
                   <img 
                     src={lovableLogo} 
                     alt="Lovable" 
-                    className="relative h-24 rounded-2xl shadow-2xl group-hover:scale-110 transition-all duration-500 z-10"
+                    className="relative h-20 md:h-24 rounded-2xl shadow-2xl group-hover:scale-110 transition-all duration-500 z-10"
                   />
                 </a>
               </div>
               
-              <p className="text-muted-foreground text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed">
+              <p className="text-muted-foreground text-lg md:text-2xl max-w-2xl mx-auto leading-relaxed px-2">
                 Escolha o pacote ideal para transformar suas ideias em realidade
               </p>
             </div>
             
             {/* Stats - Refined */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-              <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-yellow-500/8 border border-yellow-500/20 backdrop-blur-sm hover:bg-yellow-500/12 transition-colors cursor-default">
-                <Crown className="h-5 w-5 text-yellow-500" />
-                <span className="text-sm font-semibold text-foreground">Até 86% OFF</span>
+            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-4 md:mt-8">
+              <div className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl bg-yellow-500/8 border border-yellow-500/20 backdrop-blur-sm hover:bg-yellow-500/12 transition-colors cursor-default">
+                <Crown className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
+                <span className="text-sm md:text-sm font-semibold text-foreground">Até 86% OFF</span>
               </div>
-              <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-primary/8 border border-primary/20 backdrop-blur-sm hover:bg-primary/12 transition-colors cursor-default">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <span className="text-sm font-semibold"><span className="text-primary">{products.length + 1}</span> <span className="text-foreground">pacotes</span></span>
+              <div className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl bg-primary/8 border border-primary/20 backdrop-blur-sm hover:bg-primary/12 transition-colors cursor-default">
+                <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                <span className="text-sm md:text-sm font-semibold"><span className="text-primary">{products.length + 1}</span> <span className="text-foreground">pacotes</span></span>
               </div>
-              <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-orange-500/8 border border-orange-500/20 backdrop-blur-sm hover:bg-orange-500/12 transition-colors cursor-default">
-                <Zap className="h-5 w-5 text-orange-500" />
-                <span className="text-sm font-semibold text-foreground">Entrega imediata</span>
+              <div className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl bg-orange-500/8 border border-orange-500/20 backdrop-blur-sm hover:bg-orange-500/12 transition-colors cursor-default">
+                <Zap className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
+                <span className="text-sm md:text-sm font-semibold text-foreground">Entrega imediata</span>
               </div>
             </div>
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5 xl:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-5 xl:gap-4">
             {products.map((product, index) => (
               <div
                 key={index}
