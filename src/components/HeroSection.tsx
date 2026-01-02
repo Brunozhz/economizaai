@@ -1,5 +1,16 @@
 import { Sparkles, ArrowRight, Zap, Star, Brain, Crown, Shield, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import carousel1 from "@/assets/carousel-1.png";
+import carousel2 from "@/assets/carousel-2.png";
+import carousel3 from "@/assets/carousel-3.png";
+import carousel4 from "@/assets/carousel-4.png";
 const HeroSection = () => {
   return <section className="relative py-20 md:py-32 overflow-hidden bg-background">
       {/* Animated mesh gradient background */}
@@ -66,6 +77,27 @@ const HeroSection = () => {
               <Sparkles className="mr-2 h-5 w-5" />
               Grupo VIP
             </Button>
+          </div>
+
+          {/* Carousel */}
+          <div className="w-full max-w-3xl pt-8">
+            <Carousel className="w-full" opts={{ loop: true }}>
+              <CarouselContent>
+                {[carousel1, carousel2, carousel3, carousel4].map((image, index) => (
+                  <CarouselItem key={index}>
+                    <div className="p-1">
+                      <img 
+                        src={image} 
+                        alt={`Motivo ${index + 1}`} 
+                        className="w-full h-auto rounded-2xl shadow-2xl"
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2 bg-background/80 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" />
+              <CarouselNext className="right-2 bg-background/80 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" />
+            </Carousel>
           </div>
         </div>
       </div>
