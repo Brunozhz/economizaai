@@ -49,11 +49,11 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
       bgClass: 'bg-purple-500',
     },
     elite: {
-      primary: 'rgb(168, 85, 247)', // purple-500
-      glow: 'rgba(168, 85, 247, 0.6)',
-      gradient: 'from-purple-500 via-violet-500 to-fuchsia-500',
-      textClass: 'text-purple-400',
-      bgClass: 'bg-gradient-to-r from-purple-500 to-violet-500',
+      primary: 'rgb(250, 204, 21)', // yellow-400
+      glow: 'rgba(250, 204, 21, 0.6)',
+      gradient: 'from-yellow-400 via-amber-500 to-orange-500',
+      textClass: 'text-yellow-400',
+      bgClass: 'bg-gradient-to-r from-yellow-400 to-orange-500',
     },
   };
 
@@ -65,13 +65,13 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
   return (
     <div 
       className={`group relative rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 ${
-        isElite ? 'shadow-[0_0_40px_rgba(168,85,247,0.4)]' :
+        isElite ? 'shadow-[0_0_40px_rgba(250,204,21,0.4)]' :
         isAdvanced ? 'shadow-[0_0_25px_rgba(168,85,247,0.3)]' :
         tier === 'plus' ? 'shadow-[0_0_20px_rgba(168,85,247,0.25)]' :
         tier === 'basic' ? 'shadow-[0_0_15px_rgba(0,255,255,0.2)]' :
         'shadow-[0_0_15px_rgba(0,255,136,0.2)]'
       } ${
-        isElite ? 'hover:shadow-[0_0_60px_rgba(168,85,247,0.5)]' :
+        isElite ? 'hover:shadow-[0_0_60px_rgba(250,204,21,0.5)]' :
         isAdvanced ? 'hover:shadow-[0_0_40px_rgba(168,85,247,0.4)]' :
         tier === 'plus' ? 'hover:shadow-[0_0_30px_rgba(168,85,247,0.35)]' :
         'hover:shadow-xl'
@@ -80,7 +80,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
       {/* Animated gradient border for Elite */}
       {isElite && (
         <div className="absolute inset-0 rounded-2xl p-[2px] animate-border-glow" style={{
-          background: 'linear-gradient(90deg, #a855f7, #8b5cf6, #c026d3, #8b5cf6, #a855f7)',
+          background: 'linear-gradient(90deg, #facc15, #f59e0b, #f97316, #f59e0b, #facc15)',
           backgroundSize: '300% 100%',
         }}>
           <div className="absolute inset-[2px] rounded-2xl bg-card" />
@@ -102,7 +102,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         {/* Popular Badge - Elite only */}
         {popular && (
           <div className="absolute top-0 left-0 right-0 z-20">
-            <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500 text-white text-xs font-bold px-3 py-2 flex items-center justify-center gap-1.5 shadow-[0_4px_20px_rgba(168,85,247,0.5)]">
+            <div className="bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-2 flex items-center justify-center gap-1.5 shadow-[0_4px_20px_rgba(250,204,21,0.5)]">
               <Crown className="h-3.5 w-3.5" />
               <span className="tracking-wider">⚡ MAIS VENDIDO ⚡</span>
               <Crown className="h-3.5 w-3.5" />
@@ -142,7 +142,8 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         <div className="relative p-4 space-y-3 bg-gradient-to-b from-card to-background/80">
           {/* Duration & Usage combined */}
           <div className={`p-2.5 rounded-lg border text-xs ${
-            isHot ? 'bg-purple-500/10 border-purple-500/20' :
+            isElite ? 'bg-yellow-500/10 border-yellow-500/20' :
+            isAdvanced ? 'bg-purple-500/10 border-purple-500/20' :
             tier === 'plus' ? 'bg-purple-500/10 border-purple-500/20' :
             tier === 'basic' ? 'bg-cyan-500/10 border-cyan-500/20' :
             'bg-emerald-500/10 border-emerald-500/20'
@@ -178,7 +179,8 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             </p>
             
             <div className={`flex items-center justify-center gap-2 p-2 rounded-lg ${
-              isHot ? 'bg-purple-500/10' :
+              isElite ? 'bg-yellow-500/10' :
+              isAdvanced ? 'bg-purple-500/10' :
               tier === 'plus' ? 'bg-purple-500/10' :
               tier === 'basic' ? 'bg-cyan-500/10' :
               'bg-emerald-500/10'
@@ -194,7 +196,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
           <Button 
             onClick={handleBuy}
             className={`w-full h-11 font-bold text-sm rounded-xl transition-all duration-300 bg-gradient-to-r ${colors.gradient} hover:scale-[1.02] ${
-              isElite ? 'shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]' :
+              isElite ? 'shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:shadow-[0_0_30px_rgba(250,204,21,0.6)]' :
               isAdvanced ? 'shadow-lg hover:shadow-xl' :
               ''
             }`}
@@ -211,7 +213,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         <div className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
           <div className="absolute inset-0 opacity-20"
             style={{
-              background: 'linear-gradient(45deg, transparent 40%, rgba(168,85,247,0.2) 50%, transparent 60%)',
+              background: 'linear-gradient(45deg, transparent 40%, rgba(250,204,21,0.2) 50%, transparent 60%)',
               backgroundSize: '200% 200%',
               animation: 'energy-flow 3s linear infinite',
             }}
