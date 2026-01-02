@@ -35,9 +35,11 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [showExitOffer, setShowExitOffer] = useState(false);
   const [couponApplied, setCouponApplied] = useState(false);
   const [hasSeenExitOffer, setHasSeenExitOffer] = useState(false);
+  const [couponTimeLeft, setCouponTimeLeft] = useState(120); // 2 minutes countdown
   const { toast } = useToast();
 
   const DISCOUNT_PERCENT = 15;
+  const COUPON_EXPIRE_SECONDS = 120; // 2 minutes
   const discountedPrice = product ? product.discountPrice * (1 - DISCOUNT_PERCENT / 100) : 0;
 
   const formatPhone = (value: string) => {
@@ -159,10 +161,30 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     if (!hasSeenExitOffer && !couponApplied && status !== 'paid' && status !== 'loading') {
       setShowExitOffer(true);
       setHasSeenExitOffer(true);
+      setCouponTimeLeft(COUPON_EXPIRE_SECONDS); // Reset coupon timer
     } else {
       onClose();
     }
   };
+
+  // Coupon countdown timer
+  useEffect(() => {
+    if (!showExitOffer || couponTimeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setCouponTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Coupon expired, close the offer
+          setShowExitOffer(false);
+          onClose();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [showExitOffer, couponTimeLeft, onClose]);
 
   // Apply coupon
   const applyCoupon = () => {
@@ -178,6 +200,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const continueWithoutCoupon = () => {
     setShowExitOffer(false);
     onClose();
+  };
+
+  // Format coupon time
+  const formatCouponTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Check payment status periodically
@@ -285,6 +314,14 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               
               {/* Content */}
               <div className="p-6 space-y-4">
+                {/* Countdown Timer */}
+                <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-destructive/10 border border-destructive/30">
+                  <Clock className="h-5 w-5 text-destructive animate-pulse" />
+                  <span className="text-sm font-medium text-destructive">
+                    Oferta expira em: <strong className="text-lg">{formatCouponTime(couponTimeLeft)}</strong>
+                  </span>
+                </div>
+
                 <div className="text-center space-y-2">
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
                     <Tag className="h-4 w-4 text-primary" />
@@ -307,6 +344,9 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                         <span className="text-lg text-muted-foreground line-through">R$ {product.discountPrice.toFixed(2)}</span>
                         <span className="text-2xl font-black text-primary">R$ {discountedPrice.toFixed(2)}</span>
                       </div>
+                      <p className="text-xs text-primary mt-1 font-medium">
+                        Você economiza R$ {(product.discountPrice - discountedPrice).toFixed(2)}!
+                      </p>
                     </div>
                   )}
                 </div>
@@ -314,10 +354,10 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 <div className="space-y-3">
                   <Button
                     onClick={applyCoupon}
-                    className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:scale-[1.02] transition-transform"
+                    className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:scale-[1.02] transition-transform animate-pulse"
                   >
                     <Gift className="h-5 w-5 mr-2" />
-                    Aplicar Desconto!
+                    Aplicar Desconto Agora!
                   </Button>
                   
                   <button
