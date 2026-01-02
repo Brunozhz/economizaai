@@ -64,36 +64,37 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
 
   return (
     <div 
-      className={`group relative rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 ${
-        isElite ? 'shadow-[0_0_40px_rgba(250,204,21,0.4)]' :
-        isAdvanced ? 'shadow-[0_0_25px_rgba(168,85,247,0.3)]' :
-        tier === 'plus' ? 'shadow-[0_0_20px_rgba(168,85,247,0.25)]' :
-        tier === 'basic' ? 'shadow-[0_0_15px_rgba(0,255,255,0.2)]' :
-        'shadow-[0_0_15px_rgba(0,255,136,0.2)]'
+      className={`group relative rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-3 ${
+        isElite ? 'shadow-[0_0_60px_rgba(250,204,21,0.6)]' :
+        isAdvanced ? 'shadow-[0_0_45px_rgba(168,85,247,0.5)]' :
+        tier === 'plus' ? 'shadow-[0_0_35px_rgba(168,85,247,0.4)]' :
+        tier === 'basic' ? 'shadow-[0_0_30px_rgba(0,255,255,0.4)]' :
+        'shadow-[0_0_30px_rgba(0,255,136,0.4)]'
       } ${
-        isElite ? 'hover:shadow-[0_0_60px_rgba(250,204,21,0.5)]' :
-        isAdvanced ? 'hover:shadow-[0_0_40px_rgba(168,85,247,0.4)]' :
-        tier === 'plus' ? 'hover:shadow-[0_0_30px_rgba(168,85,247,0.35)]' :
-        'hover:shadow-xl'
+        isElite ? 'hover:shadow-[0_0_80px_rgba(250,204,21,0.7)]' :
+        isAdvanced ? 'hover:shadow-[0_0_60px_rgba(168,85,247,0.6)]' :
+        tier === 'plus' ? 'hover:shadow-[0_0_50px_rgba(168,85,247,0.5)]' :
+        tier === 'basic' ? 'hover:shadow-[0_0_45px_rgba(0,255,255,0.5)]' :
+        'hover:shadow-[0_0_45px_rgba(0,255,136,0.5)]'
       }`}
     >
       {/* Animated gradient border for Elite */}
       {isElite && (
-        <div className="absolute inset-0 rounded-2xl p-[2px] animate-border-glow" style={{
+        <div className="absolute inset-0 rounded-2xl p-[3px] animate-border-glow" style={{
           background: 'linear-gradient(90deg, #facc15, #f59e0b, #f97316, #f59e0b, #facc15)',
           backgroundSize: '300% 100%',
         }}>
-          <div className="absolute inset-[2px] rounded-2xl bg-card" />
+          <div className="absolute inset-[3px] rounded-2xl bg-card" />
         </div>
       )}
       
-      {/* Standard border */}
+      {/* Standard border - more visible */}
       {!isElite && (
-        <div className={`absolute inset-0 rounded-2xl border ${
-          isAdvanced ? 'border-purple-500/50' :
-          tier === 'plus' ? 'border-purple-500/40' :
-          tier === 'basic' ? 'border-cyan-500/30' :
-          'border-emerald-500/30'
+        <div className={`absolute inset-0 rounded-2xl border-2 ${
+          isAdvanced ? 'border-purple-500/70' :
+          tier === 'plus' ? 'border-purple-500/60' :
+          tier === 'basic' ? 'border-cyan-400/50' :
+          'border-emerald-400/50'
         }`} />
       )}
       
