@@ -51,7 +51,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        purple: "hsl(var(--purple))",
+        emerald: "hsl(var(--emerald))",
         "top-bar": "hsl(var(--top-bar))",
         "price-old": "hsl(var(--price-old))",
         "price-new": "hsl(var(--price-new))",

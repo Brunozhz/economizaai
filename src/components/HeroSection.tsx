@@ -9,9 +9,9 @@ const HeroSection = () => {
       <div className="absolute inset-0 gradient-glow opacity-80" />
       
       {/* Animated orbs */}
-      <div className="absolute top-20 left-[10%] w-80 h-80 orb-orange blur-[120px] animate-pulse-soft" />
-      <div className="absolute top-40 right-[15%] w-96 h-96 orb-purple blur-[140px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
-      <div className="absolute bottom-20 left-[30%] w-64 h-64 orb-purple blur-[100px] animate-pulse-soft" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-20 left-[10%] w-80 h-80 orb-green blur-[120px] animate-pulse-soft" />
+      <div className="absolute top-40 right-[15%] w-96 h-96 orb-emerald blur-[140px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
+      <div className="absolute bottom-20 left-[30%] w-64 h-64 orb-green blur-[100px] animate-pulse-soft" style={{ animationDelay: '2s' }} />
       
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -24,7 +24,7 @@ const HeroSection = () => {
           {/* Text Content */}
           <div className="space-y-8 animate-fade-in">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-purple border border-accent/30 text-accent text-sm font-semibold shadow-glow-purple">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-green border border-primary/30 text-primary text-sm font-semibold shadow-glow-sm">
               <Crown className="h-4 w-4" />
               <span>Economize até 80% com IA</span>
               <Sparkles className="h-4 w-4 animate-pulse" />
@@ -32,10 +32,10 @@ const HeroSection = () => {
             
             <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
               <span className="text-foreground">Produtos</span>{" "}
-              <span className="gradient-text-mixed">Digitais</span>
+              <span className="gradient-text">Digitais</span>
               <br />
               <span className="text-foreground">com</span>{" "}
-              <span className="gradient-text">Inteligência</span>
+              <span className="gradient-text-emerald">Inteligência</span>
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground max-w-lg leading-relaxed">
@@ -73,7 +73,7 @@ const HeroSection = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="h-14 px-8 text-lg font-semibold border-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent rounded-2xl transition-all duration-300"
+                className="h-14 px-8 text-lg font-semibold border-2 border-primary/40 text-primary hover:bg-primary/10 hover:border-primary rounded-2xl transition-all duration-300"
               >
                 <Sparkles className="mr-2 h-5 w-5" />
                 Grupo VIP
@@ -89,24 +89,24 @@ const HeroSection = () => {
               <div className="absolute inset-[-40px] rounded-[50px] border border-dashed border-accent/10 animate-spin-slow" style={{ animationDirection: 'reverse' }} />
               
               {/* Glow effect behind card */}
-              <div className="absolute inset-0 gradient-mixed rounded-3xl blur-[80px] opacity-25 animate-pulse-soft" />
+              <div className="absolute inset-0 gradient-primary rounded-3xl blur-[80px] opacity-25 animate-pulse-soft" />
               
               <div className="relative rounded-3xl overflow-hidden gradient-card border border-border/60 shadow-card hover-lift border-gradient">
                 <div className="aspect-[4/3] flex items-center justify-center p-10 relative">
                   {/* Inner decorations */}
                   <div className="absolute top-6 right-6 w-24 h-24 rounded-full border-2 border-primary/20 animate-pulse-soft" />
                   <div className="absolute top-10 right-10 w-16 h-16 rounded-full border border-accent/30" />
-                  <div className="absolute bottom-10 left-6 w-16 h-16 rounded-full gradient-purple opacity-30 blur-xl" />
+                  <div className="absolute bottom-10 left-6 w-16 h-16 rounded-full gradient-primary opacity-30 blur-xl" />
                   
                   <div className="text-center space-y-6 relative z-10">
-                    <span className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full gradient-mixed text-sm font-bold text-primary-foreground shadow-glow animate-glow">
+                    <span className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full gradient-primary text-sm font-bold text-primary-foreground shadow-glow animate-glow">
                       <Zap className="h-4 w-4" />
                       SUPER PROMOÇÃO
                     </span>
                     
                     <div className="space-y-2">
                       <p className="text-7xl md:text-8xl font-black font-display">
-                        <span className="gradient-text-mixed">+100</span>
+                        <span className="gradient-text">+100</span>
                       </p>
                       <p className="text-2xl md:text-3xl font-bold text-foreground/80 tracking-widest uppercase">
                         Créditos
@@ -117,7 +117,7 @@ const HeroSection = () => {
                       <img 
                         src={logo} 
                         alt="Economiza.IA" 
-                        className="h-12 w-auto object-contain drop-shadow-[0_0_10px_rgba(255,140,50,0.3)]"
+                        className="h-12 w-auto object-contain drop-shadow-[0_0_10px_rgba(34,197,94,0.3)]"
                       />
                     </div>
                     
@@ -133,7 +133,7 @@ const HeroSection = () => {
             
             {/* Floating elements */}
             <div className="absolute -top-8 -right-8 w-28 h-28 rounded-2xl gradient-primary opacity-25 blur-2xl animate-float" />
-            <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full gradient-purple opacity-20 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+            <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full gradient-dark opacity-40 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import logo from "@/assets/logo.jpeg";
 const Header = () => {
   return <header className="sticky top-0 z-50 w-full glass glass-border">
       {/* Gradient line at top */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] gradient-mixed" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] gradient-primary" />
       
       <div className="container mx-auto flex h-20 items-center justify-between px-4 py-4">
         {/* Logo */}
