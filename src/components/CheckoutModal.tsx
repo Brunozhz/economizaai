@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { X, Copy, Check, Loader2, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,10 +17,14 @@ interface CheckoutModalProps {
   } | null;
 }
 
-type PaymentStatus = 'loading' | 'created' | 'paid' | 'expired' | 'error';
+type PaymentStatus = 'form' | 'loading' | 'created' | 'paid' | 'expired' | 'error';
 
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
-  const [status, setStatus] = useState<PaymentStatus>('loading');
+  const [status, setStatus] = useState<PaymentStatus>('form');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [pixData, setPixData] = useState<{
     pixId: string;
     qrCode: string;
@@ -27,6 +33,60 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
   const { toast } = useToast();
+
+  const formatPhone = (value: string) => {
+    // Remove tudo que não for número
+    const numbers = value.replace(/\D/g, '');
+    
+    // Limitar a 11 dígitos (DDD + 9 dígitos)
+    const limited = numbers.slice(0, 11);
+    
+    // Formatar como (XX) XXXXX-XXXX
+    if (limited.length <= 2) {
+      return limited;
+    } else if (limited.length <= 7) {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
+    } else {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    setPhone(formatted);
+    setPhoneError('');
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setEmailError('');
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    
+    // Validar telefone (deve ter 11 dígitos)
+    const phoneNumbers = phone.replace(/\D/g, '');
+    if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
+      setPhoneError('Digite um telefone válido com DDD');
+      isValid = false;
+    }
+    
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Digite um e-mail válido');
+      isValid = false;
+    }
+    
+    return isValid;
+  };
+
+  const handleSubmitForm = () => {
+    if (validateForm()) {
+      createPix();
+    }
+  };
 
   const createPix = useCallback(async () => {
     if (!product) return;
@@ -40,6 +100,8 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           value: product.discountPrice,
           productName: product.name,
           productId: `credits-${product.credits}`,
+          customerPhone: phone.replace(/\D/g, ''),
+          customerEmail: email,
         },
       });
 
@@ -65,18 +127,20 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         variant: "destructive",
       });
     }
-  }, [product, toast]);
+  }, [product, phone, email, toast]);
 
-  // Create PIX when modal opens
+  // Reset form when modal opens
   useEffect(() => {
     if (isOpen && product) {
-      createPix();
-    } else {
-      setStatus('loading');
+      setStatus('form');
+      setPhone('');
+      setEmail('');
+      setPhoneError('');
+      setEmailError('');
       setPixData(null);
       setTimeLeft(900);
     }
-  }, [isOpen, product, createPix]);
+  }, [isOpen, product]);
 
   // Check payment status periodically
   useEffect(() => {
@@ -190,6 +254,48 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 <p className="text-sm text-price-old line-through">R$ {product.originalPrice.toFixed(2)}</p>
                 <p className="text-xl font-bold text-price-new">R$ {product.discountPrice.toFixed(2)}</p>
               </div>
+            </div>
+          )}
+
+          {/* Form State */}
+          {status === 'form' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-foreground">Telefone (WhatsApp)</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="(11) 99999-9999"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  className={phoneError ? 'border-destructive' : ''}
+                />
+                {phoneError && (
+                  <p className="text-xs text-destructive">{phoneError}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-foreground">E-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className={emailError ? 'border-destructive' : ''}
+                />
+                {emailError && (
+                  <p className="text-xs text-destructive">{emailError}</p>
+                )}
+              </div>
+
+              <Button
+                onClick={handleSubmitForm}
+                className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl mt-4"
+              >
+                Gerar PIX
+              </Button>
             </div>
           )}
 
