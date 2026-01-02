@@ -44,7 +44,13 @@ const HeroSection = () => {
             </div>
             
             <div className="flex flex-wrap gap-3 pt-2">
-              <Button size="lg" className="h-12 px-6 bg-primary text-primary-foreground font-semibold">
+              <Button 
+                size="lg" 
+                className="h-12 px-6 bg-primary text-primary-foreground font-semibold"
+                onClick={() => {
+                  document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 <Zap className="mr-2 h-5 w-5" />
                 Ver Catálogo
                 <ArrowRight className="ml-2 h-5 w-5" />
