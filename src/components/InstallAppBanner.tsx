@@ -1,7 +1,8 @@
-import { Download, Smartphone, Zap, Wifi, X } from "lucide-react";
+import { Download, Smartphone, Zap, Wifi, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const InstallAppBanner = () => {
   const { isInstallable, isInstalled, isIOS, installApp, canShowInstall } = usePWAInstall();
@@ -66,6 +67,14 @@ const InstallAppBanner = () => {
                 <Download className="h-3.5 w-3.5 mr-1.5" />
                 Baixar App Grátis
               </Button>
+              
+              <Link 
+                to="/install" 
+                className="flex items-center justify-center gap-1 mt-2 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+              >
+                Ver instruções detalhadas
+                <ChevronRight className="h-3 w-3" />
+              </Link>
             </div>
           </div>
         </div>
