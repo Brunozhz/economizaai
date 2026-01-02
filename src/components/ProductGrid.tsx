@@ -98,11 +98,11 @@ const ProductGrid = () => {
               {/* Logo sutil com glow e levitação */}
               <div className="flex items-center justify-center gap-2 mt-2">
                 <div className="relative group animate-float">
-                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-lg blur-md opacity-50 group-hover:opacity-80 animate-pulse transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-lg blur-lg opacity-50 group-hover:opacity-80 animate-pulse transition-opacity duration-500" />
                   <img 
                     src={lovableLogo} 
                     alt="Lovable" 
-                    className="relative h-8 rounded-sm hover:scale-105 transition-transform duration-300"
+                    className="relative h-14 rounded-sm hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               </div>
