@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ExternalLink, Check, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -8,10 +9,15 @@ interface ProductCardProps {
   credits: number;
   tag?: string;
   popular?: boolean;
+  onBuy: (product: { name: string; credits: number; originalPrice: number; discountPrice: number }) => void;
 }
 
-const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECARGA", popular = false }: ProductCardProps) => {
+const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECARGA", popular = false, onBuy }: ProductCardProps) => {
   const discount = Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
+
+  const handleBuy = () => {
+    onBuy({ name, credits, originalPrice, discountPrice });
+  };
 
   return (
     <div className={`group relative bg-card rounded-2xl border overflow-hidden hover-lift shadow-card ${popular ? 'border-primary/50' : 'border-border/50'}`}>
@@ -87,9 +93,10 @@ const ProductCard = ({ name, originalPrice, discountPrice, credits, tag = "RECAR
 
         {/* Action Button */}
         <Button 
+          onClick={handleBuy}
           className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:shadow-glow hover:scale-[1.02] transition-all duration-300 group/btn"
         >
-          <span>Ver Detalhes</span>
+          <span>Comprar Agora</span>
           <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
         </Button>
       </div>
