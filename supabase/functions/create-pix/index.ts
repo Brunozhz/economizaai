@@ -31,6 +31,67 @@ async function notifyAdmins(supabaseUrl: string, supabaseKey: string, title: str
   }
 }
 
+// Function to schedule remarketing after 2 minutes
+async function scheduleRemarketing(
+  supabaseUrl: string, 
+  supabaseKey: string, 
+  pixId: string,
+  customerEmail: string,
+  customerName: string,
+  customerPhone: string | undefined,
+  productName: string,
+  value: number,
+  userId: string | undefined
+) {
+  // Wait 2 minutes before checking if payment was made
+  console.log(`Scheduling remarketing check for PIX ${pixId} in 2 minutes...`);
+  
+  await new Promise(resolve => setTimeout(resolve, 2 * 60 * 1000)); // 2 minutes
+  
+  console.log(`Checking payment status for PIX ${pixId}...`);
+  
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  // Check if payment was completed
+  const { data: purchase } = await supabase
+    .from('purchases')
+    .select('id, status')
+    .eq('pix_code', pixId)
+    .eq('status', 'paid')
+    .single();
+  
+  if (purchase) {
+    console.log(`PIX ${pixId} was paid, skipping remarketing`);
+    return;
+  }
+  
+  console.log(`PIX ${pixId} not paid, sending remarketing...`);
+  
+  // Send remarketing
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-remarketing`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: customerEmail,
+        phone: customerPhone || '',
+        productName,
+        productPrice: value,
+        pixId,
+        userId,
+      }),
+    });
+    
+    const result = await response.json();
+    console.log(`Remarketing sent for PIX ${pixId}:`, result);
+  } catch (error) {
+    console.error(`Error sending remarketing for PIX ${pixId}:`, error);
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -47,7 +108,7 @@ serve(async (req) => {
       throw new Error('API key not configured');
     }
 
-    const { value, productName, productId, customerName, customerEmail } = await req.json();
+    const { value, productName, productId, customerName, customerEmail, customerPhone, userId } = await req.json();
     
     console.log('Creating PIX payment:', { value, productName, productId, customerName, customerEmail });
 
@@ -124,6 +185,26 @@ serve(async (req) => {
         customerEmail,
       }
     );
+
+    // 📩 Schedule remarketing after 2 minutes if payment not completed
+    // Using EdgeRuntime.waitUntil to run in background
+    const remarketingTask = scheduleRemarketing(
+      supabaseUrl,
+      supabaseKey,
+      data.id,
+      customerEmail,
+      customerName,
+      customerPhone,
+      productName,
+      value,
+      userId
+    );
+
+    // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(remarketingTask);
+    }
 
     return new Response(JSON.stringify({
       success: true,
