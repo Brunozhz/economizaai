@@ -85,6 +85,10 @@ export default {
           from: { opacity: "0", transform: "scale(0.95)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -92,6 +96,7 @@ export default {
         "fade-in": "fade-in 0.5s ease-out forwards",
         "slide-in": "slide-in 0.5s ease-out forwards",
         "scale-up": "scale-up 0.4s ease-out forwards",
+        "float": "float 3s ease-in-out infinite",
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
