@@ -8,12 +8,15 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/50">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
-        <div className="flex items-center gap-2 group cursor-pointer">
+        <div className="flex items-center gap-3 group cursor-pointer">
           <img 
             alt="Economiza.IA" 
-            className="h-8 w-auto object-contain" 
+            className="h-10 w-auto object-contain" 
             src={logoNew} 
           />
+          <span className="font-display font-bold text-xl text-foreground">
+            Economiza<span className="text-primary">.IA</span>
+          </span>
         </div>
 
         {/* Search Bar */}
