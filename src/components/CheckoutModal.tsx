@@ -24,29 +24,7 @@ const VALID_COUPONS: Record<string, number> = {
   'BEMVINDO20': 20,
   'DESCONTO15': 15,
   'VIP10': 10,
-};
-
-// Check if coupon is a dynamic remarketing coupon (e.g., VOLTE20, DESCONTO25, ESPECIAL30)
-const isRemarketingCoupon = (code: string): number | null => {
-  const patterns = [
-    /^VOLTE(\d+)$/,
-    /^DESCONTO(\d+)$/,
-    /^ESPECIAL(\d+)$/,
-    /^PROMO(\d+)$/,
-    /^VIP(\d+)$/
-  ];
-  
-  for (const pattern of patterns) {
-    const match = code.match(pattern);
-    if (match) {
-      const discount = parseInt(match[1]);
-      // Allow remarketing discounts from 10% to 30%
-      if (discount >= 10 && discount <= 30) {
-        return discount;
-      }
-    }
-  }
-  return null;
+  'SAIANAO15': 15,
 };
 
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
@@ -195,18 +173,22 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       if (savedRemarketing) {
         try {
           const remarketing = JSON.parse(savedRemarketing);
-          if (remarketing.code && remarketing.discount) {
+          // Only apply if the product matches
+          if (remarketing.code && remarketing.discount && remarketing.productName === product.name) {
             setCouponCode(remarketing.code);
             setAppliedCouponCode(remarketing.code);
             setDiscountPercent(remarketing.discount);
             setCouponApplied(true);
             toast({
-              title: "🎁 Cupom de remarketing aplicado!",
-              description: `Desconto de ${remarketing.discount}% foi aplicado automaticamente.`,
+              title: "🎁 Cupom exclusivo aplicado!",
+              description: `Desconto de ${remarketing.discount}% válido apenas para ${product.name}.`,
             });
             // Clear it after applying
             localStorage.removeItem('remarketing_offer');
             return;
+          } else if (remarketing.productName && remarketing.productName !== product.name) {
+            // Clear invalid remarketing offer for wrong product
+            localStorage.removeItem('remarketing_offer');
           }
         } catch (e) {
           console.error('Error parsing remarketing offer:', e);
@@ -301,30 +283,55 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       return;
     }
 
+    if (!product) {
+      setCouponError('Erro: produto não selecionado');
+      return;
+    }
+
     // Check for static coupons first
     let discount = VALID_COUPONS[code];
+    let isRemarketingCoupon = false;
     
-    // If not a static coupon, check for dynamic remarketing coupons
+    // If not a static coupon, check for remarketing coupons in database
     if (!discount) {
-      discount = isRemarketingCoupon(code) || 0;
+      const { data: remarketingCoupon } = await supabase
+        .from('remarketing_coupons')
+        .select('*')
+        .eq('coupon_code', code)
+        .eq('email', email.toLowerCase().trim())
+        .eq('is_used', false)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      if (remarketingCoupon) {
+        // Check if coupon is for this specific product
+        if (remarketingCoupon.product_name !== product.name) {
+          setCouponError(`Este cupom é válido apenas para o produto "${remarketingCoupon.product_name}"`);
+          return;
+        }
+        discount = remarketingCoupon.discount_percent;
+        isRemarketingCoupon = true;
+      }
     }
     
     if (!discount) {
-      setCouponError('Cupom inválido ou expirado');
+      setCouponError('Cupom inválido, expirado ou não é seu');
       return;
     }
 
-    // Check if coupon was already used by this email
-    const { data: existingUsage } = await supabase
-      .from('coupon_usage')
-      .select('id')
-      .eq('email', email.toLowerCase().trim())
-      .eq('coupon_code', code)
-      .maybeSingle();
+    // Check if static coupon was already used by this email
+    if (!isRemarketingCoupon) {
+      const { data: existingUsage } = await supabase
+        .from('coupon_usage')
+        .select('id')
+        .eq('email', email.toLowerCase().trim())
+        .eq('coupon_code', code)
+        .maybeSingle();
 
-    if (existingUsage) {
-      setCouponError('Você já utilizou este cupom');
-      return;
+      if (existingUsage) {
+        setCouponError('Você já utilizou este cupom');
+        return;
+      }
     }
 
     setCouponApplied(true);
@@ -379,6 +386,14 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           
           // Register coupon usage if a coupon was applied
           if (couponApplied && appliedCouponCode && email) {
+            // Check if it's a remarketing coupon and mark as used
+            await supabase
+              .from('remarketing_coupons')
+              .update({ is_used: true })
+              .eq('coupon_code', appliedCouponCode)
+              .eq('email', email.toLowerCase().trim());
+
+            // Also register in coupon_usage for tracking
             await supabase
               .from('coupon_usage')
               .insert({
@@ -387,6 +402,10 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               })
               .single();
           }
+          
+          // Clear saved promo coupon after successful payment
+          localStorage.removeItem('promo_coupon');
+          localStorage.removeItem('remarketing_offer');
           
           toast({
             title: "Pagamento Confirmado! 🎉",
