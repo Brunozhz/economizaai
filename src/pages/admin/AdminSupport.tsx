@@ -7,9 +7,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
-import { MessageCircle, Send, Clock, CheckCircle, User, Bell } from "lucide-react";
+import { MessageCircle, Send, Clock, CheckCircle, User, Bell, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+// Quick responses for common support scenarios
+const QUICK_RESPONSES = [
+  {
+    label: "Saudação",
+    text: "Olá! 👋 Sou do suporte da Economiza.IA. Como posso ajudá-lo(a) hoje?"
+  },
+  {
+    label: "Pagamento PIX",
+    text: "Para realizar o pagamento via PIX, basta clicar no botão 'Comprar' do plano desejado. O QR Code será gerado automaticamente e você terá 30 minutos para efetuar o pagamento. Após a confirmação, seus créditos serão liberados instantaneamente! 💳"
+  },
+  {
+    label: "Créditos não aparecem",
+    text: "Seus créditos podem levar até 5 minutos para aparecer após a confirmação do pagamento. Se o problema persistir, por favor me envie seu email de cadastro e o comprovante do PIX para verificarmos. 🔍"
+  },
+  {
+    label: "Cupom de desconto",
+    text: "Para usar um cupom de desconto, basta inserir o código no campo 'Cupom' durante o checkout, antes de gerar o PIX. O desconto será aplicado automaticamente ao valor final! 🎫"
+  },
+  {
+    label: "Como usar créditos",
+    text: "Seus créditos podem ser usados para acessar todas as funcionalidades da plataforma Lovable. Basta fazer login e começar a criar seus projetos. Os créditos são debitados conforme o uso. 🚀"
+  },
+  {
+    label: "Problema resolvido",
+    text: "Fico feliz em saber que conseguimos resolver! 🎉 Se tiver mais alguma dúvida, estou à disposição. Obrigado por escolher a Economiza.IA!"
+  },
+  {
+    label: "Aguardar verificação",
+    text: "Estou verificando sua solicitação e retorno em alguns minutos. Agradeço sua paciência! ⏳"
+  },
+  {
+    label: "Reembolso",
+    text: "Para solicitar reembolso, por favor me envie: 1) Email de cadastro, 2) Comprovante do PIX, 3) Motivo da solicitação. Analisaremos seu caso em até 24 horas úteis. 📝"
+  }
+];
 
 interface Message {
   role: "user" | "assistant";
@@ -276,6 +312,25 @@ const AdminSupport = () => {
                   )}
                 </div>
               </ScrollArea>
+
+              {/* Quick Responses */}
+              <div className="px-4 pt-3 border-t">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-4 h-4 text-yellow-500" />
+                  <span className="text-xs font-medium text-muted-foreground">Respostas Rápidas</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 max-h-[60px] overflow-y-auto">
+                  {QUICK_RESPONSES.map((response, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setAdminResponse(prev => prev ? `${prev}\n\n${response.text}` : response.text)}
+                      className="px-2 py-1 text-xs bg-muted hover:bg-muted/80 rounded-md transition-colors border border-border hover:border-primary/50"
+                    >
+                      {response.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Admin Response Input */}
               <div className="p-4 border-t">
