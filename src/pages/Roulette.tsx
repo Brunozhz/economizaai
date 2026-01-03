@@ -5,8 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { RotateCw, Gift, ShoppingCart, ArrowLeft, Copy, Ticket, Sparkles } from "lucide-react";
+import { RotateCw, Gift, ShoppingCart, ArrowLeft, Copy, Ticket, Sparkles, QrCode, Loader2, Plus, Minus, Check } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -37,6 +40,20 @@ const Roulette = () => {
   const [loading, setLoading] = useState(true);
   const wheelRef = useRef<HTMLDivElement>(null);
 
+  // PIX payment states
+  const [showPixModal, setShowPixModal] = useState(false);
+  const [spinQuantity, setSpinQuantity] = useState(1);
+  const [pixData, setPixData] = useState<{
+    pixId: string;
+    qrCode: string;
+    qrCodeBase64?: string;
+    value: number;
+  } | null>(null);
+  const [isGeneratingPix, setIsGeneratingPix] = useState(false);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const [paymentApproved, setPaymentApproved] = useState(false);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (!user) {
       navigate("/auth");
@@ -45,6 +62,15 @@ const Roulette = () => {
     loadUserData();
     loadUserCoupons();
   }, [user, navigate]);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
+  }, []);
 
   const loadUserData = async () => {
     if (!user || !profile) return;
@@ -213,14 +239,139 @@ const Roulette = () => {
     }, 4000);
   };
 
-  const buySpins = async () => {
-    // TODO: Integrate with PIX payment
-    toast.info("Função de compra de giros em desenvolvimento!");
+  const openBuyModal = () => {
+    setSpinQuantity(1);
+    setPixData(null);
+    setPaymentApproved(false);
+    setShowPixModal(true);
+  };
+
+  const generatePixPayment = async () => {
+    if (!user || !profile) return;
+
+    const totalValue = spinQuantity * SPIN_PRICE;
+
+    setIsGeneratingPix(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-pix", {
+        body: {
+          value: totalValue,
+          productName: `${spinQuantity}x Giro(s) da Roleta`,
+          productId: "roulette-spins",
+          customerName: profile.name || "Cliente",
+          customerEmail: profile.email,
+          customerPhone: profile.phone,
+          userId: user.id,
+        },
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || "Erro ao gerar PIX");
+      }
+
+      setPixData({
+        pixId: data.pixId,
+        qrCode: data.qrCode,
+        qrCodeBase64: data.qrCodeBase64,
+        value: totalValue,
+      });
+
+      // Start polling for payment status
+      startPaymentPolling(data.pixId, spinQuantity);
+    } catch (error: any) {
+      console.error("Error generating PIX:", error);
+      toast.error(error.message || "Erro ao gerar PIX. Tente novamente.");
+    } finally {
+      setIsGeneratingPix(false);
+    }
+  };
+
+  const startPaymentPolling = (pixId: string, quantity: number) => {
+    setIsCheckingPayment(true);
+    let attempts = 0;
+    const maxAttempts = 120; // 10 minutes (every 5 seconds)
+
+    pollingRef.current = setInterval(async () => {
+      attempts++;
+
+      if (attempts > maxAttempts) {
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+        }
+        setIsCheckingPayment(false);
+        toast.error("Tempo limite para pagamento expirado.");
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke("check-pix-status", {
+          body: {
+            pixId,
+            productName: `${quantity}x Giro(s) da Roleta`,
+            value: quantity * SPIN_PRICE * 100,
+          },
+        });
+
+        if (error) {
+          console.error("Error checking PIX status:", error);
+          return;
+        }
+
+        console.log("PIX status:", data);
+
+        if (data.status === "paid" || data.status === "approved" || data.status === "completed") {
+          if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+          }
+
+          // Add spins to user account
+          await supabase
+            .from("user_spins")
+            .update({ purchased_spins: purchasedSpins + quantity })
+            .eq("user_id", user!.id);
+
+          setPurchasedSpins(prev => prev + quantity);
+          setPaymentApproved(true);
+          setIsCheckingPayment(false);
+
+          toast.success(
+            <div className="flex flex-col gap-1">
+              <span className="font-bold">✅ Pagamento Aprovado!</span>
+              <span>Você ganhou {quantity} giro(s) extra(s)!</span>
+            </div>
+          );
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 5000);
+  };
+
+  const copyPixCode = () => {
+    if (pixData?.qrCode) {
+      navigator.clipboard.writeText(pixData.qrCode);
+      toast.success("Código PIX copiado!");
+    }
   };
 
   const copyCoupon = (code: string) => {
     navigator.clipboard.writeText(code);
     toast.success("Cupom copiado!");
+  };
+
+  const closePixModal = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+    setShowPixModal(false);
+    setPixData(null);
+    setIsCheckingPayment(false);
+    setPaymentApproved(false);
   };
 
   if (loading) {
@@ -378,9 +529,9 @@ const Roulette = () => {
                     </div>
                   </div>
 
-                  <Button className="w-full" onClick={buySpins}>
+                  <Button className="w-full" onClick={openBuyModal}>
                     <ShoppingCart className="mr-2 h-4 w-4" />
-                    Comprar Giro por R$ {SPIN_PRICE.toFixed(2)}
+                    Comprar Giros
                   </Button>
 
                   <p className="text-xs text-center text-muted-foreground">
@@ -458,6 +609,153 @@ const Roulette = () => {
           </div>
         </div>
       </div>
+
+      {/* PIX Payment Modal */}
+      <Dialog open={showPixModal} onOpenChange={closePixModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="h-5 w-5" />
+              Comprar Giros
+            </DialogTitle>
+            <DialogDescription>
+              Compre giros extras para mais chances de ganhar descontos!
+            </DialogDescription>
+          </DialogHeader>
+
+          {paymentApproved ? (
+            <div className="text-center py-8 space-y-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-green-600">Pagamento Aprovado!</h3>
+              <p className="text-muted-foreground">
+                Você recebeu {spinQuantity} giro(s) extra(s). Divirta-se!
+              </p>
+              <Button onClick={closePixModal} className="w-full">
+                Voltar para a Roleta
+              </Button>
+            </div>
+          ) : !pixData ? (
+            <div className="space-y-6">
+              {/* Quantity Selector */}
+              <div className="space-y-2">
+                <Label>Quantidade de Giros</Label>
+                <div className="flex items-center justify-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSpinQuantity(Math.max(1, spinQuantity - 1))}
+                    disabled={spinQuantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="text-3xl font-bold w-16 text-center">{spinQuantity}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSpinQuantity(Math.min(50, spinQuantity + 1))}
+                    disabled={spinQuantity >= 50}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Quick Select */}
+              <div className="flex gap-2 justify-center flex-wrap">
+                {[1, 3, 5, 10].map((qty) => (
+                  <Button
+                    key={qty}
+                    variant={spinQuantity === qty ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSpinQuantity(qty)}
+                  >
+                    {qty}x
+                  </Button>
+                ))}
+              </div>
+
+              {/* Total */}
+              <div className="bg-muted p-4 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-3xl font-bold text-primary">
+                  R$ {(spinQuantity * SPIN_PRICE).toFixed(2)}
+                </p>
+              </div>
+
+              <Button
+                className="w-full h-12"
+                onClick={generatePixPayment}
+                disabled={isGeneratingPix}
+              >
+                {isGeneratingPix ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Gerando PIX...
+                  </>
+                ) : (
+                  <>
+                    <QrCode className="mr-2 h-4 w-4" />
+                    Gerar PIX
+                  </>
+                )}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* QR Code */}
+              <div className="flex flex-col items-center space-y-4">
+                {pixData.qrCodeBase64 ? (
+                  <img
+                    src={`data:image/png;base64,${pixData.qrCodeBase64}`}
+                    alt="QR Code PIX"
+                    className="w-48 h-48 rounded-lg border"
+                  />
+                ) : (
+                  <div className="w-48 h-48 bg-muted rounded-lg flex items-center justify-center">
+                    <QrCode className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Valor</p>
+                  <p className="text-2xl font-bold text-primary">R$ {pixData.value.toFixed(2)}</p>
+                </div>
+              </div>
+
+              {/* Copy PIX Code */}
+              <div className="space-y-2">
+                <Label>Código PIX (Copia e Cola)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={pixData.qrCode}
+                    readOnly
+                    className="font-mono text-xs"
+                  />
+                  <Button variant="outline" size="icon" onClick={copyPixCode}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Payment Status */}
+              <div className="flex items-center justify-center gap-2 py-4 bg-muted rounded-lg">
+                {isCheckingPayment && (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <span className="text-sm">Aguardando pagamento...</span>
+                  </>
+                )}
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground">
+                O pagamento será confirmado automaticamente. Você tem 10 minutos para pagar.
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
