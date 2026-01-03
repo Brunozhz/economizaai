@@ -8,8 +8,7 @@ const TopBar = () => {
 
   const handleClick = () => {
     if (user) {
-      // TODO: Navigate to roulette/spin wheel page when implemented
-      navigate('/');
+      navigate('/roulette');
     } else {
       navigate('/install');
     }

@@ -359,6 +359,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_coupons: {
+        Row: {
+          coupon_code: string
+          created_at: string
+          discount_percent: number
+          email: string
+          expires_at: string
+          id: string
+          is_used: boolean
+          user_id: string
+        }
+        Insert: {
+          coupon_code: string
+          created_at?: string
+          discount_percent: number
+          email: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          user_id: string
+        }
+        Update: {
+          coupon_code?: string
+          created_at?: string
+          discount_percent?: number
+          email?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -376,6 +409,36 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_spins: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          last_free_spin_at: string | null
+          purchased_spins: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          last_free_spin_at?: string | null
+          purchased_spins?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          last_free_spin_at?: string | null
+          purchased_spins?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
