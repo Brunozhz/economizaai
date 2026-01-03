@@ -448,6 +448,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_roulette_ranking: {
+        Args: { limit_count?: number }
+        Returns: {
+          discount_percent: number
+          user_name: string
+          won_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
