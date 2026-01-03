@@ -5,6 +5,7 @@ import BenefitsBar from "@/components/BenefitsBar";
 import ProductGrid from "@/components/ProductGrid";
 import Footer from "@/components/Footer";
 import InstallAppBanner from "@/components/InstallAppBanner";
+import SupportChatWidget from "@/components/SupportChatWidget";
 import { useGreeting } from "@/hooks/useGreeting";
 
 const Index = () => {
@@ -21,6 +22,7 @@ const Index = () => {
       </main>
       <Footer />
       <InstallAppBanner />
+      <SupportChatWidget />
     </div>
   );
 };

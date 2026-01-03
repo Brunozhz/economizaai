@@ -329,6 +329,36 @@ export type Database = {
         }
         Relationships: []
       }
+      support_conversations: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          email: string | null
+          id: string
+          messages: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          messages?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          messages?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
