@@ -84,14 +84,57 @@ INFORMAÇÕES SOBRE A LOJA:
     if (conversationId) {
       const updatedMessages = [...messages, { role: "assistant", content: assistantMessage }];
       
+      // Check if this is a new conversation (first message)
+      const isFirstMessage = messages.length === 1;
+      
+      // Check if AI suggests escalating to human
+      const shouldEscalate = assistantMessage.includes("atendente") || assistantMessage.includes("humano");
+      
       await supabase
         .from('support_conversations')
         .update({ 
           messages: updatedMessages,
           email: email || null,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          status: shouldEscalate ? 'waiting_admin' : undefined
         })
         .eq('id', conversationId);
+
+      // Send push notification to admins for new conversations or when escalating
+      if (isFirstMessage || shouldEscalate) {
+        try {
+          const notificationBody = isFirstMessage 
+            ? `Nova conversa iniciada${email ? ` por ${email}` : ''}`
+            : `Cliente ${email || 'sem email'} aguardando atendimento`;
+          
+          console.log('Sending push notification to admins:', notificationBody);
+          
+          // Call the send-push function to notify admins
+          const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              title: '💬 Nova mensagem de suporte',
+              body: notificationBody,
+              admin_only: true,
+              data: {
+                type: 'support_chat',
+                conversationId,
+                url: '/admin/support'
+              }
+            }),
+          });
+          
+          const pushResult = await pushResponse.json();
+          console.log('Admin push notification result:', pushResult);
+        } catch (pushError) {
+          console.error('Error sending admin push notification:', pushError);
+          // Don't fail the main request if push fails
+        }
+      }
     }
 
     console.log("Support chat response generated successfully");
