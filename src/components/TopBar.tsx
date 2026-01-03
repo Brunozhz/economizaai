@@ -13,8 +13,8 @@ const TopBar = () => {
       >
         <div className="container mx-auto flex items-center justify-center gap-2 text-sm font-medium text-primary-foreground">
           <Zap className="h-4 w-4 animate-pulse" />
-          <span className="hidden sm:inline">OFERTA ESPECIAL: Cadastre seu e-mail e ganhe</span>
-          <span className="sm:hidden">Cadastre e ganhe</span>
+          <span className="hidden sm:inline">BAIXE O APP E CRIE SUA CONTA - Ganhe</span>
+          <span className="sm:hidden">Baixe o app e ganhe</span>
           <span className="font-black text-yellow-300">20% OFF</span>
           <Gift className="h-4 w-4" />
         </div>
