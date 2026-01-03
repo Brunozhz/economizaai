@@ -459,24 +459,32 @@ const Roulette = () => {
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Roulette Wheel */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
+          <Card className="overflow-hidden border-2 border-primary/20 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-primary via-primary/90 to-primary text-primary-foreground relative overflow-hidden">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23fff%22%20fill-opacity%3D%220.1%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50" />
+              <CardTitle className="flex items-center gap-2 relative z-10">
+                <Sparkles className="h-5 w-5 animate-pulse" />
                 Gire e Ganhe!
+                <Sparkles className="h-5 w-5 animate-pulse" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="relative w-full max-w-[300px] mx-auto aspect-square">
+            <CardContent className="p-6 bg-gradient-to-b from-background to-muted/30">
+              <div className="relative w-full max-w-[320px] mx-auto aspect-square">
+                {/* Glow effect behind wheel */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/30 via-primary/30 to-yellow-400/30 blur-xl scale-110 animate-pulse" />
+                
+                {/* Outer ring decoration */}
+                <div className="absolute inset-[-8px] rounded-full border-4 border-dashed border-yellow-400/50 animate-spin" style={{ animationDuration: '20s' }} />
+                
                 {/* Pointer */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-20">
-                  <div className="w-0 h-0 border-l-[15px] border-r-[15px] border-t-[25px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg" />
+                  <div className="w-0 h-0 border-l-[18px] border-r-[18px] border-t-[30px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg filter drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]" />
                 </div>
 
                 {/* Wheel */}
                 <div
                   ref={wheelRef}
-                  className="w-full h-full rounded-full border-4 border-yellow-400 shadow-2xl overflow-hidden relative"
+                  className="w-full h-full rounded-full border-[6px] border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.5)] overflow-hidden relative"
                   style={{
                     transform: `rotate(${rotation}deg)`,
                     transition: isSpinning ? "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
@@ -516,8 +524,10 @@ const Roulette = () => {
                   
                   {/* Center circle */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center">
-                      <Gift className="w-8 h-8 text-primary" />
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-white to-gray-100 shadow-[0_0_20px_rgba(0,0,0,0.3)] flex items-center justify-center border-4 border-yellow-400">
+                      <div className={`${isSpinning ? 'animate-bounce' : ''}`}>
+                        <Gift className="w-10 h-10 text-primary drop-shadow-lg" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -526,9 +536,18 @@ const Roulette = () => {
               {/* Won Discount Display */}
               {wonDiscount !== null && !isSpinning && (
                 <div className="mt-6 text-center animate-fade-in">
-                  <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-full font-bold text-xl shadow-lg animate-pulse">
-                    🎉 {wonDiscount}% OFF 🎉
+                  <div className={`inline-block px-8 py-4 rounded-2xl font-bold text-2xl shadow-2xl ${
+                    wonDiscount >= 50 
+                      ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-white animate-pulse ring-4 ring-yellow-400/50' 
+                      : wonDiscount >= 30
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white animate-pulse'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                  }`}>
+                    {wonDiscount >= 50 ? '🔥🎉🔥' : '🎉'} {wonDiscount}% OFF {wonDiscount >= 50 ? '🔥🎉🔥' : '🎉'}
                   </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Cupom salvo! Use na próxima compra.
+                  </p>
                 </div>
               )}
 
@@ -629,6 +648,9 @@ const Roulette = () => {
                             <span className="font-bold text-lg text-primary">
                               {coupon.discount_percent}% OFF
                             </span>
+                            <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
+                              Uso único
+                            </Badge>
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Expira em {format(new Date(coupon.expires_at), "dd/MM", { locale: ptBR })}
@@ -650,6 +672,9 @@ const Roulette = () => {
                     ))}
                   </div>
                 )}
+                <p className="text-xs text-center text-muted-foreground mt-3">
+                  ⚠️ Cada cupom só pode ser usado uma única vez
+                </p>
               </CardContent>
             </Card>
 
