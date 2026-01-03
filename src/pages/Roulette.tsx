@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { RotateCw, Gift, ShoppingCart, ArrowLeft, Copy, Ticket, Sparkles, QrCode, Loader2, Plus, Minus, Check } from "lucide-react";
+import { RotateCw, Gift, ShoppingCart, ArrowLeft, Copy, Ticket, Sparkles, QrCode, Loader2, Plus, Minus, Check, Trophy, Crown } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import confetti from "canvas-confetti";
@@ -37,6 +37,7 @@ const Roulette = () => {
   const [canFreeSpin, setCanFreeSpin] = useState(false);
   const [purchasedSpins, setPurchasedSpins] = useState(0);
   const [userCoupons, setUserCoupons] = useState<any[]>([]);
+  const [ranking, setRanking] = useState<{ user_name: string; discount_percent: number; won_at: string }[]>([]);
   const [wonDiscount, setWonDiscount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const wheelRef = useRef<HTMLDivElement>(null);
@@ -62,6 +63,7 @@ const Roulette = () => {
     }
     loadUserData();
     loadUserCoupons();
+    loadRanking();
   }, [user, navigate]);
 
   // Cleanup polling on unmount
@@ -137,6 +139,14 @@ const Roulette = () => {
 
     if (!error && data) {
       setUserCoupons(data);
+    }
+  };
+
+  const loadRanking = async () => {
+    const { data, error } = await supabase.rpc("get_roulette_ranking", { limit_count: 10 });
+    
+    if (!error && data) {
+      setRanking(data);
     }
   };
 
@@ -267,6 +277,7 @@ const Roulette = () => {
         }
 
         loadUserCoupons();
+        if (wonSegment >= 25) loadRanking(); // Update ranking for significant wins
 
         const celebrationEmoji = wonSegment >= 50 ? "🔥🎉🔥" : "🎉";
         toast.success(
@@ -630,6 +641,64 @@ const Roulette = () => {
                             <Copy className="h-4 w-4" />
                           </Button>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Ranking Card */}
+            <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-amber-600">
+                  <Trophy className="h-5 w-5" />
+                  🏆 Ranking de Descontos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {ranking.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4">
+                    Nenhum grande prêmio ainda. Seja o primeiro!
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {ranking.map((entry, index) => (
+                      <div
+                        key={index}
+                        className={`flex items-center justify-between p-3 rounded-lg ${
+                          index === 0
+                            ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40"
+                            : index === 1
+                            ? "bg-gradient-to-r from-slate-400/20 to-slate-300/20 border border-slate-400/40"
+                            : index === 2
+                            ? "bg-gradient-to-r from-orange-600/20 to-orange-500/20 border border-orange-600/40"
+                            : "bg-muted/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl font-bold">
+                            {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}º`}
+                          </span>
+                          <div>
+                            <p className="font-semibold flex items-center gap-1">
+                              {entry.user_name}
+                              {index === 0 && <Crown className="h-4 w-4 text-amber-500" />}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(entry.won_at), "dd/MM/yyyy", { locale: ptBR })}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge 
+                          className={`text-lg font-bold ${
+                            entry.discount_percent >= 50 
+                              ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0" 
+                              : "bg-primary"
+                          }`}
+                        >
+                          {entry.discount_percent}% OFF
+                        </Badge>
                       </div>
                     ))}
                   </div>
