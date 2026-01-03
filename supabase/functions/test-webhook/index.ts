@@ -22,7 +22,7 @@ serve(async (req) => {
     
     console.log('Sending test payment webhook:', webhookPayload);
     
-    const response = await fetch('https://n8n.infinityunlocker.com.br/webhook-test/v1/pagamento-confirmado', {
+    const response = await fetch('https://n8n.infinityunlocker.com.br/webhook/v1/pagamento-confirmado', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
