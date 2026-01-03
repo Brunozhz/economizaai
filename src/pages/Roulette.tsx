@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { RotateCw, Gift, ShoppingCart, ArrowLeft, Copy, Ticket, Sparkles, QrCode, Loader2, Plus, Minus, Check } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import confetti from "canvas-confetti";
 
 // Roulette segments with weighted probabilities
 // Higher weight = more likely to land on
@@ -196,6 +197,48 @@ const Roulette = () => {
       setIsSpinning(false);
       setWonDiscount(wonSegment);
 
+      // Trigger confetti for high discounts (above 30%)
+      if (wonSegment > 30) {
+        // Epic confetti celebration for high discounts
+        const duration = wonSegment >= 50 ? 5000 : 3000;
+        const end = Date.now() + duration;
+
+        const colors = wonSegment >= 50 
+          ? ['#fbbf24', '#ef4444', '#ec4899', '#8b5cf6'] // Gold, red, pink, purple for legendary
+          : ['#22c55e', '#3b82f6', '#f59e0b']; // Green, blue, orange for rare
+
+        (function frame() {
+          confetti({
+            particleCount: wonSegment >= 50 ? 7 : 4,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0, y: 0.7 },
+            colors: colors,
+          });
+          confetti({
+            particleCount: wonSegment >= 50 ? 7 : 4,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1, y: 0.7 },
+            colors: colors,
+          });
+
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        })();
+
+        // Extra burst for 50%+ discounts
+        if (wonSegment >= 50) {
+          confetti({
+            particleCount: 100,
+            spread: 100,
+            origin: { y: 0.6 },
+            colors: colors,
+          });
+        }
+      }
+
       // Generate coupon
       const couponCode = generateCouponCode();
 
@@ -225,9 +268,10 @@ const Roulette = () => {
 
         loadUserCoupons();
 
+        const celebrationEmoji = wonSegment >= 50 ? "🔥🎉🔥" : "🎉";
         toast.success(
           <div className="flex flex-col gap-1">
-            <span className="font-bold">🎉 Parabéns!</span>
+            <span className="font-bold">{celebrationEmoji} Parabéns!</span>
             <span>Você ganhou {wonSegment}% de desconto!</span>
             <span className="text-xs">Cupom: {couponCode}</span>
           </div>
