@@ -290,6 +290,45 @@ export type Database = {
         }
         Relationships: []
       }
+      remarketing_coupons: {
+        Row: {
+          coupon_code: string
+          created_at: string
+          discount_percent: number
+          email: string
+          expires_at: string
+          id: string
+          is_used: boolean
+          pix_id: string | null
+          product_name: string
+          product_price: number
+        }
+        Insert: {
+          coupon_code: string
+          created_at?: string
+          discount_percent: number
+          email: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          pix_id?: string | null
+          product_name: string
+          product_price: number
+        }
+        Update: {
+          coupon_code?: string
+          created_at?: string
+          discount_percent?: number
+          email?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          pix_id?: string | null
+          product_name?: string
+          product_price?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

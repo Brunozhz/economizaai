@@ -22,189 +22,123 @@ const getGreeting = (name: string) => {
   return firstName ? `${firstName}` : 'Amigo(a)';
 };
 
-// Generate random discount between 10% and 30%
-const getRandomDiscount = () => {
-  const discounts = [10, 15, 20, 25, 30];
-  return discounts[Math.floor(Math.random() * discounts.length)];
+// Generate discount based on cart value (higher value = higher discount)
+const getDiscountByCartValue = (price: number): number => {
+  if (price >= 100) return 30;      // R$100+ = 30% OFF
+  if (price >= 70) return 25;       // R$70-99 = 25% OFF
+  if (price >= 40) return 20;       // R$40-69 = 20% OFF
+  if (price >= 20) return 15;       // R$20-39 = 15% OFF
+  return 10;                         // < R$20 = 10% OFF
 };
 
-// Generate coupon code
-const generateCouponCode = (discount: number) => {
-  const codes = [
-    `VOLTE${discount}`,
-    `DESCONTO${discount}`,
-    `ESPECIAL${discount}`,
-    `PROMO${discount}`,
-    `VIP${discount}`
-  ];
-  return codes[Math.floor(Math.random() * codes.length)];
+// Generate unique coupon code with timestamp to avoid collisions
+const generateCouponCode = (discount: number, productName: string): string => {
+  const productCode = productName.toUpperCase().substring(0, 3);
+  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${productCode}${discount}${randomPart}`;
 };
 
 // Messages with {NAME}, {PRODUCT}, {DISCOUNT}, {COUPON} placeholders
 const remarketingMessages = [
   // Manhã - Motivacional (com cupom)
   {
-    title: "Bom dia, {NAME}! ☀️ Presente especial pra você",
+    title: "Bom dia, {NAME}! ☀️ Presente EXCLUSIVO pra você",
     content: `Bom dia, {NAME}! ☀️
 
 Acordei pensando em você... e na oportunidade que está esperando sua decisão!
 
-Para te ajudar a dar esse passo, preparei um **presente especial**:
-
-🎁 **Cupom exclusivo: {COUPON}**
-💰 **{DISCOUNT}% de desconto** em {PRODUCT}!
-
-Esse cupom foi feito especialmente para você e expira em breve.
-
-🌟 **Hoje é o dia perfeito para começar.**
-
-Não deixe o medo te impedir de alcançar o que você merece. Bora junto?`,
-    hasCoupon: true
-  },
-  {
-    title: "Ei, {NAME}! 🚀 Vim te dar um empurrãozinho",
-    content: `Oi, {NAME}! Tudo bem? ☀️
-
-Passou pela minha cabeça agora cedo que você ainda não finalizou sua compra de {PRODUCT}...
-
-Olha, eu sei que às vezes a gente precisa de um empurrãozinho. Então deixa eu te dar um motivo extra:
+Como você mostrou interesse em **{PRODUCT}**, preparei um **cupom exclusivo**:
 
 🎁 **Cupom: {COUPON}**
-💰 **{DISCOUNT}% OFF** só pra você!
+💰 **{DISCOUNT}% de desconto** - válido APENAS para {PRODUCT}!
 
-💡 **Pensa comigo:** Qual versão de você vai existir daqui a um mês? A que tomou atitude ou a que deixou passar?
-
-Estou aqui torcendo por você! 🙌`,
-    hasCoupon: true
-  },
-  // Manhã - Sem cupom
-  {
-    title: "Bom dia, {NAME}! ☀️ Seu sucesso te espera",
-    content: `Bom dia, {NAME}! ☀️
-
-Acordei pensando em você... e na oportunidade que está esperando sua decisão!
-
-Sabe aquele momento em que a gente sente que precisa dar um passo? **Esse momento é AGORA.**
-
-Os créditos de {PRODUCT} que você escolheu podem ser o combustível que faltava para você decolar. Imagina daqui a uma semana, olhando para trás e pensando: "Ainda bem que eu fiz isso!"
+⚠️ **IMPORTANTE:** Este cupom é único e só funciona para esta oferta específica.
 
 🌟 **Hoje é o dia perfeito para começar.**
 
-Não deixe o medo te impedir de alcançar o que você merece. Bora junto?`,
-    hasCoupon: false
+Clique em "Ver Esta Oferta" e o desconto será aplicado automaticamente!`
+  },
+  {
+    title: "Ei, {NAME}! 🚀 Cupom personalizado pra você",
+    content: `Oi, {NAME}! Tudo bem? ☀️
+
+Vi que você se interessou por **{PRODUCT}** mas ainda não finalizou...
+
+Olha o que eu liberei especialmente pra você:
+
+🎁 **Seu cupom exclusivo: {COUPON}**
+💰 **{DISCOUNT}% OFF** apenas em {PRODUCT}!
+
+⚠️ Este cupom foi gerado só pra você e só funciona nesta oferta.
+
+💡 **Pensa comigo:** Qual versão de você vai existir daqui a um mês?
+
+Clique em "Ver Esta Oferta" para aplicar automaticamente! 🙌`
   },
   // Tarde - Urgência (com cupom)
   {
-    title: "⚡ {NAME}, olha só o que eu consegui pra você!",
+    title: "⚡ {NAME}, seu desconto especial está esperando!",
     content: `Ei, {NAME}! Passando rapidinho aqui...
 
-Já é tarde e você ainda não garantiu {PRODUCT}! 😱
+Já é tarde e você ainda não garantiu **{PRODUCT}**! 😱
 
-Consegui liberar um **desconto especial** só pra você:
+Liberei um desconto baseado no seu interesse:
 
-🎁 **Use o cupom: {COUPON}**
+🎁 **Cupom exclusivo: {COUPON}**
 💰 **{DISCOUNT}% de desconto!**
 
+⚠️ **Atenção:** Este cupom é ÚNICO e válido apenas para {PRODUCT}.
+
 ⏰ **O melhor momento era ontem. O segundo melhor é AGORA.**
 
-Vamos fazer acontecer? Estou aqui esperando você do outro lado! 💚`,
-    hasCoupon: true
+Clique no botão abaixo e aproveite! 💚`
   },
   {
-    title: "🔥 {NAME}, você está deixando passar!",
+    title: "🔥 {NAME}, liberei um super desconto!",
     content: `Opa, {NAME}! Tudo bem?
 
-Olha, vou ser direto com você: **cada minuto que passa é uma oportunidade escapando.**
+Olha, vou ser direto: preparei algo especial pra você finalizar a compra de **{PRODUCT}**:
 
-Eu sei que você veio até aqui porque quer algo melhor. Você não é alguém que fica parado esperando as coisas acontecerem, né?
+🎁 **{COUPON}** = **{DISCOUNT}% OFF**
 
-Para te ajudar, liberei um cupom exclusivo:
+⚠️ **Importante:** Este cupom é pessoal e só funciona para esta oferta específica. Não pode ser usado em outros produtos!
 
-🎁 **{COUPON}** = **{DISCOUNT}% OFF** em {PRODUCT}
-
-Seja qual for o motivo da hesitação, saiba que **os melhores resultados vêm para quem age rápido.**
-
-Bora transformar essa vontade em ação? 🚀`,
-    hasCoupon: true
-  },
-  // Tarde - Sem cupom
-  {
-    title: "⚡ {NAME}, não deixe para amanhã!",
-    content: `Ei, {NAME}! Passando rapidinho aqui...
-
-Já é tarde e você ainda não garantiu {PRODUCT}! 😱
-
-Eu entendo que a vida é corrida, mas pensa comigo: **quanto tempo você já perdeu pensando nisso?**
-
-Enquanto você hesita, outras pessoas estão lá na frente colhendo resultados. Não deixe o "depois" roubar suas conquistas!
-
-⏰ **O melhor momento era ontem. O segundo melhor é AGORA.**
-
-Vamos fazer acontecer? Estou aqui esperando você do outro lado! 💚`,
-    hasCoupon: false
+Os melhores resultados vêm para quem age rápido. Bora? 🚀`
   },
   // Noite - Reflexão (com cupom)
   {
-    title: "🌙 {NAME}, antes de dormir... um presente",
+    title: "🌙 {NAME}, antes de dormir... seu presente",
     content: `Boa noite, {NAME}! 🌙
 
-Antes de você encerrar o dia, quero deixar uma perguntinha:
+Antes de encerrar o dia, olha o que separei pra você:
 
-**O que você fez hoje para chegar mais perto dos seus objetivos?**
+🎁 **Cupom personalizado: {COUPON}**
+💰 **{DISCOUNT}% OFF** em **{PRODUCT}**!
 
-Para te ajudar a tomar essa decisão, liberei um desconto especial:
+⚠️ Este cupom foi criado especialmente para esta oferta. Não funciona em outros produtos.
 
-🎁 **Cupom: {COUPON}**
-💰 **{DISCOUNT}% OFF** em {PRODUCT}!
+Imagina acordar amanhã sabendo que você tomou uma decisão importante hoje...
 
-Imagina acordar amanhã sabendo que você tomou uma decisão importante hoje... Que sensação boa, né?
+✨ **Não vá dormir com arrependimento.**
 
-✨ **Não vá dormir com arrependimento. Vá dormir com a certeza de que agiu.**
-
-Te espero! 💚`,
-    hasCoupon: true
+Clique no botão e garanta seu desconto! 💚`
   },
   {
-    title: "💭 {NAME}, última mensagem do dia...",
+    title: "💭 {NAME}, última chance do dia...",
     content: `Ei, {NAME}, tudo bem? 🌙
 
-O dia foi longo, eu sei. Mas antes de descansar, deixa eu te fazer uma pergunta sincera:
+O dia foi longo, eu sei. Mas antes de descansar, olha isso:
 
-**O que está te impedindo?**
+🎁 **Seu cupom exclusivo: {COUPON}**
+💰 **{DISCOUNT}% de desconto** em **{PRODUCT}**!
 
-Medo? Dúvida? Procrastinação? 
+⚠️ **Atenção:** Cupom válido APENAS para esta oferta específica.
 
-Seja o que for, saiba que **as pessoas que vencem são as que agem mesmo com medo.**
+Você já demonstrou interesse... Só falta o último passo!
 
-Para te dar aquele empurrãozinho final:
+🌟 **Amanhã pode ser tarde demais.**
 
-🎁 **Cupom exclusivo: {COUPON}**
-💰 **{DISCOUNT}% de desconto** em {PRODUCT}!
-
-Você já demonstrou interesse, já escolheu o que quer... Só falta o último passo!
-
-🌟 **Amanhã pode ser tarde demais. Hoje ainda dá tempo.**
-
-Durma bem, mas antes... pensa nisso! 💭`,
-    hasCoupon: true
-  },
-  // Noite - Sem cupom
-  {
-    title: "🌙 {NAME}, antes de dormir... uma reflexão",
-    content: `Boa noite, {NAME}! 🌙
-
-Antes de você encerrar o dia, quero deixar uma perguntinha:
-
-**O que você fez hoje para chegar mais perto dos seus objetivos?**
-
-Às vezes, um pequeno passo pode mudar tudo. E esse passo pode ser finalizar a compra de {PRODUCT} que você começou.
-
-Imagina acordar amanhã sabendo que você tomou uma decisão importante hoje... Que sensação boa, né?
-
-✨ **Não vá dormir com arrependimento. Vá dormir com a certeza de que agiu.**
-
-Te espero! 💚`,
-    hasCoupon: false
+Clique em "Ver Esta Oferta" agora! 💭`
   }
 ];
 
@@ -221,7 +155,7 @@ serve(async (req) => {
 
     const { email, phone, productName, productPrice, pixId, userId, userName }: RemarketingRequest = await req.json();
 
-    console.log(`Processing remarketing for email: ${email}, pix: ${pixId}, name: ${userName}`);
+    console.log(`Processing remarketing for email: ${email}, pix: ${pixId}, name: ${userName}, price: ${productPrice}`);
 
     // Check if this lead already exists
     const { data: existingLead } = await supabase
@@ -260,25 +194,45 @@ serve(async (req) => {
       }
     }
 
+    // Generate discount based on cart value
+    const discount = getDiscountByCartValue(productPrice);
+    const couponCode = generateCouponCode(discount, productName);
+    
+    console.log(`Generated coupon ${couponCode} with ${discount}% discount for price R$${productPrice}`);
+
+    // Store the coupon in the database
+    const { error: couponError } = await supabase
+      .from("remarketing_coupons")
+      .insert({
+        email: email.toLowerCase().trim(),
+        coupon_code: couponCode,
+        discount_percent: discount,
+        product_name: productName,
+        product_price: productPrice,
+        pix_id: pixId,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+      });
+
+    if (couponError) {
+      console.error("Error inserting coupon:", couponError);
+      // Continue anyway, just log the error
+    }
+
     // Pick a random message based on time of day
     const hour = new Date().getHours();
     let messagePool;
     if (hour >= 6 && hour < 12) {
-      messagePool = remarketingMessages.slice(0, 3); // Morning (2 with coupon, 1 without)
+      messagePool = remarketingMessages.slice(0, 2); // Morning
     } else if (hour >= 12 && hour < 18) {
-      messagePool = remarketingMessages.slice(3, 6); // Afternoon (2 with coupon, 1 without)
+      messagePool = remarketingMessages.slice(2, 4); // Afternoon
     } else {
-      messagePool = remarketingMessages.slice(6, 9); // Evening (2 with coupon, 1 without)
+      messagePool = remarketingMessages.slice(4, 6); // Evening
     }
     
     const randomMessage = messagePool[Math.floor(Math.random() * messagePool.length)];
     
     // Get personalized name
     const personalizedName = getGreeting(userName || '');
-    
-    // Generate discount and coupon if needed
-    const discount = randomMessage.hasCoupon ? getRandomDiscount() : 0;
-    const couponCode = randomMessage.hasCoupon ? generateCouponCode(discount) : '';
     
     // Replace placeholders in message
     const personalizedTitle = randomMessage.title
@@ -315,9 +269,7 @@ serve(async (req) => {
 
     // Send push notification to the user
     try {
-      const pushBody = randomMessage.hasCoupon 
-        ? `🎁 ${personalizedName}, você ganhou ${discount}% OFF em ${productName}!`
-        : `Você tem uma oferta exclusiva para ${productName}!`;
+      const pushBody = `🎁 ${personalizedName}, você ganhou ${discount}% OFF em ${productName}! Cupom: ${couponCode}`;
         
       const pushResponse = await fetch(
         `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push`,
@@ -339,13 +291,12 @@ serve(async (req) => {
       console.log("Push notification response:", pushResponse.status);
     } catch (pushError) {
       console.error("Error sending push notification:", pushError);
-      // Don't throw, just log - push is optional
     }
 
-    console.log("Remarketing message sent successfully", { hasCoupon: randomMessage.hasCoupon, discount, couponCode });
+    console.log("Remarketing message sent successfully", { discount, couponCode, productName });
 
     return new Response(
-      JSON.stringify({ success: true, hasCoupon: randomMessage.hasCoupon, discount, couponCode }),
+      JSON.stringify({ success: true, discount, couponCode, productName }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
