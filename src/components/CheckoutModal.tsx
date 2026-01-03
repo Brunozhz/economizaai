@@ -304,8 +304,26 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     // Check for static coupons first
     let discount = VALID_COUPONS[code];
     let isRemarketingCoupon = false;
+    let isRouletteCoupon = false;
     
-    // If not a static coupon, check for remarketing coupons in database
+    // If not a static coupon, check for roulette coupons (user_coupons) in database
+    if (!discount) {
+      const { data: rouletteCoupon } = await supabase
+        .from('user_coupons')
+        .select('*')
+        .eq('coupon_code', code)
+        .eq('email', email.toLowerCase().trim())
+        .eq('is_used', false)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      if (rouletteCoupon) {
+        discount = rouletteCoupon.discount_percent;
+        isRouletteCoupon = true;
+      }
+    }
+    
+    // If not a roulette coupon, check for remarketing coupons in database
     if (!discount) {
       const { data: remarketingCoupon } = await supabase
         .from('remarketing_coupons')
@@ -333,7 +351,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     }
 
     // Check if static coupon was already used by this email
-    if (!isRemarketingCoupon) {
+    if (!isRemarketingCoupon && !isRouletteCoupon) {
       const { data: existingUsage } = await supabase
         .from('coupon_usage')
         .select('id')
@@ -412,7 +430,14 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           
           // Register coupon usage if a coupon was applied
           if (couponApplied && appliedCouponCode && email) {
-            // Check if it's a remarketing coupon and mark as used
+            // Mark roulette coupon as used
+            await supabase
+              .from('user_coupons')
+              .update({ is_used: true })
+              .eq('coupon_code', appliedCouponCode)
+              .eq('email', email.toLowerCase().trim());
+
+            // Mark remarketing coupon as used
             await supabase
               .from('remarketing_coupons')
               .update({ is_used: true })
