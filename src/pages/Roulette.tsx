@@ -13,6 +13,7 @@ import { RotateCw, Gift, ShoppingCart, ArrowLeft, Copy, Ticket, Sparkles, QrCode
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import confetti from "canvas-confetti";
+import { useVictorySound } from "@/hooks/useVictorySound";
 
 // Roulette segments with weighted probabilities
 // Higher weight = more likely to land on
@@ -32,6 +33,7 @@ const SPIN_PRICE = 2; // R$ 2.00 per spin
 const Roulette = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { playVictorySound } = useVictorySound();
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [canFreeSpin, setCanFreeSpin] = useState(false);
@@ -206,6 +208,9 @@ const Roulette = () => {
     setTimeout(async () => {
       setIsSpinning(false);
       setWonDiscount(wonSegment);
+
+      // Play victory sound based on discount level
+      playVictorySound(wonSegment);
 
       // Trigger confetti for high discounts (above 30%)
       if (wonSegment > 30) {
