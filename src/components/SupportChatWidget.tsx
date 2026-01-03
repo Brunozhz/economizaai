@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNotificationSound } from "@/hooks/useNotificationSound";
 import FlappyBirdGame from "./FlappyBirdGame";
 
 interface Message {
@@ -20,8 +21,10 @@ const SupportChatWidget = () => {
   const [email, setEmail] = useState("");
   const [showGame, setShowGame] = useState(false);
   const [waitingForAdmin, setWaitingForAdmin] = useState(false);
+  const [hasNewResponse, setHasNewResponse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { playNotificationSound } = useNotificationSound();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,8 +64,15 @@ const SupportChatWidget = () => {
               { role: "assistant", content: `👨‍💼 Atendente: ${payload.new.admin_response}` }
             ]);
             setWaitingForAdmin(false);
+            
+            // Play notification sound and show visual indicator
+            playNotificationSound();
+            if (!isOpen) {
+              setHasNewResponse(true);
+            }
+            
             toast({
-              title: "Resposta do suporte!",
+              title: "🔔 Resposta do suporte!",
               description: "Um atendente respondeu sua mensagem.",
             });
           }
@@ -197,11 +207,20 @@ const SupportChatWidget = () => {
     <>
       {/* Floating Button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsOpen(true);
+          setHasNewResponse(false);
+        }}
         className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-all duration-300 flex items-center justify-center ${isOpen ? 'hidden' : ''}`}
       >
         <MessageCircle className="w-6 h-6" />
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse" />
+        {hasNewResponse ? (
+          <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full animate-bounce flex items-center justify-center text-xs font-bold text-white">
+            !
+          </span>
+        ) : (
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse" />
+        )}
       </button>
 
       {/* Chat Window */}
