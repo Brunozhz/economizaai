@@ -384,6 +384,19 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         if (data.success && data.status === 'paid') {
           setStatus('paid');
           
+          // Fire Meta Pixel Purchase event
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            const finalPrice = couponApplied ? discountedPrice : product?.discountPrice;
+            (window as any).fbq('track', 'Purchase', {
+              value: finalPrice,
+              currency: 'BRL',
+              content_name: product?.name,
+              content_type: 'product',
+              content_ids: [`credits-${product?.credits}`],
+            });
+            console.log('Meta Pixel Purchase event fired:', finalPrice);
+          }
+          
           // Register coupon usage if a coupon was applied
           if (couponApplied && appliedCouponCode && email) {
             // Check if it's a remarketing coupon and mark as used
