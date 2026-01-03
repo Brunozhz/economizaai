@@ -433,9 +433,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         if (data.success && data.status === 'paid') {
           setStatus('paid');
           
+          const finalPrice = couponApplied ? discountedPrice : product?.discountPrice;
+          const effectiveEmailForPayment = isLoggedIn && profile?.email ? profile.email : email;
+          const effectivePhoneForPayment = isLoggedIn && profile?.phone ? profile.phone : phone;
+          const effectiveNameForPayment = profile?.name || '';
+          
           // Fire Meta Pixel Purchase event
           if (typeof window !== 'undefined' && (window as any).fbq) {
-            const finalPrice = couponApplied ? discountedPrice : product?.discountPrice;
             (window as any).fbq('track', 'Purchase', {
               value: finalPrice,
               currency: 'BRL',
@@ -444,6 +448,37 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               content_ids: [`credits-${product?.credits}`],
             });
             console.log('Meta Pixel Purchase event fired:', finalPrice);
+          }
+          
+          // 🔔 Send post-sale webhook to n8n
+          try {
+            const webhookPayload = {
+              nome_cliente: effectiveNameForPayment,
+              whatsapp_numero: effectivePhoneForPayment.replace(/\D/g, ''),
+              email_contato: effectiveEmailForPayment,
+              plano_comprado: product?.name,
+              valor_pago: finalPrice,
+              quantidade_creditos: product?.credits,
+              pedido_id: pixData.pixId,
+            };
+            
+            console.log('Sending post-sale webhook:', webhookPayload);
+            
+            const webhookResponse = await fetch('https://n8n.infinityunlocker.com.br/webhook-test/v1/pagamento-confirmado', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(webhookPayload),
+            });
+            
+            if (webhookResponse.ok) {
+              console.log('Post-sale webhook sent successfully');
+            } else {
+              console.error('Post-sale webhook failed:', webhookResponse.status);
+            }
+          } catch (webhookError) {
+            console.error('Error sending post-sale webhook:', webhookError);
           }
           
           // Register coupon usage if a coupon was applied
@@ -479,7 +514,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           
           toast({
             title: "Pagamento Confirmado! 🎉",
-            description: `Seus ${product?.credits} créditos foram liberados!`,
+            description: "Aguarde, nosso Agente de Ativação entrará em contato via WhatsApp!",
           });
         } else if (data.status === 'expired' || data.status === 'canceled') {
           setStatus('expired');
@@ -886,15 +921,21 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
           {/* Payment Confirmed */}
           {status === 'paid' && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="h-20 w-20 rounded-full bg-pix-badge/20 flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center py-12 space-y-6">
+              <div className="h-20 w-20 rounded-full bg-pix-badge/20 flex items-center justify-center animate-pulse">
                 <CheckCircle className="h-12 w-12 text-pix-badge" />
               </div>
-              <div className="text-center space-y-2">
-                <h3 className="text-2xl font-bold text-foreground">Pagamento Confirmado!</h3>
+              <div className="text-center space-y-3">
+                <h3 className="text-2xl font-bold text-foreground">Pagamento Confirmado! 🎉</h3>
                 <p className="text-muted-foreground">
-                  Seus {product?.credits} créditos foram liberados com sucesso.
+                  Seus <span className="font-bold text-primary">{product?.credits} créditos</span> foram liberados com sucesso.
                 </p>
+                <div className="mt-4 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                  <p className="text-sm text-green-400 font-medium flex items-center justify-center gap-2">
+                    <span className="text-lg">📱</span>
+                    Nosso Agente de Ativação entrará em contato via WhatsApp em instantes!
+                  </p>
+                </div>
               </div>
               <Button
                 onClick={onClose}
