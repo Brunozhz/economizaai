@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import Purchases from "./pages/Purchases";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
+import Roulette from "./pages/Roulette";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -49,6 +50,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/purchases" element={<Purchases />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/roulette" element={<Roulette />} />
               <Route path="/messages" element={<Messages />} />
               
               {/* Admin Routes */}
