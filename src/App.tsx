@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useSalesNotificationListener } from "@/hooks/useSalesNotificationListener";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import Index from "./pages/Index";
 import Install from "./pages/Install";
 import Auth from "./pages/Auth";
@@ -29,6 +30,7 @@ const queryClient = new QueryClient();
 const PageTracker = ({ children }: { children: React.ReactNode }) => {
   usePageTracking();
   useSalesNotificationListener();
+  useAutoRefresh();
   return <>{children}</>;
 };
 
