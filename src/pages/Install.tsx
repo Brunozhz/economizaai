@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Smartphone, Monitor, Apple, Download, Check, ArrowLeft, Zap, Wifi, Shield, Share2, PlusSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -7,9 +7,32 @@ import InstallAnimation from "@/components/InstallAnimation";
 
 type Platform = 'android' | 'ios' | 'desktop';
 
+const detectPlatform = (): Platform => {
+  const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+  
+  // iOS detection
+  if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+    return 'ios';
+  }
+  
+  // Android detection
+  if (/android/i.test(userAgent)) {
+    return 'android';
+  }
+  
+  // Desktop (default)
+  return 'desktop';
+};
+
 const Install = () => {
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('android');
   const { isInstallable, isInstalled, installApp } = usePWAInstall();
+
+  // Auto-detect platform on mount
+  useEffect(() => {
+    const detected = detectPlatform();
+    setSelectedPlatform(detected);
+  }, []);
 
   const handleInstall = async () => {
     await installApp();
