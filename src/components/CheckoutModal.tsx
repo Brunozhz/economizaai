@@ -168,6 +168,19 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setRemarketingSent(false);
       setCouponError('');
 
+      // Fire Meta Pixel InitiateCheckout event
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'InitiateCheckout', {
+          value: product.discountPrice,
+          currency: 'BRL',
+          content_name: product.name,
+          content_type: 'product',
+          content_ids: [`credits-${product.credits}`],
+          num_items: 1,
+        });
+        console.log('Meta Pixel InitiateCheckout event fired:', product.name);
+      }
+
       // Check for remarketing offer first (priority)
       const savedRemarketing = localStorage.getItem('remarketing_offer');
       if (savedRemarketing) {
