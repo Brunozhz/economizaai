@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { MessageCircle, Send, Clock, CheckCircle, User } from "lucide-react";
+import { useNotificationSound } from "@/hooks/useNotificationSound";
+import { MessageCircle, Send, Clock, CheckCircle, User, Bell } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -31,7 +32,10 @@ const AdminSupport = () => {
   const [adminResponse, setAdminResponse] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [newMessageCount, setNewMessageCount] = useState(0);
+  const previousConversationsRef = useRef<Conversation[]>([]);
   const { toast } = useToast();
+  const { playNotificationSound } = useNotificationSound();
 
   useEffect(() => {
     loadConversations();
@@ -46,7 +50,29 @@ const AdminSupport = () => {
           schema: 'public',
           table: 'support_conversations'
         },
-        () => {
+        (payload) => {
+          // Check if it's a new message from a client
+          if (payload.eventType === 'INSERT') {
+            playNotificationSound();
+            setNewMessageCount(prev => prev + 1);
+            toast({
+              title: "🔔 Nova conversa de suporte!",
+              description: "Um cliente iniciou uma nova conversa.",
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            const newData = payload.new as Conversation;
+            const oldData = payload.old as Partial<Conversation>;
+            
+            // Check if client sent new messages (not admin response)
+            if (newData.status === 'waiting_admin' && oldData.status !== 'waiting_admin') {
+              playNotificationSound();
+              setNewMessageCount(prev => prev + 1);
+              toast({
+                title: "🔔 Cliente aguardando resposta!",
+                description: newData.email || "Cliente precisa de atendimento.",
+              });
+            }
+          }
           loadConversations();
         }
       )
@@ -55,7 +81,7 @@ const AdminSupport = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [playNotificationSound, toast]);
 
   const loadConversations = async () => {
     try {
@@ -148,6 +174,12 @@ const AdminSupport = () => {
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
             Conversas ({conversations.length})
+            {newMessageCount > 0 && (
+              <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full animate-pulse flex items-center gap-1">
+                <Bell className="w-3 h-3" />
+                {newMessageCount}
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -160,7 +192,13 @@ const AdminSupport = () => {
               conversations.map((conv) => (
                 <button
                   key={conv.id}
-                  onClick={() => setSelectedConversation(conv)}
+                  onClick={() => {
+                    setSelectedConversation(conv);
+                    // Clear notification count when selecting a conversation
+                    if (conv.status === 'waiting_admin') {
+                      setNewMessageCount(prev => Math.max(0, prev - 1));
+                    }
+                  }}
                   className={`w-full p-4 text-left border-b hover:bg-muted/50 transition-colors ${
                     selectedConversation?.id === conv.id ? 'bg-muted' : ''
                   }`}
