@@ -156,6 +156,36 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         });
         setStatus('created');
         setTimeLeft(900);
+        
+        // 🔔 Send PIX generated webhook to n8n (recovery route)
+        try {
+          const pixGeneratedPayload = {
+            email: effectiveEmail,
+            whatsapp: effectivePhone.replace(/\D/g, ''),
+            status: 'pending',
+            plano: product.name,
+          };
+          
+          console.log('Sending PIX generated webhook:', pixGeneratedPayload);
+          
+          fetch('https://n8n.infinityunlocker.com.br/webhook/v1/pix-gerado', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(pixGeneratedPayload),
+          }).then(res => {
+            if (res.ok) {
+              console.log('PIX generated webhook sent successfully');
+            } else {
+              console.error('PIX generated webhook failed:', res.status);
+            }
+          }).catch(err => {
+            console.error('Error sending PIX generated webhook:', err);
+          });
+        } catch (webhookError) {
+          console.error('Error sending PIX generated webhook:', webhookError);
+        }
       } else {
         throw new Error(data.error || 'Erro ao criar PIX');
       }
@@ -450,21 +480,18 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             console.log('Meta Pixel Purchase event fired:', finalPrice);
           }
           
-          // 🔔 Send post-sale webhook to n8n
+          // 🔔 Send payment confirmed webhook to n8n (success route)
           try {
             const webhookPayload = {
-              nome_cliente: effectiveNameForPayment,
-              whatsapp_numero: effectivePhoneForPayment.replace(/\D/g, ''),
-              email_contato: effectiveEmailForPayment,
-              plano_comprado: product?.name,
-              valor_pago: finalPrice,
-              quantidade_creditos: product?.credits,
-              pedido_id: pixData.pixId,
+              email: effectiveEmailForPayment,
+              whatsapp: effectivePhoneForPayment.replace(/\D/g, ''),
+              status: 'paid',
+              plano: product?.name,
             };
             
-            console.log('Sending post-sale webhook:', webhookPayload);
+            console.log('Sending payment confirmed webhook:', webhookPayload);
             
-            const webhookResponse = await fetch('https://n8n.infinityunlocker.com.br/webhook-test/v1/pagamento-confirmado', {
+            const webhookResponse = await fetch('https://n8n.infinityunlocker.com.br/webhook/v1/pagamento-confirmado', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -473,12 +500,12 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             });
             
             if (webhookResponse.ok) {
-              console.log('Post-sale webhook sent successfully');
+              console.log('Payment confirmed webhook sent successfully');
             } else {
-              console.error('Post-sale webhook failed:', webhookResponse.status);
+              console.error('Payment confirmed webhook failed:', webhookResponse.status);
             }
           } catch (webhookError) {
-            console.error('Error sending post-sale webhook:', webhookError);
+            console.error('Error sending payment confirmed webhook:', webhookError);
           }
           
           // Register coupon usage if a coupon was applied
