@@ -28,10 +28,13 @@ const VALID_COUPONS: Record<string, number> = {
 };
 
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [status, setStatus] = useState<PaymentStatus>('form');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  
+  // Check if user is logged in
+  const isLoggedIn = !!user && !!profile;
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [pixData, setPixData] = useState<{
@@ -87,6 +90,11 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const validateForm = () => {
     let isValid = true;
     
+    // Se usuário está logado, usar dados do perfil
+    if (isLoggedIn) {
+      return true; // Dados já validados pelo sistema de auth
+    }
+    
     // Validar telefone (deve ter 11 dígitos)
     const phoneNumbers = phone.replace(/\D/g, '');
     if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
@@ -103,6 +111,10 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     
     return isValid;
   };
+  
+  // Get effective email and phone (from profile if logged in, otherwise from form)
+  const getEffectiveEmail = () => isLoggedIn && profile?.email ? profile.email : email;
+  const getEffectivePhone = () => isLoggedIn && profile?.phone ? profile.phone : phone;
 
   const handleSubmitForm = () => {
     if (validateForm()) {
@@ -119,14 +131,18 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     const finalPrice = couponApplied ? discountedPrice : product.discountPrice;
     const couponLabel = appliedCouponCode ? `(cupom ${appliedCouponCode})` : '(com cupom 15%)';
     
+    const effectiveEmail = getEffectiveEmail();
+    const effectivePhone = getEffectivePhone();
+    
     try {
       const { data, error } = await supabase.functions.invoke('create-pix', {
         body: {
           value: finalPrice,
           productName: couponApplied ? `${product.name} ${couponLabel}` : product.name,
           productId: `credits-${product.credits}`,
-          customerPhone: phone.replace(/\D/g, ''),
-          customerEmail: email,
+          customerPhone: effectivePhone.replace(/\D/g, ''),
+          customerEmail: effectiveEmail,
+          userId: user?.id || null,
         },
       });
 
@@ -152,7 +168,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         variant: "destructive",
       });
     }
-  }, [product, phone, email, toast, couponApplied, discountedPrice]);
+  }, [product, phone, email, toast, couponApplied, discountedPrice, isLoggedIn, user, profile, getEffectiveEmail, getEffectivePhone]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -291,7 +307,9 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       return;
     }
 
-    if (!email || !email.includes('@')) {
+    const effectiveEmail = getEffectiveEmail();
+    
+    if (!effectiveEmail || !effectiveEmail.includes('@')) {
       setCouponError('Preencha seu e-mail primeiro para validar o cupom');
       return;
     }
@@ -312,7 +330,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         .from('user_coupons')
         .select('*')
         .eq('coupon_code', code)
-        .eq('email', email.toLowerCase().trim())
+        .eq('email', effectiveEmail.toLowerCase().trim())
         .eq('is_used', false)
         .gt('expires_at', new Date().toISOString())
         .maybeSingle();
@@ -329,7 +347,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         .from('remarketing_coupons')
         .select('*')
         .eq('coupon_code', code)
-        .eq('email', email.toLowerCase().trim())
+        .eq('email', effectiveEmail.toLowerCase().trim())
         .eq('is_used', false)
         .gt('expires_at', new Date().toISOString())
         .maybeSingle();
@@ -355,7 +373,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       const { data: existingUsage } = await supabase
         .from('coupon_usage')
         .select('id')
-        .eq('email', email.toLowerCase().trim())
+        .eq('email', effectiveEmail.toLowerCase().trim())
         .eq('coupon_code', code)
         .maybeSingle();
 
@@ -429,26 +447,27 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           }
           
           // Register coupon usage if a coupon was applied
-          if (couponApplied && appliedCouponCode && email) {
+          const effectiveEmailForCoupon = isLoggedIn && profile?.email ? profile.email : email;
+          if (couponApplied && appliedCouponCode && effectiveEmailForCoupon) {
             // Mark roulette coupon as used
             await supabase
               .from('user_coupons')
               .update({ is_used: true })
               .eq('coupon_code', appliedCouponCode)
-              .eq('email', email.toLowerCase().trim());
+              .eq('email', effectiveEmailForCoupon.toLowerCase().trim());
 
             // Mark remarketing coupon as used
             await supabase
               .from('remarketing_coupons')
               .update({ is_used: true })
               .eq('coupon_code', appliedCouponCode)
-              .eq('email', email.toLowerCase().trim());
+              .eq('email', effectiveEmailForCoupon.toLowerCase().trim());
 
             // Also register in coupon_usage for tracking
             await supabase
               .from('coupon_usage')
               .insert({
-                email: email.toLowerCase().trim(),
+                email: effectiveEmailForCoupon.toLowerCase().trim(),
                 coupon_code: appliedCouponCode,
               })
               .single();
@@ -694,35 +713,54 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           {/* Form State */}
           {status === 'form' && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-foreground">Telefone (WhatsApp)</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="(11) 99999-9999"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  className={phoneError ? 'border-destructive' : ''}
-                />
-                {phoneError && (
-                  <p className="text-xs text-destructive">{phoneError}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={handleEmailChange}
-                  className={emailError ? 'border-destructive' : ''}
-                />
-                {emailError && (
-                  <p className="text-xs text-destructive">{emailError}</p>
-                )}
-              </div>
+              {/* Logged in user info */}
+              {isLoggedIn ? (
+                <div className="p-4 rounded-xl bg-primary/10 border border-primary/30 space-y-2">
+                  <div className="flex items-center gap-2 text-primary font-medium">
+                    <Check className="h-5 w-5" />
+                    <span>Dados preenchidos automaticamente</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    ✅ Você já tem uma conta logada e seus dados para pedido já foram preenchidos automaticamente.
+                  </p>
+                  <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-primary/20">
+                    <p><strong>E-mail:</strong> {profile?.email}</p>
+                    {profile?.phone && <p><strong>Telefone:</strong> {profile.phone}</p>}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-foreground">Telefone (WhatsApp)</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="(11) 99999-9999"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      className={phoneError ? 'border-destructive' : ''}
+                    />
+                    {phoneError && (
+                      <p className="text-xs text-destructive">{phoneError}</p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-foreground">E-mail</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={handleEmailChange}
+                      className={emailError ? 'border-destructive' : ''}
+                    />
+                    {emailError && (
+                      <p className="text-xs text-destructive">{emailError}</p>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Coupon Area */}
               <div className="space-y-2">
