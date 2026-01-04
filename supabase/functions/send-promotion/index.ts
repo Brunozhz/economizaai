@@ -144,6 +144,44 @@ Tenha um ótimo dia! ☀️`,
   },
 ];
 
+// Helper function to verify admin authentication
+async function verifyAdminAuth(req: Request, supabaseClient: any) {
+  const authHeader = req.headers.get('Authorization');
+  
+  if (!authHeader) {
+    return { error: 'Unauthorized - No authorization header', status: 401 };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  
+  // Check if it's the service role key (for cron jobs)
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (token === serviceRoleKey) {
+    return { authorized: true };
+  }
+
+  // Otherwise, verify JWT and check admin role
+  const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+
+  if (authError || !user) {
+    return { error: 'Unauthorized - Invalid token', status: 401 };
+  }
+
+  // Verify admin role
+  const { data: roleData, error: roleError } = await supabaseClient
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('role', 'admin')
+    .maybeSingle();
+
+  if (roleError || !roleData) {
+    return { error: 'Forbidden - Admin access required', status: 403 };
+  }
+
+  return { authorized: true, user };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -155,8 +193,40 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Verify admin authentication
+    const authResult = await verifyAdminAuth(req, supabase);
+    if ('error' in authResult) {
+      console.error("Auth failed:", authResult.error);
+      return new Response(
+        JSON.stringify({ error: authResult.error }),
+        { status: authResult.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const body: PromotionRequest = await req.json();
     const { useRandom = true, title, content, discountPercentage, productName } = body;
+
+    // Input validation
+    if (!useRandom) {
+      if (title && title.length > 200) {
+        return new Response(
+          JSON.stringify({ error: "Title must be less than 200 characters" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (content && content.length > 2000) {
+        return new Response(
+          JSON.stringify({ error: "Content must be less than 2000 characters" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (discountPercentage !== undefined && (discountPercentage < 0 || discountPercentage > 100)) {
+        return new Response(
+          JSON.stringify({ error: "Discount percentage must be between 0 and 100" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     console.log("Sending promotion:", body);
 

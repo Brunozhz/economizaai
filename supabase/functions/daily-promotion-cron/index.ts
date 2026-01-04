@@ -25,12 +25,41 @@ const randomPromotions = [
   { day: -1, title: "🌈 Arco-íris de Descontos!", content: "7 produtos, 7 descontos! Até 50% OFF. Código: ARCOIRIS50", discount: "50%" },
 ];
 
+// Helper function to verify authorization
+function verifyAuth(req: Request): { authorized: boolean; error?: string; status?: number } {
+  const authHeader = req.headers.get('Authorization');
+  
+  if (!authHeader) {
+    return { authorized: false, error: 'Unauthorized - No authorization header', status: 401 };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  // Only allow service role key for cron jobs
+  if (token !== serviceRoleKey) {
+    return { authorized: false, error: 'Unauthorized - Invalid credentials', status: 401 };
+  }
+
+  return { authorized: true };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Verify authorization - only service role can trigger this
+    const authResult = verifyAuth(req);
+    if (!authResult.authorized) {
+      console.error("Auth failed:", authResult.error);
+      return new Response(
+        JSON.stringify({ error: authResult.error }),
+        { status: authResult.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Starting daily promotion cron job...');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

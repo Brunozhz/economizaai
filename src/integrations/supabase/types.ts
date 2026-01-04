@@ -336,8 +336,10 @@ export type Database = {
           email: string | null
           id: string
           messages: Json
+          session_token: string | null
           status: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           admin_response?: string | null
@@ -345,8 +347,10 @@ export type Database = {
           email?: string | null
           id?: string
           messages?: Json
+          session_token?: string | null
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           admin_response?: string | null
@@ -354,8 +358,10 @@ export type Database = {
           email?: string | null
           id?: string
           messages?: Json
+          session_token?: string | null
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
