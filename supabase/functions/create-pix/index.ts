@@ -7,6 +7,55 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Function to send webhook to n8n
+async function sendWebhookToN8N(data: {
+  pixId: string;
+  productName: string;
+  productId: string;
+  value: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  userId?: string;
+  status: string;
+  qrCode: string;
+}) {
+  const webhookUrl = 'https://n8n.infinityunlocker.com.br/webhook-test/pix-gerado';
+  
+  try {
+    console.log('Sending webhook to n8n:', webhookUrl);
+    
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        pix_id: data.pixId,
+        produto: data.productName,
+        produto_id: data.productId,
+        valor: data.value,
+        nome: data.customerName,
+        email: data.customerEmail,
+        whatsapp: data.customerPhone || '',
+        user_id: data.userId || '',
+        status: data.status,
+        qr_code: data.qrCode,
+        created_at: new Date().toISOString(),
+      }),
+    });
+    
+    console.log('Webhook response status:', response.status);
+    const result = await response.text();
+    console.log('Webhook response:', result);
+    
+    return { success: true, status: response.status };
+  } catch (error) {
+    console.error('Error sending webhook to n8n:', error);
+    return { success: false, error };
+  }
+}
+
 // Function to notify admins
 async function notifyAdmins(supabaseUrl: string, supabaseKey: string, title: string, body: string, data?: Record<string, unknown>) {
   try {
@@ -205,6 +254,22 @@ serve(async (req) => {
       // @ts-ignore
       EdgeRuntime.waitUntil(remarketingTask);
     }
+
+    // 🔗 Send webhook to n8n with all payment data
+    const webhookResult = await sendWebhookToN8N({
+      pixId: data.id,
+      productName,
+      productId,
+      value,
+      customerName,
+      customerEmail,
+      customerPhone,
+      userId,
+      status: data.status,
+      qrCode: data.qr_code,
+    });
+    
+    console.log('Webhook to n8n result:', webhookResult);
 
     return new Response(JSON.stringify({
       success: true,
