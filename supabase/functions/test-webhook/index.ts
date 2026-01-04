@@ -14,10 +14,10 @@ serve(async (req) => {
     const { email, whatsapp, plano } = await req.json();
     
     const webhookPayload = {
-      email: email || 'brunoeliassantos097@gmail.com',
-      whatsapp: whatsapp || '47992683132',
+      email: email || 'emailteste@agenciapara.com',
+      whatsapp: whatsapp || '55997029710',
       status: 'paid',
-      plano: plano || '100 Créditos',
+      plano: plano || 'Start - 50 Créditos',
     };
     
     console.log('Sending test payment webhook:', webhookPayload);
