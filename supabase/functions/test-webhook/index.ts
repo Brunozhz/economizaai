@@ -17,7 +17,6 @@ serve(async (req) => {
       email: email || 'emailteste@agenciapara.com',
       whatsapp: whatsapp || '55997029710',
       status: 'paid',
-      plano: plano || 'Start - 50 Créditos',
     };
     
     console.log('Sending test payment webhook:', webhookPayload);
