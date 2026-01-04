@@ -30,11 +30,13 @@ const VALID_COUPONS: Record<string, number> = {
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const { profile, user } = useAuth();
   const [status, setStatus] = useState<PaymentStatus>('form');
+  const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   
   // Check if user is logged in
   const isLoggedIn = !!user && !!profile;
+  const [nameError, setNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [pixData, setPixData] = useState<{
@@ -92,12 +94,23 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     setEmailError('');
   };
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomerName(e.target.value);
+    setNameError('');
+  };
+
   const validateForm = () => {
     let isValid = true;
     
     // Se usuário está logado, usar dados do perfil
     if (isLoggedIn) {
       return true; // Dados já validados pelo sistema de auth
+    }
+    
+    // Validar nome
+    if (!customerName.trim() || customerName.trim().length < 2) {
+      setNameError('Digite seu nome completo');
+      isValid = false;
     }
     
     // Validar telefone (deve ter 11 dígitos)
@@ -117,7 +130,8 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     return isValid;
   };
   
-  // Get effective email and phone (from profile if logged in, otherwise from form)
+  // Get effective name, email and phone (from profile if logged in, otherwise from form)
+  const getEffectiveName = () => isLoggedIn && profile?.name ? profile.name : customerName.trim();
   const getEffectiveEmail = () => isLoggedIn && profile?.email ? profile.email : email;
   const getEffectivePhone = () => {
     const phoneValue = isLoggedIn && profile?.phone ? profile.phone : phone;
@@ -142,6 +156,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     const finalPrice = couponApplied ? discountedPrice : product.discountPrice;
     const couponLabel = appliedCouponCode ? `(cupom ${appliedCouponCode})` : '(com cupom 15%)';
     
+    const effectiveName = getEffectiveName();
     const effectiveEmail = getEffectiveEmail();
     const effectivePhone = getEffectivePhone();
     
@@ -151,6 +166,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           value: finalPrice,
           productName: couponApplied ? `${product.name} ${couponLabel}` : product.name,
           productId: `credits-${product.credits}`,
+          customerName: effectiveName,
           customerPhone: effectivePhone.replace(/\D/g, ''),
           customerEmail: effectiveEmail,
           userId: user?.id || null,
@@ -209,13 +225,15 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         variant: "destructive",
       });
     }
-  }, [product, phone, email, toast, couponApplied, discountedPrice, isLoggedIn, user, profile, getEffectiveEmail, getEffectivePhone]);
+  }, [product, phone, email, customerName, toast, couponApplied, discountedPrice, isLoggedIn, user, profile, getEffectiveName, getEffectiveEmail, getEffectivePhone]);
 
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen && product) {
       setStatus('form');
+      setCustomerName('');
       setPhone('');
+      setNameError('');
       setPhoneError('');
       setEmailError('');
       setPixData(null);
@@ -797,12 +815,27 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                     ✅ Você já tem uma conta logada e seus dados para pedido já foram preenchidos automaticamente.
                   </p>
                   <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-primary/20">
+                    {profile?.name && <p><strong>Nome:</strong> {profile.name}</p>}
                     <p><strong>E-mail:</strong> {profile?.email}</p>
                     {profile?.phone && <p><strong>Telefone:</strong> {profile.phone}</p>}
                   </div>
                 </div>
               ) : (
                 <>
+                  <div className="space-y-2">
+                    <Label htmlFor="customerName" className="text-foreground">Nome Completo</Label>
+                    <Input
+                      id="customerName"
+                      type="text"
+                      placeholder="Seu nome completo"
+                      value={customerName}
+                      onChange={handleNameChange}
+                      className={nameError ? 'border-destructive' : ''}
+                    />
+                    {nameError && (
+                      <p className="text-xs text-destructive">{nameError}</p>
+                    )}
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-foreground">Telefone (WhatsApp)</Label>
                     <div className="flex">
