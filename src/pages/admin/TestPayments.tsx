@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
@@ -16,8 +17,58 @@ import {
   Clock,
   Copy,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Package
 } from 'lucide-react';
+
+// Produtos do site (mesma estrutura do ProductGrid.tsx)
+const siteProducts = [
+  {
+    id: 'start',
+    name: "Start",
+    price: 14.90,
+    originalPrice: 68.00,
+    credits: 50,
+    duration: "1 a 2 dias",
+    usage: "Pequenos ajustes de design, correções rápidas de bugs e testes iniciais de interface.",
+  },
+  {
+    id: 'basic',
+    name: "Basic",
+    price: 27.90,
+    originalPrice: 135.00,
+    credits: 100,
+    duration: "3 a 5 dias",
+    usage: "Criação de Landing Pages completas e desenvolvimento de MVPs simples.",
+  },
+  {
+    id: 'plus',
+    name: "Plus",
+    price: 49.90,
+    originalPrice: 270.00,
+    credits: 200,
+    duration: "7 a 10 dias",
+    usage: "Desenvolvimento de aplicações multipáginas e protótipos funcionais intermediários.",
+  },
+  {
+    id: 'advanced',
+    name: "Advanced",
+    price: 89.90,
+    originalPrice: 540.00,
+    credits: 400,
+    duration: "15 a 20 dias",
+    usage: "Projetos profissionais robustos e construção de estruturas completas para SaaS.",
+  },
+  {
+    id: 'elite',
+    name: "Elite",
+    price: 149.90,
+    originalPrice: 1080.00,
+    credits: 800,
+    duration: "25 a 30 dias",
+    usage: "Nível Software House. Ideal para quem gerencia múltiplos projetos ou sistemas de alta complexidade.",
+  },
+];
 
 interface PixPayment {
   pixId: string;
@@ -26,6 +77,9 @@ interface PixPayment {
   status: string;
   value: number;
   productName: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
   createdAt: Date;
 }
 
@@ -35,36 +89,53 @@ const TestPayments = () => {
   const [payments, setPayments] = useState<PixPayment[]>([]);
   
   // Form state
-  const [value, setValue] = useState('1.00');
-  const [productName, setProductName] = useState('Produto Teste');
-  const [customerName, setCustomerName] = useState('Cliente Teste');
-  const [customerEmail, setCustomerEmail] = useState('teste@teste.com');
-  const [customerPhone, setCustomerPhone] = useState('11999999999');
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+
+  const selectedProduct = siteProducts.find(p => p.id === selectedProductId);
 
   const createTestPayment = async () => {
+    if (!selectedProduct) {
+      toast.error('Selecione um produto');
+      return;
+    }
+
+    if (!customerName.trim()) {
+      toast.error('Informe o nome do cliente');
+      return;
+    }
+
+    if (!customerEmail.trim()) {
+      toast.error('Informe o email do cliente');
+      return;
+    }
+
+    if (!customerPhone.trim() || customerPhone.length < 10) {
+      toast.error('Informe um telefone válido');
+      return;
+    }
+
     setLoading(true);
     
     try {
-      const numericValue = parseFloat(value);
+      const formattedPhone = `55${customerPhone.replace(/\D/g, '')}`;
       
-      if (isNaN(numericValue) || numericValue < 0.50) {
-        toast.error('Valor mínimo é R$ 0,50');
-        return;
-      }
-      
-      if (numericValue > 150) {
+      // PushinPay tem limite de R$ 150.00
+      if (selectedProduct.price > 150) {
         toast.error('Valor máximo é R$ 150,00 (limite PushinPay)');
         return;
       }
 
       const { data, error } = await supabase.functions.invoke('create-pix', {
         body: {
-          value: numericValue,
-          productName,
-          productId: 'test-product',
-          customerName,
-          customerEmail,
-          customerPhone: `55${customerPhone.replace(/\D/g, '')}`,
+          value: selectedProduct.price,
+          productName: `${selectedProduct.name} - ${selectedProduct.credits} créditos`,
+          productId: selectedProduct.id,
+          customerName: customerName.trim(),
+          customerEmail: customerEmail.trim(),
+          customerPhone: formattedPhone,
         },
       });
 
@@ -77,13 +148,16 @@ const TestPayments = () => {
         qrCode: data.qrCode,
         qrCodeBase64: data.qrCodeBase64,
         status: data.status || 'pending',
-        value: numericValue,
-        productName,
+        value: selectedProduct.price,
+        productName: `${selectedProduct.name} - ${selectedProduct.credits} créditos`,
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim(),
+        customerPhone: formattedPhone,
         createdAt: new Date(),
       };
 
       setPayments(prev => [newPayment, ...prev]);
-      toast.success('PIX de teste criado com sucesso!');
+      toast.success('PIX real criado com sucesso!');
     } catch (error) {
       console.error('Erro ao criar PIX:', error);
       toast.error(error instanceof Error ? error.message : 'Erro ao criar PIX');
@@ -176,15 +250,14 @@ const TestPayments = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold">Pagamentos de Teste</h1>
-          <p className="text-muted-foreground">Simule pagamentos reais com a API PushinPay</p>
+          <p className="text-muted-foreground">Gere PIX reais para testar o fluxo de pagamento</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
         <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
         <p className="text-sm text-amber-600 dark:text-amber-400">
-          <strong>Atenção:</strong> Estes são pagamentos reais via PushinPay. Use valores baixos para testes.
-          Limite: R$ 0,50 a R$ 150,00.
+          <strong>Atenção:</strong> Estes são pagamentos REAIS via PushinPay. Os dados enviados serão exatamente os mesmos do checkout normal.
         </p>
       </div>
 
@@ -197,63 +270,80 @@ const TestPayments = () => {
               Criar PIX de Teste
             </CardTitle>
             <CardDescription>
-              Preencha os dados para gerar um PIX real de teste
+              Selecione um produto e preencha os dados do cliente
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="value">Valor (R$)</Label>
-                <Input
-                  id="value"
-                  type="number"
-                  step="0.01"
-                  min="0.50"
-                  max="150"
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  placeholder="1.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="productName">Nome do Produto</Label>
-                <Input
-                  id="productName"
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  placeholder="Produto Teste"
-                />
-              </div>
+            {/* Product Selector */}
+            <div className="space-y-2">
+              <Label htmlFor="product">Produto</Label>
+              <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um produto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {siteProducts.map((product) => (
+                    <SelectItem key={product.id} value={product.id}>
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4" />
+                        <span>{product.name} - {product.credits} créditos - {formatCurrency(product.price)}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Selected Product Info */}
+            {selectedProduct && (
+              <div className="p-4 rounded-lg border bg-muted/50 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{selectedProduct.name}</span>
+                  <Badge variant="secondary">{selectedProduct.credits} créditos</Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Preço Original:</span>
+                  <span className="line-through text-muted-foreground">{formatCurrency(selectedProduct.originalPrice)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Preço com Desconto:</span>
+                  <span className="font-bold text-lg text-primary">{formatCurrency(selectedProduct.price)}</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium">Uso:</span> {selectedProduct.usage}
+                </div>
+              </div>
+            )}
 
             <Separator />
 
+            {/* Customer Data */}
             <div className="space-y-4">
-              <p className="text-sm font-medium text-muted-foreground">Dados do Cliente (Simulado)</p>
+              <p className="text-sm font-medium text-muted-foreground">Dados do Cliente</p>
               
               <div className="space-y-2">
-                <Label htmlFor="customerName">Nome</Label>
+                <Label htmlFor="customerName">Nome do Cliente *</Label>
                 <Input
                   id="customerName"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Nome do cliente"
+                  placeholder="Nome completo do cliente"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customerEmail">Email</Label>
+                <Label htmlFor="customerEmail">Email *</Label>
                 <Input
                   id="customerEmail"
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="email@teste.com"
+                  placeholder="email@exemplo.com"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customerPhone">Telefone</Label>
+                <Label htmlFor="customerPhone">Telefone *</Label>
                 <div className="flex">
                   <div className="flex items-center justify-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-muted-foreground text-sm font-medium">
                     +55
@@ -267,24 +357,25 @@ const TestPayments = () => {
                     className="rounded-l-none"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">DDD + número (ex: 11999999999)</p>
               </div>
             </div>
 
             <Button 
               onClick={createTestPayment} 
-              disabled={loading}
+              disabled={loading || !selectedProductId}
               className="w-full"
               size="lg"
             >
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Gerando PIX...
+                  Gerando PIX Real...
                 </>
               ) : (
                 <>
                   <QrCode className="h-4 w-4 mr-2" />
-                  Gerar PIX de Teste
+                  Gerar PIX Real
                 </>
               )}
             </Button>
@@ -311,7 +402,7 @@ const TestPayments = () => {
                 <p>Gere um PIX de teste para ver aqui</p>
               </div>
             ) : (
-              <div className="space-y-4 max-h-[500px] overflow-y-auto">
+              <div className="space-y-4 max-h-[600px] overflow-y-auto">
                 {payments.map((payment) => (
                   <div 
                     key={payment.pixId} 
@@ -325,6 +416,13 @@ const TestPayments = () => {
                         </p>
                       </div>
                       {getStatusBadge(payment.status)}
+                    </div>
+
+                    {/* Customer Info */}
+                    <div className="p-2 rounded bg-muted/50 text-xs space-y-1">
+                      <p><span className="font-medium">Cliente:</span> {payment.customerName}</p>
+                      <p><span className="font-medium">Email:</span> {payment.customerEmail}</p>
+                      <p><span className="font-medium">Telefone:</span> {payment.customerPhone}</p>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
