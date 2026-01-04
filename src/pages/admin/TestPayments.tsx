@@ -77,7 +77,6 @@ interface PixPayment {
   status: string;
   value: number;
   productName: string;
-  customerName: string;
   customerEmail: string;
   customerPhone: string;
   createdAt: Date;
@@ -90,7 +89,6 @@ const TestPayments = () => {
   
   // Form state
   const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
 
@@ -99,11 +97,6 @@ const TestPayments = () => {
   const createTestPayment = async () => {
     if (!selectedProduct) {
       toast.error('Selecione um produto');
-      return;
-    }
-
-    if (!customerName.trim()) {
-      toast.error('Informe o nome do cliente');
       return;
     }
 
@@ -133,7 +126,7 @@ const TestPayments = () => {
           value: selectedProduct.price,
           productName: `${selectedProduct.name} - ${selectedProduct.credits} créditos`,
           productId: selectedProduct.id,
-          customerName: customerName.trim(),
+          customerName: customerEmail.split('@')[0], // Usa parte do email como nome
           customerEmail: customerEmail.trim(),
           customerPhone: formattedPhone,
         },
@@ -150,7 +143,6 @@ const TestPayments = () => {
         status: data.status || 'pending',
         value: selectedProduct.price,
         productName: `${selectedProduct.name} - ${selectedProduct.credits} créditos`,
-        customerName: customerName.trim(),
         customerEmail: customerEmail.trim(),
         customerPhone: formattedPhone,
         createdAt: new Date(),
@@ -317,33 +309,12 @@ const TestPayments = () => {
 
             <Separator />
 
-            {/* Customer Data */}
+            {/* Customer Data - Igual ao checkout real */}
             <div className="space-y-4">
-              <p className="text-sm font-medium text-muted-foreground">Dados do Cliente</p>
+              <p className="text-sm font-medium text-muted-foreground">Dados do Cliente (igual ao checkout)</p>
               
               <div className="space-y-2">
-                <Label htmlFor="customerName">Nome do Cliente *</Label>
-                <Input
-                  id="customerName"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Nome completo do cliente"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customerEmail">Email *</Label>
-                <Input
-                  id="customerEmail"
-                  type="email"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="email@exemplo.com"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customerPhone">Telefone *</Label>
+                <Label htmlFor="customerPhone">Telefone (WhatsApp) *</Label>
                 <div className="flex">
                   <div className="flex items-center justify-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-muted-foreground text-sm font-medium">
                     +55
@@ -353,11 +324,21 @@ const TestPayments = () => {
                     type="tel"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                    placeholder="11999999999"
+                    placeholder="(11) 99999-9999"
                     className="rounded-l-none"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">DDD + número (ex: 11999999999)</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="customerEmail">E-mail *</Label>
+                <Input
+                  id="customerEmail"
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                />
               </div>
             </div>
 
@@ -420,7 +401,6 @@ const TestPayments = () => {
 
                     {/* Customer Info */}
                     <div className="p-2 rounded bg-muted/50 text-xs space-y-1">
-                      <p><span className="font-medium">Cliente:</span> {payment.customerName}</p>
                       <p><span className="font-medium">Email:</span> {payment.customerEmail}</p>
                       <p><span className="font-medium">Telefone:</span> {payment.customerPhone}</p>
                     </div>
