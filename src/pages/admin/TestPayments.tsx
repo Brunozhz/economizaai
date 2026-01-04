@@ -77,6 +77,7 @@ interface PixPayment {
   status: string;
   value: number;
   productName: string;
+  customerName: string;
   customerEmail: string;
   customerPhone: string;
   createdAt: Date;
@@ -89,6 +90,7 @@ const TestPayments = () => {
   
   // Form state
   const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
 
@@ -97,6 +99,11 @@ const TestPayments = () => {
   const createTestPayment = async () => {
     if (!selectedProduct) {
       toast.error('Selecione um produto');
+      return;
+    }
+
+    if (!customerName.trim()) {
+      toast.error('Informe o nome do cliente');
       return;
     }
 
@@ -126,7 +133,7 @@ const TestPayments = () => {
           value: selectedProduct.price,
           productName: `${selectedProduct.name} - ${selectedProduct.credits} créditos`,
           productId: selectedProduct.id,
-          customerName: customerEmail.split('@')[0], // Usa parte do email como nome
+          customerName: customerName.trim(),
           customerEmail: customerEmail.trim(),
           customerPhone: formattedPhone,
         },
@@ -143,6 +150,7 @@ const TestPayments = () => {
         status: data.status || 'pending',
         value: selectedProduct.price,
         productName: `${selectedProduct.name} - ${selectedProduct.credits} créditos`,
+        customerName: customerName.trim(),
         customerEmail: customerEmail.trim(),
         customerPhone: formattedPhone,
         createdAt: new Date(),
@@ -314,6 +322,17 @@ const TestPayments = () => {
               <p className="text-sm font-medium text-muted-foreground">Dados do Cliente (igual ao checkout)</p>
               
               <div className="space-y-2">
+                <Label htmlFor="customerName">Nome Completo *</Label>
+                <Input
+                  id="customerName"
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Seu nome completo"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="customerPhone">Telefone (WhatsApp) *</Label>
                 <div className="flex">
                   <div className="flex items-center justify-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-muted-foreground text-sm font-medium">
@@ -401,6 +420,7 @@ const TestPayments = () => {
 
                     {/* Customer Info */}
                     <div className="p-2 rounded bg-muted/50 text-xs space-y-1">
+                      <p><span className="font-medium">Nome:</span> {payment.customerName}</p>
                       <p><span className="font-medium">Email:</span> {payment.customerEmail}</p>
                       <p><span className="font-medium">Telefone:</span> {payment.customerPhone}</p>
                     </div>
