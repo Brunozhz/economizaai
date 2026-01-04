@@ -322,18 +322,18 @@ const TestPayments = () => {
               <p className="text-sm font-medium text-muted-foreground">Dados do Cliente (igual ao checkout)</p>
               
               <div className="space-y-2">
-                <Label htmlFor="customerName">Nome Completo *</Label>
+                <Label htmlFor="customerName" className="text-foreground">Nome Completo</Label>
                 <Input
                   id="customerName"
                   type="text"
+                  placeholder="Seu nome completo"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Seu nome completo"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customerPhone">Telefone (WhatsApp) *</Label>
+                <Label htmlFor="customerPhone" className="text-foreground">Telefone (WhatsApp)</Label>
                 <div className="flex">
                   <div className="flex items-center justify-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-muted-foreground text-sm font-medium">
                     +55
@@ -341,22 +341,22 @@ const TestPayments = () => {
                   <Input
                     id="customerPhone"
                     type="tel"
+                    placeholder="(11) 99999-9999"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                    placeholder="(11) 99999-9999"
                     className="rounded-l-none"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customerEmail">E-mail *</Label>
+                <Label htmlFor="customerEmail" className="text-foreground">E-mail</Label>
                 <Input
                   id="customerEmail"
                   type="email"
+                  placeholder="seu@email.com"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="seu@email.com"
                 />
               </div>
             </div>
