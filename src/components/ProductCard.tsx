@@ -132,7 +132,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             
             {/* Credits display */}
             <div className="relative py-2 md:py-1">
-              <p className={`text-6xl md:text-5xl font-black font-display leading-none ${colors.textClass}`}>
+              <p className={`text-5xl sm:text-6xl md:text-5xl font-black font-display leading-none ${colors.textClass}`}>
                 <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent drop-shadow-lg`}>
                   {credits}
                 </span>
