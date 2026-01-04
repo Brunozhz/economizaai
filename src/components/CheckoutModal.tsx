@@ -61,7 +61,12 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
   const formatPhone = (value: string) => {
     // Remove tudo que não for número
-    const numbers = value.replace(/\D/g, '');
+    let numbers = value.replace(/\D/g, '');
+    
+    // Remove o 55 do início se o usuário digitar (já está fixo)
+    if (numbers.startsWith('55')) {
+      numbers = numbers.slice(2);
+    }
     
     // Limitar a 11 dígitos (DDD + 9 dígitos)
     const limited = numbers.slice(0, 11);
@@ -114,7 +119,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   
   // Get effective email and phone (from profile if logged in, otherwise from form)
   const getEffectiveEmail = () => isLoggedIn && profile?.email ? profile.email : email;
-  const getEffectivePhone = () => isLoggedIn && profile?.phone ? profile.phone : phone;
+  const getEffectivePhone = () => {
+    const phoneValue = isLoggedIn && profile?.phone ? profile.phone : phone;
+    const phoneNumbers = phoneValue.replace(/\D/g, '');
+    // Add 55 prefix if not already present
+    return phoneNumbers.startsWith('55') ? phoneNumbers : `55${phoneNumbers}`;
+  };
+  
 
   const handleSubmitForm = () => {
     if (validateForm()) {
@@ -794,14 +805,19 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-foreground">Telefone (WhatsApp)</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="(11) 99999-9999"
-                      value={phone}
-                      onChange={handlePhoneChange}
-                      className={phoneError ? 'border-destructive' : ''}
-                    />
+                    <div className="flex">
+                      <div className="flex items-center justify-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-muted-foreground text-sm font-medium">
+                        +55
+                      </div>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="(11) 99999-9999"
+                        value={phone}
+                        onChange={handlePhoneChange}
+                        className={`rounded-l-none ${phoneError ? 'border-destructive' : ''}`}
+                      />
+                    </div>
                     {phoneError && (
                       <p className="text-xs text-destructive">{phoneError}</p>
                     )}
