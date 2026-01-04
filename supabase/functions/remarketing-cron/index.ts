@@ -135,12 +135,41 @@ Bora finalizar isso juntos?`
   }
 ];
 
+// Helper function to verify authorization
+function verifyAuth(req: Request): { authorized: boolean; error?: string; status?: number } {
+  const authHeader = req.headers.get('Authorization');
+  
+  if (!authHeader) {
+    return { authorized: false, error: 'Unauthorized - No authorization header', status: 401 };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  // Only allow service role key for cron jobs
+  if (token !== serviceRoleKey) {
+    return { authorized: false, error: 'Unauthorized - Invalid credentials', status: 401 };
+  }
+
+  return { authorized: true };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Verify authorization - only service role can trigger this
+    const authResult = verifyAuth(req);
+    if (!authResult.authorized) {
+      console.error("Auth failed:", authResult.error);
+      return new Response(
+        JSON.stringify({ error: authResult.error }),
+        { status: authResult.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
