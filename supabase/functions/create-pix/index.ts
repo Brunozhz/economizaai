@@ -20,7 +20,12 @@ async function sendWebhookToN8N(data: {
   status: string;
   qrCode: string;
 }) {
-  const webhookUrl = 'https://n8n.infinityunlocker.com.br/webhook-test/pix-gerado';
+  const webhookUrl = Deno.env.get('N8N_WEBHOOK_PIX_GERADO');
+  
+  if (!webhookUrl) {
+    console.log('N8N_WEBHOOK_PIX_GERADO not configured, skipping webhook');
+    return { success: false, error: 'Webhook URL not configured' };
+  }
   
   try {
     console.log('Sending webhook to n8n:', webhookUrl);
