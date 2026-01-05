@@ -134,20 +134,42 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             }}
           />
           
-          <div className="relative text-center space-y-3 md:space-y-3 z-10">
-            {/* Title */}
-            <h3 className={`text-lg md:text-base font-bold tracking-wider uppercase ${colors.textClass} drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]`}>{name}</h3>
+          <div className="relative text-center space-y-2 z-10">
+            {/* Title com fundo semi-transparente */}
+            <div className="inline-block px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/10">
+              <h3 className={`text-base md:text-sm font-extrabold tracking-[0.15em] uppercase text-white`}
+                style={{
+                  textShadow: `0 0 20px ${colors.primary}, 0 2px 4px rgba(0,0,0,0.8)`
+                }}
+              >
+                {name}
+              </h3>
+            </div>
             
-            {/* Credits display */}
-            <div className="relative py-2 md:py-1">
-              <p className={`text-6xl md:text-5xl font-black font-display leading-none ${colors.textClass}`}>
-                <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]`}>
-                  {credits}
-                </span>
+            {/* Credits display - maior destaque */}
+            <div className="relative py-3 md:py-2">
+              <p 
+                className="text-7xl md:text-6xl font-black font-display leading-none text-white"
+                style={{
+                  textShadow: `0 0 40px ${colors.primary}, 0 0 80px ${colors.glow}, 0 4px 8px rgba(0,0,0,0.9)`,
+                  WebkitTextStroke: `1px ${colors.primary}`,
+                }}
+              >
+                {credits}
               </p>
             </div>
             
-            <p className="text-sm md:text-[11px] font-bold text-white/90 uppercase tracking-[0.2em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Créditos</p>
+            {/* Label Créditos com estilo */}
+            <div className="inline-block px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">
+              <p 
+                className="text-xs md:text-[10px] font-bold uppercase tracking-[0.25em] text-white/95"
+                style={{
+                  textShadow: `0 0 10px ${colors.primary}, 0 1px 2px rgba(0,0,0,0.8)`
+                }}
+              >
+                Créditos
+              </p>
+            </div>
           </div>
         </div>
 
