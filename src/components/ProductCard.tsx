@@ -102,17 +102,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
       )}
       
       {/* Card content */}
-      <div 
-        className={`relative rounded-2xl overflow-hidden ${isElite ? 'm-[2px]' : ''}`}
-        style={{
-          backgroundImage: `url(${cardBackground})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/75 backdrop-blur-[1px]" />
-        
+      <div className={`relative bg-card rounded-2xl overflow-hidden ${isElite ? 'm-[2px]' : ''}`}>
         {/* Popular Badge - Elite only */}
         {popular && (
           <div className="absolute top-0 left-0 right-0 z-20">
@@ -124,38 +114,45 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
           </div>
         )}
 
-        {/* Product Preview */}
-        <div className={`relative px-5 py-8 md:py-6 flex items-center justify-center overflow-hidden z-10 ${popular ? 'pt-16 md:pt-14' : ''}`}
+        {/* Product Preview - COM IMAGEM DE FUNDO */}
+        <div 
+          className={`relative px-5 py-8 md:py-6 flex items-center justify-center overflow-hidden ${popular ? 'pt-16 md:pt-14' : ''}`}
           style={{
-            background: `radial-gradient(ellipse at top, ${colors.glow} 0%, transparent 65%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)`
+            backgroundImage: `url(${cardBackground})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         >
-          {/* Subtle background glow */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full blur-3xl opacity-30`}
-              style={{ backgroundColor: colors.primary }}
-            />
-          </div>
+          {/* Overlay escuro para legibilidade */}
+          <div className="absolute inset-0 bg-black/50" />
+          
+          {/* Glow do tier por cima */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(ellipse at center, ${colors.glow} 0%, transparent 70%)`
+            }}
+          />
           
           <div className="relative text-center space-y-3 md:space-y-3 z-10">
             {/* Title */}
-            <h3 className={`text-lg md:text-base font-bold tracking-wider uppercase ${colors.textClass} drop-shadow-sm`}>{name}</h3>
+            <h3 className={`text-lg md:text-base font-bold tracking-wider uppercase ${colors.textClass} drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]`}>{name}</h3>
             
             {/* Credits display */}
             <div className="relative py-2 md:py-1">
               <p className={`text-6xl md:text-5xl font-black font-display leading-none ${colors.textClass}`}>
-                <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent drop-shadow-lg`}>
+                <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]`}>
                   {credits}
                 </span>
               </p>
             </div>
             
-            <p className="text-sm md:text-[11px] font-bold text-muted-foreground/80 uppercase tracking-[0.2em]">Créditos</p>
+            <p className="text-sm md:text-[11px] font-bold text-white/90 uppercase tracking-[0.2em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Créditos</p>
           </div>
         </div>
 
         {/* Product Info */}
-        <div className="relative px-5 md:px-4 py-6 md:py-5 space-y-5 md:space-y-4 z-10">
+        <div className="relative px-5 md:px-4 py-6 md:py-5 space-y-5 md:space-y-4 bg-gradient-to-b from-card via-card to-background/90">
           {/* Duration & Usage */}
           <div className={`p-4 md:p-3 rounded-xl border text-sm md:text-xs ${
             isElite ? 'bg-yellow-500/8 border-yellow-500/25' :
