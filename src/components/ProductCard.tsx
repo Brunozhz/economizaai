@@ -133,6 +133,13 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
               background: `radial-gradient(ellipse at center, ${colors.glow} 0%, transparent 70%)`
             }}
           />
+
+          {/* Lovable watermark */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
+            <p className="text-[10px] font-medium tracking-widest uppercase text-white/40">
+              Lovable
+            </p>
+          </div>
           
           <div className="relative text-center space-y-2 z-10">
             {/* Title com fundo semi-transparente */}
