@@ -327,10 +327,10 @@
   /* Mesh gradient background */
   .mesh-gradient {
     background: 
-      radial-gradient(at 20% 20%, hsl(145, 80%, 45%, 0.12) 0%, transparent 50%),
-      radial-gradient(at 80% 20%, hsl(160, 70%, 40%, 0.1) 0%, transparent 50%),
-      radial-gradient(at 50% 80%, hsl(150, 60%, 35%, 0.08) 0%, transparent 50%),
-      hsl(150, 10%, 4%);
+      radial-gradient(at 20% 20%, hsl(280, 70%, 50%, 0.12) 0%, transparent 50%),
+      radial-gradient(at 80% 20%, hsl(25, 95%, 55%, 0.1) 0%, transparent 50%),
+      radial-gradient(at 50% 80%, hsl(330, 85%, 55%, 0.08) 0%, transparent 50%),
+      hsl(240, 25%, 8%);
   }
 
   /* Noise texture overlay */
@@ -349,12 +349,16 @@
   }
 
   /* Glow orbs */
-  .orb-green {
-    background: radial-gradient(circle, hsl(145, 80%, 45%, 0.4) 0%, transparent 70%);
+  .orb-purple {
+    background: radial-gradient(circle, hsl(280, 70%, 50%, 0.4) 0%, transparent 70%);
   }
 
-  .orb-emerald {
-    background: radial-gradient(circle, hsl(160, 85%, 40%, 0.4) 0%, transparent 70%);
+  .orb-pink {
+    background: radial-gradient(circle, hsl(330, 85%, 55%, 0.4) 0%, transparent 70%);
+  }
+
+  .orb-orange {
+    background: radial-gradient(circle, hsl(25, 95%, 55%, 0.4) 0%, transparent 70%);
   }
 
   /* Elite card animated border */
