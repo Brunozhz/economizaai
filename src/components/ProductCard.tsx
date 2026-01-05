@@ -1,5 +1,6 @@
 import { ExternalLink, Check, Zap, Crown, Clock, Target, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import cardBackground from "@/assets/card-background.png";
 
 interface ProductCardProps {
   name: string;
@@ -101,7 +102,17 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
       )}
       
       {/* Card content */}
-      <div className={`relative bg-card rounded-2xl overflow-hidden ${isElite ? 'm-[2px]' : ''}`}>
+      <div 
+        className={`relative rounded-2xl overflow-hidden ${isElite ? 'm-[2px]' : ''}`}
+        style={{
+          backgroundImage: `url(${cardBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/75 backdrop-blur-[1px]" />
+        
         {/* Popular Badge - Elite only */}
         {popular && (
           <div className="absolute top-0 left-0 right-0 z-20">
@@ -114,7 +125,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         )}
 
         {/* Product Preview */}
-        <div className={`relative px-5 py-8 md:py-6 flex items-center justify-center overflow-hidden ${popular ? 'pt-16 md:pt-14' : ''}`}
+        <div className={`relative px-5 py-8 md:py-6 flex items-center justify-center overflow-hidden z-10 ${popular ? 'pt-16 md:pt-14' : ''}`}
           style={{
             background: `radial-gradient(ellipse at top, ${colors.glow} 0%, transparent 65%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)`
           }}
@@ -144,7 +155,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         </div>
 
         {/* Product Info */}
-        <div className="relative px-5 md:px-4 py-6 md:py-5 space-y-5 md:space-y-4 bg-gradient-to-b from-card via-card to-background/90">
+        <div className="relative px-5 md:px-4 py-6 md:py-5 space-y-5 md:space-y-4 z-10">
           {/* Duration & Usage */}
           <div className={`p-4 md:p-3 rounded-xl border text-sm md:text-xs ${
             isElite ? 'bg-yellow-500/8 border-yellow-500/25' :
