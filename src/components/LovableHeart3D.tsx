@@ -16,7 +16,7 @@ const LovableHeart3D = ({ className = "" }: { className?: string }) => {
         viewBox="0 0 100 100" 
         className="relative z-10 w-full h-full drop-shadow-2xl"
         style={{
-          transform: 'rotate(-25deg) rotateY(-15deg) rotateX(10deg)',
+          transform: 'rotate(25deg) rotateY(15deg) rotateX(10deg)',
           transformStyle: 'preserve-3d',
           filter: 'drop-shadow(0 4px 12px rgba(139,92,246,0.5)) drop-shadow(0 8px 24px rgba(236,72,153,0.3))'
         }}
