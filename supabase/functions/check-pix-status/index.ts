@@ -113,6 +113,7 @@ serve(async (req) => {
       userId,
       couponCode,
       isRecovery,
+      simulatePaid, // 🧪 Para testes: simula pagamento como pago
     } = await req.json();
     
     console.log('Checking PIX status for:', pixId);
@@ -135,9 +136,12 @@ serve(async (req) => {
       console.error('PushinPay error:', data);
       throw new Error(data.message || 'Erro ao consultar PIX');
     }
+    // 🧪 Se simulatePaid=true, força status como 'paid' para testes
+    const effectiveStatus = simulatePaid ? 'paid' : data.status;
+    console.log('Effective status:', effectiveStatus, '(simulatePaid:', simulatePaid, ')');
 
     // 🔔 When payment is approved: send push notification to admins AND webhook to n8n
-    if (data.status === 'paid' || data.status === 'approved' || data.status === 'completed') {
+    if (effectiveStatus === 'paid' || effectiveStatus === 'approved' || effectiveStatus === 'completed') {
       const formattedValue = value 
         ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value / 100)
         : `R$ ${(data.value / 100).toFixed(2)}`;
@@ -180,11 +184,11 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       pixId: data.id,
-      status: data.status,
+      status: effectiveStatus, // Retorna status efetivo (pode ser simulado)
       value: data.value,
-      payerName: data.payer_name,
+      payerName: data.payer_name || (simulatePaid ? customerName : null),
       payerDocument: data.payer_national_registration,
-      endToEndId: data.end_to_end_id,
+      endToEndId: data.end_to_end_id || (simulatePaid ? `E${Date.now()}` : null),
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
