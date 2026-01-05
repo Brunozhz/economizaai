@@ -16,8 +16,7 @@ function generateCouponCode(discount: number, dayNumber: number): string {
 
 // Get base URL for recovery links
 function getBaseUrl(): string {
-  // Production URL - update this to your actual domain
-  return Deno.env.get('APP_BASE_URL') || 'https://preview--crediario-infinity.lovable.app';
+  return Deno.env.get('APP_BASE_URL') || 'https://economizaai.lovable.app';
 }
 
 // Generate recovery link with coupon
