@@ -122,29 +122,9 @@ export const useDisableInspect = () => {
       }
     };
 
-    // Detectar DevTools aberto via diferença de tamanho
-    const detectDevTools = () => {
-      const widthThreshold = window.outerWidth - window.innerWidth > 160;
-      const heightThreshold = window.outerHeight - window.innerHeight > 160;
-      
-      if (widthThreshold || heightThreshold) {
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-size:24px;text-align:center;padding:20px;">Ferramentas de desenvolvedor não são permitidas.</div>';
-      }
-    };
-
-    // Bloquear arrastar elementos
-    const handleDragStart = (e: DragEvent) => {
-      e.preventDefault();
-      return false;
-    };
-
     // Adicionar listeners com capture para pegar antes de extensões
     document.addEventListener("contextmenu", handleContextMenu, true);
     document.addEventListener("keydown", handleKeyDown, true);
-    document.addEventListener("dragstart", handleDragStart, true);
-    
-    // Verificar periodicamente
-    const devToolsInterval = setInterval(detectDevTools, 1000);
 
     // Sobrescrever console para dificultar debug
     const noop = () => {};
@@ -157,8 +137,6 @@ export const useDisableInspect = () => {
     return () => {
       document.removeEventListener("contextmenu", handleContextMenu, true);
       document.removeEventListener("keydown", handleKeyDown, true);
-      document.removeEventListener("dragstart", handleDragStart, true);
-      clearInterval(devToolsInterval);
       // Restaurar console
       Object.assign(console, originalConsole);
     };
