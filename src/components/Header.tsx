@@ -1,5 +1,5 @@
 import { Search, Menu, Download, X, Share, Plus, Monitor, Smartphone, User, ShoppingBag, MessageCircle, Settings } from "lucide-react";
-import lovableLogo from "@/assets/lovable-logo-transparent.png";
+import lovableHeart from "@/assets/lovable-heart-icon.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -218,14 +218,11 @@ const Header = () => {
                 {/* Top shine */}
                 <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent rounded-t-xl" />
                 
-                {/* Lovable logo */}
+                {/* Lovable heart icon */}
                 <img 
-                  src={lovableLogo}
+                  src={lovableHeart}
                   alt="Economiza.IA"
-                  className="h-8 w-auto relative z-10 transition-all duration-500 group-hover:scale-110"
-                  style={{
-                    filter: 'drop-shadow(0 0 8px rgba(244,114,182,0.6))'
-                  }}
+                  className="h-10 w-10 relative z-10 transition-all duration-500 group-hover:scale-110 object-contain"
                 />
               </div>
               
