@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { useSalesNotificationListener } from "@/hooks/useSalesNotificationListener";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
+import { useDisableInspect } from "@/hooks/useDisableInspect";
 import Index from "./pages/Index";
 import Install from "./pages/Install";
 import Auth from "./pages/Auth";
@@ -34,6 +35,7 @@ const PageTracker = ({ children }: { children: React.ReactNode }) => {
   usePageTracking();
   useSalesNotificationListener();
   useAutoRefresh();
+  useDisableInspect();
   return <>{children}</>;
 };
 
