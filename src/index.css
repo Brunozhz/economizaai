@@ -294,7 +294,7 @@
 
   .text-gradient-animated {
     @apply bg-clip-text text-transparent animate-gradient;
-    background-image: linear-gradient(90deg, hsl(145, 85%, 50%), hsl(160, 85%, 45%), hsl(170, 80%, 40%), hsl(145, 85%, 50%));
+    background-image: linear-gradient(90deg, hsl(280, 85%, 65%), hsl(330, 90%, 60%), hsl(25, 100%, 55%), hsl(330, 90%, 60%), hsl(280, 85%, 65%));
     background-size: 300% auto;
   }
 
