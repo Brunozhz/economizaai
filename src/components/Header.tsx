@@ -158,21 +158,21 @@ const Header = () => {
               {/* Outer aurora glow */}
               <div className="absolute h-16 w-16 rounded-full opacity-40 group-hover:opacity-70 transition-all duration-700 blur-2xl"
                 style={{
-                  background: 'radial-gradient(circle, rgba(34,197,94,0.8) 0%, rgba(6,182,212,0.6) 40%, rgba(139,92,246,0.3) 70%, transparent 100%)',
+                  background: 'radial-gradient(circle, rgba(236,72,153,0.8) 0%, rgba(168,85,247,0.6) 40%, rgba(249,115,22,0.3) 70%, transparent 100%)',
                   animation: 'pulse 3s ease-in-out infinite'
                 }}
               />
               
               {/* Orbiting particles */}
               <div className="absolute h-14 w-14 animate-[spin_6s_linear_infinite]">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/80" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/80" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-pink-400 shadow-lg shadow-pink-400/80" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-orange-400 shadow-lg shadow-orange-400/80" />
               </div>
               
               {/* Counter-rotating ring */}
               <div className="absolute h-12 w-12 rounded-full animate-[spin_4s_linear_infinite_reverse]"
                 style={{
-                  background: 'conic-gradient(from 180deg, transparent 0%, rgba(34,197,94,0.5) 25%, transparent 50%, rgba(6,182,212,0.5) 75%, transparent 100%)',
+                  background: 'conic-gradient(from 180deg, transparent 0%, rgba(236,72,153,0.5) 25%, transparent 50%, rgba(249,115,22,0.5) 75%, transparent 100%)',
                   filter: 'blur(1px)'
                 }}
               />
@@ -189,9 +189,9 @@ const Header = () => {
                   />
                   <defs>
                     <linearGradient id="hexGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#22c55e" />
-                      <stop offset="50%" stopColor="#06b6d4" />
-                      <stop offset="100%" stopColor="#22c55e" />
+                      <stop offset="0%" stopColor="#ec4899" />
+                      <stop offset="50%" stopColor="#a855f7" />
+                      <stop offset="100%" stopColor="#f97316" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -201,14 +201,14 @@ const Header = () => {
               <div className="relative h-10 w-10 rounded-xl flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-500"
                 style={{
                   background: 'linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,41,59,0.8) 50%, rgba(15,23,42,0.9) 100%)',
-                  boxShadow: '0 8px 32px rgba(34,197,94,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.3)',
-                  border: '1px solid rgba(34,197,94,0.3)'
+                  boxShadow: '0 8px 32px rgba(236,72,153,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(236,72,153,0.3)'
                 }}
               >
                 {/* Animated gradient background */}
                 <div className="absolute inset-0 opacity-30"
                   style={{
-                    background: 'linear-gradient(45deg, transparent 0%, rgba(34,197,94,0.4) 50%, transparent 100%)',
+                    background: 'linear-gradient(45deg, transparent 0%, rgba(236,72,153,0.4) 50%, transparent 100%)',
                     backgroundSize: '200% 200%',
                     animation: 'shimmer 3s ease-in-out infinite'
                   }}
@@ -222,16 +222,16 @@ const Header = () => {
                   className="h-5 w-5 relative z-10 transition-all duration-500 group-hover:scale-110"
                   strokeWidth={1.5}
                   style={{
-                    color: '#4ade80',
-                    filter: 'drop-shadow(0 0 4px rgba(74,222,128,0.8)) drop-shadow(0 0 12px rgba(34,197,94,0.6)) drop-shadow(0 0 20px rgba(6,182,212,0.4))'
+                    color: '#f472b6',
+                    filter: 'drop-shadow(0 0 4px rgba(244,114,182,0.8)) drop-shadow(0 0 12px rgba(236,72,153,0.6)) drop-shadow(0 0 20px rgba(168,85,247,0.4))'
                   }}
                 />
               </div>
               
               {/* Status indicator */}
               <div className="absolute -top-1 -right-1 flex items-center justify-center">
-                <div className="h-3 w-3 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-pulse shadow-lg shadow-emerald-400/60" />
-                <div className="absolute h-3 w-3 rounded-full bg-emerald-400/50 animate-ping" />
+                <div className="h-3 w-3 rounded-full bg-gradient-to-r from-pink-400 to-orange-400 animate-pulse shadow-lg shadow-pink-400/60" />
+                <div className="absolute h-3 w-3 rounded-full bg-pink-400/50 animate-ping" />
               </div>
             </div>
             <span className="font-display font-bold text-xl text-foreground">
@@ -262,7 +262,7 @@ const Header = () => {
               <Button 
                 size="sm"
                 onClick={handleInstall}
-                className="h-9 px-3 bg-gradient-to-r from-cyan-500 to-primary hover:from-cyan-600 hover:to-primary/90 text-white font-semibold text-xs rounded-lg shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
+                className="h-9 px-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold text-xs rounded-lg shadow-lg shadow-pink-500/20 transition-all duration-300 hover:scale-[1.02]"
               >
                 <Download className="h-3.5 w-3.5 mr-1.5" />
                 Baixar App
@@ -348,7 +348,7 @@ const Header = () => {
             </button>
 
             <div className="text-center mb-6">
-              <div className="h-14 w-14 mx-auto rounded-2xl bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-primary/30 mb-4">
+              <div className="h-14 w-14 mx-auto rounded-2xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center shadow-lg shadow-pink-500/30 mb-4">
                 {instructions.icon}
               </div>
               <h3 className="text-lg font-bold text-foreground mb-1">
@@ -371,7 +371,7 @@ const Header = () => {
 
             <Button 
               onClick={() => setShowInstallModal(false)}
-              className="w-full h-10 bg-gradient-to-r from-primary to-emerald-600 text-white font-semibold rounded-xl"
+              className="w-full h-10 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-semibold rounded-xl"
             >
               Entendi
             </Button>
