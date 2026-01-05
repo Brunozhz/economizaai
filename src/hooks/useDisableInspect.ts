@@ -1,8 +1,47 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useDisableInspect = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  // Verificar se usuário é admin
   useEffect(() => {
-    // Desabilitar menu de contexto (clique direito) - múltiplos handlers
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setIsAdmin(false);
+        setChecked(true);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      setIsAdmin(!!data);
+      setChecked(true);
+    };
+
+    checkAdmin();
+
+    // Escutar mudanças de auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAdmin();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Se ainda não verificou ou é admin, não bloqueia
+    if (!checked || isAdmin) return;
+
+    // Desabilitar menu de contexto (clique direito)
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -89,18 +128,7 @@ export const useDisableInspect = () => {
       const heightThreshold = window.outerHeight - window.innerHeight > 160;
       
       if (widthThreshold || heightThreshold) {
-        // DevTools detectado - pode redirecionar ou mostrar aviso
         document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-size:24px;text-align:center;padding:20px;">Ferramentas de desenvolvedor não são permitidas.</div>';
-      }
-    };
-
-    // Detectar debugger via timing
-    const detectDebugger = () => {
-      const start = performance.now();
-      // debugger será pausado aqui se DevTools estiver aberto
-      const end = performance.now();
-      if (end - start > 100) {
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-size:24px;text-align:center;padding:20px;">Acesso bloqueado.</div>';
       }
     };
 
@@ -117,7 +145,6 @@ export const useDisableInspect = () => {
     
     // Verificar periodicamente
     const devToolsInterval = setInterval(detectDevTools, 1000);
-    const debuggerInterval = setInterval(detectDebugger, 2000);
 
     // Sobrescrever console para dificultar debug
     const noop = () => {};
@@ -132,9 +159,8 @@ export const useDisableInspect = () => {
       document.removeEventListener("keydown", handleKeyDown, true);
       document.removeEventListener("dragstart", handleDragStart, true);
       clearInterval(devToolsInterval);
-      clearInterval(debuggerInterval);
       // Restaurar console
       Object.assign(console, originalConsole);
     };
-  }, []);
+  }, [checked, isAdmin]);
 };
