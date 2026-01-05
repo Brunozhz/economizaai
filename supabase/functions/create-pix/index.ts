@@ -59,18 +59,18 @@ async function sendWebhookToN8N(data: {
   const coupon4Days = generateCouponCode(25, 4);
   const coupon5Days = generateCouponCode(30, 5);
   
-  // Calculate discounted values
-  const valorDesconto1 = data.value * 0.10;
-  const valorDesconto2 = data.value * 0.15;
-  const valorDesconto3 = data.value * 0.20;
-  const valorDesconto4 = data.value * 0.25;
-  const valorDesconto5 = data.value * 0.30;
+  // Calculate discounted values (rounded to 2 decimal places)
+  const valorDesconto1 = Number((data.value * 0.10).toFixed(2));
+  const valorDesconto2 = Number((data.value * 0.15).toFixed(2));
+  const valorDesconto3 = Number((data.value * 0.20).toFixed(2));
+  const valorDesconto4 = Number((data.value * 0.25).toFixed(2));
+  const valorDesconto5 = Number((data.value * 0.30).toFixed(2));
   
-  const valorFinal1 = data.value - valorDesconto1;
-  const valorFinal2 = data.value - valorDesconto2;
-  const valorFinal3 = data.value - valorDesconto3;
-  const valorFinal4 = data.value - valorDesconto4;
-  const valorFinal5 = data.value - valorDesconto5;
+  const valorFinal1 = Number((data.value - valorDesconto1).toFixed(2));
+  const valorFinal2 = Number((data.value - valorDesconto2).toFixed(2));
+  const valorFinal3 = Number((data.value - valorDesconto3).toFixed(2));
+  const valorFinal4 = Number((data.value - valorDesconto4).toFixed(2));
+  const valorFinal5 = Number((data.value - valorDesconto5).toFixed(2));
   
   // Generate recovery links
   const link1Day = generateRecoveryLink(data.productName, coupon1Day, 10);
