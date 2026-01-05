@@ -60,31 +60,28 @@ const HeroSection = () => {
           </div>
           
           {/* Main headline with staggered animation */}
-          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight">
-            <span 
-              className="text-foreground block mb-3 opacity-0 animate-[fade-in-up_0.8s_ease-out_0.2s_forwards]"
-            >
-              Créditos Lovable
-            </span>
-            <span 
-              className="text-muted-foreground/80 block text-3xl md:text-5xl lg:text-6xl font-bold mb-4 opacity-0 animate-[fade-in-up_0.8s_ease-out_0.5s_forwards]"
-            >
+          <div className="space-y-6 md:space-y-8">
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight opacity-0 animate-[fade-in-up_0.8s_ease-out_0.2s_forwards]">
+              <span className="text-foreground">Créditos Lovable</span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground/70 font-medium opacity-0 animate-[fade-in-up_0.8s_ease-out_0.4s_forwards]">
               com o
-            </span>
-            <span 
-              className="relative inline-block opacity-0 animate-[fade-in-up_0.8s_ease-out_0.8s_forwards]"
-            >
-              <span className="text-gradient-animated text-5xl md:text-7xl lg:text-8xl font-black">Melhor Preço</span>
-              <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/30 via-pink-500/20 to-orange-500/30 blur-3xl rounded-full opacity-60 -z-10 animate-pulse" />
-            </span>
-            <span 
-              className="block mt-4 opacity-0 animate-[fade-in-up_0.8s_ease-out_1.1s_forwards]"
-            >
-              <span className="text-3xl md:text-5xl lg:text-6xl font-bold text-muted-foreground/80">do </span>
-              <span className="text-gradient-animated text-4xl md:text-6xl lg:text-7xl font-black">Brasil</span>
-              <span className="text-primary text-4xl md:text-6xl lg:text-7xl font-black">.</span>
-            </span>
-          </h1>
+            </p>
+            
+            <div className="relative inline-block opacity-0 animate-[fade-in-up_0.8s_ease-out_0.6s_forwards]">
+              <span className="font-display text-5xl md:text-6xl lg:text-7xl font-black text-gradient-animated tracking-tight">
+                Melhor Preço
+              </span>
+              <div className="absolute -inset-6 bg-gradient-to-r from-purple-500/20 via-pink-500/15 to-orange-500/20 blur-3xl rounded-full opacity-50 -z-10 animate-pulse" />
+            </div>
+            
+            <p className="opacity-0 animate-[fade-in-up_0.8s_ease-out_0.8s_forwards]">
+              <span className="text-xl md:text-2xl lg:text-3xl text-muted-foreground/70 font-medium">do </span>
+              <span className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-gradient-animated">Brasil</span>
+              <span className="text-primary text-4xl md:text-5xl lg:text-6xl font-black">.</span>
+            </p>
+          </div>
           
           {/* Subheadlines with better hierarchy */}
           <div className="space-y-4 max-w-3xl">
