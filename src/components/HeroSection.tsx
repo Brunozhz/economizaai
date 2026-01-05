@@ -50,7 +50,7 @@ const HeroSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col items-center text-center max-w-5xl mx-auto space-y-10 animate-fade-in">
           {/* Premium Badge */}
-          <div className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass glass-border text-primary text-sm font-semibold cursor-default hover:border-primary/50 transition-all duration-500 animate-shimmer" style={{
+          <div className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass glass-border text-primary text-sm font-semibold cursor-default hover:border-primary/50 transition-all duration-500 opacity-0 animate-[fade-in-up_0.8s_ease-out_0s_forwards]" style={{
             backgroundImage: 'linear-gradient(90deg, transparent, hsl(330, 85%, 55%, 0.15), transparent)',
             backgroundSize: '200% 100%'
           }}>
@@ -59,15 +59,27 @@ const HeroSection = () => {
             <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform" />
           </div>
           
-          {/* Main headline with enhanced typography */}
+          {/* Main headline with staggered animation */}
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight">
-            <span className="text-foreground block mb-3">Créditos Lovable</span>
-            <span className="text-muted-foreground/80 block text-3xl md:text-5xl lg:text-6xl font-bold mb-4">com o</span>
-            <span className="relative inline-block">
-              <span className="text-gradient-animated text-5xl md:text-7xl lg:text-8xl font-black">Melhor Preço</span>
-              <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/30 via-pink-500/20 to-orange-500/30 blur-3xl rounded-full opacity-60 -z-10" />
+            <span 
+              className="text-foreground block mb-3 opacity-0 animate-[fade-in-up_0.8s_ease-out_0.2s_forwards]"
+            >
+              Créditos Lovable
             </span>
-            <span className="block mt-4">
+            <span 
+              className="text-muted-foreground/80 block text-3xl md:text-5xl lg:text-6xl font-bold mb-4 opacity-0 animate-[fade-in-up_0.8s_ease-out_0.5s_forwards]"
+            >
+              com o
+            </span>
+            <span 
+              className="relative inline-block opacity-0 animate-[fade-in-up_0.8s_ease-out_0.8s_forwards]"
+            >
+              <span className="text-gradient-animated text-5xl md:text-7xl lg:text-8xl font-black">Melhor Preço</span>
+              <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/30 via-pink-500/20 to-orange-500/30 blur-3xl rounded-full opacity-60 -z-10 animate-pulse" />
+            </span>
+            <span 
+              className="block mt-4 opacity-0 animate-[fade-in-up_0.8s_ease-out_1.1s_forwards]"
+            >
               <span className="text-3xl md:text-5xl lg:text-6xl font-bold text-muted-foreground/80">do </span>
               <span className="text-gradient-animated text-4xl md:text-6xl lg:text-7xl font-black">Brasil</span>
               <span className="text-primary text-4xl md:text-6xl lg:text-7xl font-black">.</span>
