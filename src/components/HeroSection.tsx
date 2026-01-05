@@ -60,14 +60,18 @@ const HeroSection = () => {
           </div>
           
           {/* Main headline with enhanced typography */}
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] tracking-tight">
-            <span className="text-foreground block mb-2">Créditos Lovable com o </span>
+          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight">
+            <span className="text-foreground block mb-3">Créditos Lovable</span>
+            <span className="text-muted-foreground/80 block text-3xl md:text-5xl lg:text-6xl font-bold mb-4">com o</span>
             <span className="relative inline-block">
-              <span className="text-gradient-animated text-6xl md:text-8xl lg:text-9xl">Melhor Preço</span>
-              <div className="absolute -inset-2 bg-primary/20 blur-2xl rounded-full opacity-50 -z-10" />
+              <span className="text-gradient-animated text-5xl md:text-7xl lg:text-8xl font-black">Melhor Preço</span>
+              <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/30 via-pink-500/20 to-orange-500/30 blur-3xl rounded-full opacity-60 -z-10" />
             </span>
-            <br />
-            <span className="text-primary drop-shadow-[0_0_40px_rgba(236,72,153,0.6)] mt-2 inline-block">do Brasil.</span>
+            <span className="block mt-4">
+              <span className="text-3xl md:text-5xl lg:text-6xl font-bold text-muted-foreground/80">do </span>
+              <span className="text-gradient-animated text-4xl md:text-6xl lg:text-7xl font-black">Brasil</span>
+              <span className="text-primary text-4xl md:text-6xl lg:text-7xl font-black">.</span>
+            </span>
           </h1>
           
           {/* Subheadlines with better hierarchy */}
