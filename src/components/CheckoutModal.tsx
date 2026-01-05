@@ -489,8 +489,23 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
     const checkStatus = async () => {
       try {
+        const effectiveEmailForPayment = isLoggedIn && profile?.email ? profile.email : email;
+        const effectivePhoneForPayment = isLoggedIn && profile?.phone ? profile.phone : phone;
+        const effectiveNameForPayment = isLoggedIn && profile?.name ? profile.name : customerName;
+        
         const { data, error } = await supabase.functions.invoke('check-pix-status', {
-          body: { pixId: pixData.pixId },
+          body: { 
+            pixId: pixData.pixId,
+            productName: product?.name,
+            productId: `credits-${product?.credits}`,
+            value: couponApplied ? Math.round(discountedPrice * 100) : Math.round((product?.discountPrice || 0) * 100),
+            customerName: effectiveNameForPayment,
+            customerEmail: effectiveEmailForPayment,
+            customerPhone: effectivePhoneForPayment.replace(/\D/g, ''),
+            userId: user?.id || null,
+            couponCode: appliedCouponCode || null,
+            isRecovery: isRecoveryMode,
+          },
         });
 
         if (error) throw error;
@@ -499,9 +514,6 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           setStatus('paid');
           
           const finalPrice = couponApplied ? discountedPrice : product?.discountPrice;
-          const effectiveEmailForPayment = isLoggedIn && profile?.email ? profile.email : email;
-          const effectivePhoneForPayment = isLoggedIn && profile?.phone ? profile.phone : phone;
-          const effectiveNameForPayment = profile?.name || '';
           
           // Fire Meta Pixel Purchase event
           if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -515,33 +527,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             console.log('Meta Pixel Purchase event fired:', finalPrice);
           }
           
-          // 🔔 Send payment confirmed webhook to n8n (success route)
-          try {
-            const webhookPayload = {
-              email: effectiveEmailForPayment,
-              whatsapp: effectivePhoneForPayment.replace(/\D/g, ''),
-              status: 'paid',
-              plano: product?.name,
-            };
-            
-            console.log('Sending payment confirmed webhook:', webhookPayload);
-            
-            const webhookResponse = await fetch('https://n8n.infinityunlocker.com.br/webhook/v1/pagamento-confirmado', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(webhookPayload),
-            });
-            
-            if (webhookResponse.ok) {
-              console.log('Payment confirmed webhook sent successfully');
-            } else {
-              console.error('Payment confirmed webhook failed:', webhookResponse.status);
-            }
-          } catch (webhookError) {
-            console.error('Error sending payment confirmed webhook:', webhookError);
-          }
+          // Webhook is now sent by the edge function, no need to send from frontend
           
           // Register coupon usage if a coupon was applied
           const effectiveEmailForCoupon = isLoggedIn && profile?.email ? profile.email : email;
