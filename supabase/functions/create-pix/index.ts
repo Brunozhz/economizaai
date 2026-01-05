@@ -7,6 +7,31 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Generate coupon code
+function generateCouponCode(discount: number, dayNumber: number): string {
+  const timestamp = Date.now().toString(36).slice(-4).toUpperCase();
+  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `VOLTA${discount}D${dayNumber}-${timestamp}${random}`;
+}
+
+// Get base URL for recovery links
+function getBaseUrl(): string {
+  // Production URL - update this to your actual domain
+  return Deno.env.get('APP_BASE_URL') || 'https://preview--crediario-infinity.lovable.app';
+}
+
+// Generate recovery link with coupon
+function generateRecoveryLink(productName: string, couponCode: string, discount: number): string {
+  const baseUrl = getBaseUrl();
+  const params = new URLSearchParams({
+    remarketing: 'true',
+    produto: productName,
+    cupom: couponCode,
+    desconto: discount.toString(),
+  });
+  return `${baseUrl}/?${params.toString()}`;
+}
+
 // Function to send webhook to n8n
 async function sendWebhookToN8N(data: {
   pixId: string;
@@ -19,7 +44,7 @@ async function sendWebhookToN8N(data: {
   userId?: string;
   status: string;
   qrCode: string;
-}) {
+}, supabaseUrl: string, supabaseKey: string) {
   const webhookUrl = Deno.env.get('N8N_WEBHOOK_PIX_GERADO');
   
   if (!webhookUrl) {
@@ -27,27 +52,128 @@ async function sendWebhookToN8N(data: {
     return { success: false, error: 'Webhook URL not configured' };
   }
   
+  // Generate 3 progressive coupons (10%, 20%, 30%)
+  const coupon1Day = generateCouponCode(10, 1);
+  const coupon2Days = generateCouponCode(20, 2);
+  const coupon3Days = generateCouponCode(30, 3);
+  
+  // Calculate discounted values
+  const valorDesconto1 = data.value * 0.10;
+  const valorDesconto2 = data.value * 0.20;
+  const valorDesconto3 = data.value * 0.30;
+  
+  const valorFinal1 = data.value - valorDesconto1;
+  const valorFinal2 = data.value - valorDesconto2;
+  const valorFinal3 = data.value - valorDesconto3;
+  
+  // Generate recovery links
+  const link1Day = generateRecoveryLink(data.productName, coupon1Day, 10);
+  const link2Days = generateRecoveryLink(data.productName, coupon2Days, 20);
+  const link3Days = generateRecoveryLink(data.productName, coupon3Days, 30);
+  
+  // Save coupons to database (valid for 1 day each, starting from their respective days)
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  const now = new Date();
+  
+  // Coupon 1: Available from day 1, expires day 2
+  const expires1Day = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // Expires in 2 days (valid on day 1)
+  // Coupon 2: Available from day 2, expires day 3  
+  const expires2Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // Expires in 3 days (valid on day 2)
+  // Coupon 3: Available from day 3, expires day 4
+  const expires3Days = new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000); // Expires in 4 days (valid on day 3)
+  
+  // Insert all 3 coupons into remarketing_coupons table
+  const couponsToInsert = [
+    {
+      email: data.customerEmail.toLowerCase().trim(),
+      product_name: data.productName,
+      product_price: data.value,
+      coupon_code: coupon1Day,
+      discount_percent: 10,
+      pix_id: data.pixId,
+      expires_at: expires1Day.toISOString(),
+    },
+    {
+      email: data.customerEmail.toLowerCase().trim(),
+      product_name: data.productName,
+      product_price: data.value,
+      coupon_code: coupon2Days,
+      discount_percent: 20,
+      pix_id: data.pixId,
+      expires_at: expires2Days.toISOString(),
+    },
+    {
+      email: data.customerEmail.toLowerCase().trim(),
+      product_name: data.productName,
+      product_price: data.value,
+      coupon_code: coupon3Days,
+      discount_percent: 30,
+      pix_id: data.pixId,
+      expires_at: expires3Days.toISOString(),
+    },
+  ];
+  
+  const { error: couponError } = await supabase
+    .from('remarketing_coupons')
+    .insert(couponsToInsert);
+    
+  if (couponError) {
+    console.error('Error saving remarketing coupons:', couponError);
+  } else {
+    console.log('Saved 3 remarketing coupons for', data.customerEmail);
+  }
+  
   try {
     console.log('Sending webhook to n8n:', webhookUrl);
+    
+    const webhookPayload = {
+      // Customer data
+      pix_id: data.pixId,
+      produto: data.productName,
+      produto_id: data.productId,
+      valor: data.value,
+      nome: data.customerName,
+      email: data.customerEmail,
+      whatsapp: data.customerPhone || '',
+      user_id: data.userId || '',
+      status: data.status,
+      qr_code: data.qrCode,
+      created_at: new Date().toISOString(),
+      
+      // Coupon 1 (10% - Day 1)
+      cupom_1_dia: coupon1Day,
+      desconto_1_dia: 10,
+      valor_desconto_1_dia: valorDesconto1,
+      valor_final_1_dia: valorFinal1,
+      link_cupom_1_dia: link1Day,
+      expira_1_dia: expires1Day.toISOString(),
+      
+      // Coupon 2 (20% - Day 2)
+      cupom_2_dias: coupon2Days,
+      desconto_2_dias: 20,
+      valor_desconto_2_dias: valorDesconto2,
+      valor_final_2_dias: valorFinal2,
+      link_cupom_2_dias: link2Days,
+      expira_2_dias: expires2Days.toISOString(),
+      
+      // Coupon 3 (30% - Day 3)
+      cupom_3_dias: coupon3Days,
+      desconto_3_dias: 30,
+      valor_desconto_3_dias: valorDesconto3,
+      valor_final_3_dias: valorFinal3,
+      link_cupom_3_dias: link3Days,
+      expira_3_dias: expires3Days.toISOString(),
+    };
+    
+    console.log('Webhook payload:', JSON.stringify(webhookPayload, null, 2));
     
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        pix_id: data.pixId,
-        produto: data.productName,
-        produto_id: data.productId,
-        valor: data.value,
-        nome: data.customerName,
-        email: data.customerEmail,
-        whatsapp: data.customerPhone || '',
-        user_id: data.userId || '',
-        status: data.status,
-        qr_code: data.qrCode,
-        created_at: new Date().toISOString(),
-      }),
+      body: JSON.stringify(webhookPayload),
     });
     
     console.log('Webhook response status:', response.status);
@@ -260,7 +386,7 @@ serve(async (req) => {
       EdgeRuntime.waitUntil(remarketingTask);
     }
 
-    // 🔗 Send webhook to n8n with all payment data
+    // 🔗 Send webhook to n8n with all payment data and coupons
     const webhookResult = await sendWebhookToN8N({
       pixId: data.id,
       productName,
@@ -272,7 +398,7 @@ serve(async (req) => {
       userId,
       status: data.status,
       qrCode: data.qr_code,
-    });
+    }, supabaseUrl, supabaseKey);
     
     console.log('Webhook to n8n result:', webhookResult);
 
