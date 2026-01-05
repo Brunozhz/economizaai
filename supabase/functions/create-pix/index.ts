@@ -19,16 +19,14 @@ function getBaseUrl(): string {
   return Deno.env.get('APP_BASE_URL') || 'https://economizaai.lovable.app';
 }
 
-// Generate recovery link with coupon and pix_id
-function generateRecoveryLink(productName: string, couponCode: string, discount: number, pixId: string, qrCode: string): string {
+// Generate recovery link with coupon
+function generateRecoveryLink(productName: string, couponCode: string, discount: number): string {
   const baseUrl = getBaseUrl();
   const params = new URLSearchParams({
     remarketing: 'true',
     produto: productName,
     cupom: couponCode,
     desconto: discount.toString(),
-    pix_id: pixId,
-    qr_code: qrCode,
   });
   return `${baseUrl}/?${params.toString()}`;
 }
@@ -73,12 +71,12 @@ async function sendWebhookToN8N(data: {
   const valorFinal4 = Number((data.value - valorDesconto4).toFixed(2));
   const valorFinal5 = Number((data.value - valorDesconto5).toFixed(2));
   
-  // Generate recovery links with pix_id and qr_code for cart recovery
-  const link1Day = generateRecoveryLink(data.productName, coupon1Day, 10, data.pixId, data.qrCode);
-  const link2Days = generateRecoveryLink(data.productName, coupon2Days, 15, data.pixId, data.qrCode);
-  const link3Days = generateRecoveryLink(data.productName, coupon3Days, 20, data.pixId, data.qrCode);
-  const link4Days = generateRecoveryLink(data.productName, coupon4Days, 25, data.pixId, data.qrCode);
-  const link5Days = generateRecoveryLink(data.productName, coupon5Days, 30, data.pixId, data.qrCode);
+  // Generate recovery links
+  const link1Day = generateRecoveryLink(data.productName, coupon1Day, 10);
+  const link2Days = generateRecoveryLink(data.productName, coupon2Days, 15);
+  const link3Days = generateRecoveryLink(data.productName, coupon3Days, 20);
+  const link4Days = generateRecoveryLink(data.productName, coupon4Days, 25);
+  const link5Days = generateRecoveryLink(data.productName, coupon5Days, 30);
   
   // Save coupons to database (valid for 1 day each, starting from their respective days)
   const supabase = createClient(supabaseUrl, supabaseKey);
@@ -331,9 +329,9 @@ serve(async (req) => {
       throw new Error('API key not configured');
     }
 
-    const { value, productName, productId, customerName, customerEmail, customerPhone, userId } = await req.json();
+    const { value, productName, productId, customerName, customerEmail, customerPhone, userId, isRecovery } = await req.json();
     
-    console.log('Creating PIX payment:', { value, productName, productId, customerName, customerEmail });
+    console.log('Creating PIX payment:', { value, productName, productId, customerName, customerEmail, isRecovery: !!isRecovery });
 
     // PushinPay has a limit of R$ 150.00
     if (value > 150) {
@@ -395,13 +393,18 @@ serve(async (req) => {
       currency: 'BRL',
     }).format(value);
 
+    const notificationType = isRecovery ? '🔄 PIX Recuperado!' : '💰 PIX Gerado!';
+    const notificationBody = isRecovery 
+      ? `${customerName || 'Cliente'} recuperou carrinho: ${formattedValue} para ${productName}`
+      : `${customerName || 'Cliente'} gerou um PIX de ${formattedValue} para ${productName}`;
+
     await notifyAdmins(
       supabaseUrl,
       supabaseKey,
-      '💰 PIX Gerado!',
-      `${customerName || 'Cliente'} gerou um PIX de ${formattedValue} para ${productName}`,
+      notificationType,
+      notificationBody,
       {
-        type: 'pix_generated',
+        type: isRecovery ? 'pix_recovered' : 'pix_generated',
         pixId: data.id,
         productName,
         value,
@@ -409,41 +412,44 @@ serve(async (req) => {
       }
     );
 
-    // 📩 Schedule remarketing after 2 minutes if payment not completed
-    // Using EdgeRuntime.waitUntil to run in background
-    const remarketingTask = scheduleRemarketing(
-      supabaseUrl,
-      supabaseKey,
-      data.id,
-      customerEmail,
-      customerName,
-      customerPhone,
-      productName,
-      value,
-      userId
-    );
+    // 📩 Schedule remarketing ONLY if not a recovery (avoid duplicate remarketing)
+    if (!isRecovery) {
+      const remarketingTask = scheduleRemarketing(
+        supabaseUrl,
+        supabaseKey,
+        data.id,
+        customerEmail,
+        customerName,
+        customerPhone,
+        productName,
+        value,
+        userId
+      );
 
-    // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
-    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
-      // @ts-ignore
-      EdgeRuntime.waitUntil(remarketingTask);
+      // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        // @ts-ignore
+        EdgeRuntime.waitUntil(remarketingTask);
+      }
+
+      // 🔗 Send webhook to n8n with all payment data and coupons (only for new purchases)
+      const webhookResult = await sendWebhookToN8N({
+        pixId: data.id,
+        productName,
+        productId,
+        value,
+        customerName,
+        customerEmail,
+        customerPhone,
+        userId,
+        status: data.status,
+        qrCode: data.qr_code,
+      }, supabaseUrl, supabaseKey);
+      
+      console.log('Webhook to n8n result:', webhookResult);
+    } else {
+      console.log('Skipping remarketing and webhook for recovery PIX');
     }
-
-    // 🔗 Send webhook to n8n with all payment data and coupons
-    const webhookResult = await sendWebhookToN8N({
-      pixId: data.id,
-      productName,
-      productId,
-      value,
-      customerName,
-      customerEmail,
-      customerPhone,
-      userId,
-      status: data.status,
-      qrCode: data.qr_code,
-    }, supabaseUrl, supabaseKey);
-    
-    console.log('Webhook to n8n result:', webhookResult);
 
     return new Response(JSON.stringify({
       success: true,

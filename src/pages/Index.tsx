@@ -15,8 +15,6 @@ interface RemarketingData {
   productName: string;
   couponCode: string;
   discount: number;
-  pixId?: string;
-  qrCode?: string;
 }
 
 const Index = () => {
@@ -31,16 +29,12 @@ const Index = () => {
     const produto = searchParams.get('produto');
     const cupom = searchParams.get('cupom');
     const desconto = searchParams.get('desconto');
-    const pixId = searchParams.get('pix_id');
-    const qrCode = searchParams.get('qr_code');
 
     if (isRemarketing && produto && cupom && desconto) {
       const data: RemarketingData = {
         productName: produto,
         couponCode: cupom,
         discount: parseInt(desconto, 10),
-        pixId: pixId || undefined,
-        qrCode: qrCode || undefined,
       };
       
       // Persist to localStorage to survive page refreshes

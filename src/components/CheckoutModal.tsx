@@ -55,6 +55,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [couponError, setCouponError] = useState('');
   const [appliedCouponCode, setAppliedCouponCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(15);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const { toast } = useToast();
 
   const EXIT_OFFER_DISCOUNT = 15;
@@ -170,6 +171,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           customerPhone: effectivePhone.replace(/\D/g, ''),
           customerEmail: effectiveEmail,
           userId: user?.id || null,
+          isRecovery: isRecoveryMode, // Flag to skip remarketing automation
         },
       });
 
@@ -225,7 +227,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         variant: "destructive",
       });
     }
-  }, [product, phone, email, customerName, toast, couponApplied, discountedPrice, isLoggedIn, user, profile, getEffectiveName, getEffectiveEmail, getEffectivePhone]);
+  }, [product, phone, email, customerName, toast, couponApplied, discountedPrice, isLoggedIn, user, profile, getEffectiveName, getEffectiveEmail, getEffectivePhone, isRecoveryMode, appliedCouponCode]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -242,6 +244,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setHasSeenExitOffer(false);
       setRemarketingSent(false);
       setCouponError('');
+      setIsRecoveryMode(false);
 
       // Fire Meta Pixel InitiateCheckout event
       if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -267,26 +270,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             setAppliedCouponCode(remarketing.code);
             setDiscountPercent(remarketing.discount);
             setCouponApplied(true);
+            setIsRecoveryMode(true); // Mark as recovery to skip remarketing automation
             
-            // If we have an existing PIX from remarketing, use it instead of creating new
-            if (remarketing.pixId && remarketing.qrCode) {
-              setPixData({
-                pixId: remarketing.pixId,
-                qrCode: decodeURIComponent(remarketing.qrCode),
-                qrCodeBase64: '', // Will show text code instead of QR image
-              });
-              setStatus('created');
-              setTimeLeft(900); // 15 minutes
-              toast({
-                title: "🎁 Sua compra foi recuperada!",
-                description: `Desconto de ${remarketing.discount}% aplicado. Complete o pagamento abaixo!`,
-              });
-            } else {
-              toast({
-                title: "🎁 Cupom exclusivo aplicado!",
-                description: `Desconto de ${remarketing.discount}% válido apenas para ${product.name}.`,
-              });
-            }
+            toast({
+              title: "🎁 Cupom de recuperação aplicado!",
+              description: `Desconto de ${remarketing.discount}% aplicado. Preencha seus dados para gerar o PIX!`,
+            });
+            
             // Clear it after applying
             localStorage.removeItem('remarketing_offer');
             return;
