@@ -1,11 +1,11 @@
 import { Check, X, TrendingDown, Sparkles } from "lucide-react";
 
 const comparisonData = [
-  { credits: 50, lovablePrice: 10, appPrice: 14.90 },
-  { credits: 100, lovablePrice: 20, appPrice: 27.90 },
-  { credits: 200, lovablePrice: 40, appPrice: 49.90 },
-  { credits: 400, lovablePrice: 80, appPrice: 89.90 },
-  { credits: 800, lovablePrice: 160, appPrice: 149.90 },
+  { credits: 50, lovablePrice: 68.00, appPrice: 14.90 },
+  { credits: 100, lovablePrice: 135.00, appPrice: 27.90 },
+  { credits: 200, lovablePrice: 270.00, appPrice: 49.90 },
+  { credits: 400, lovablePrice: 540.00, appPrice: 89.90 },
+  { credits: 800, lovablePrice: 1080.00, appPrice: 149.90 },
 ];
 
 const PriceComparison = () => {
@@ -65,7 +65,7 @@ const PriceComparison = () => {
                   <div className="flex items-center justify-center gap-1 text-muted-foreground">
                     <X className="h-4 w-4 text-destructive" />
                     <span className="line-through text-sm md:text-base">
-                      US$ {item.lovablePrice.toFixed(2)}
+                      R$ {item.lovablePrice.toFixed(2).replace('.', ',')}
                     </span>
                   </div>
                 </div>
