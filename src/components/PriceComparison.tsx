@@ -1,11 +1,11 @@
 import { Check, X, TrendingDown, Sparkles } from "lucide-react";
 
 const comparisonData = [
-  { credits: 100, lovablePrice: 25, appPrice: 5, savings: 80 },
-  { credits: 500, lovablePrice: 100, appPrice: 19.90, savings: 80 },
-  { credits: 1000, lovablePrice: 200, appPrice: 37.90, savings: 81 },
-  { credits: 2500, lovablePrice: 450, appPrice: 89.90, savings: 80 },
-  { credits: 5000, lovablePrice: 850, appPrice: 169.90, savings: 80 },
+  { credits: 100, lovablePrice: 25, appPrice: 5 },
+  { credits: 500, lovablePrice: 100, appPrice: 19.90 },
+  { credits: 1000, lovablePrice: 200, appPrice: 37.90 },
+  { credits: 2500, lovablePrice: 450, appPrice: 89.90 },
+  { credits: 5000, lovablePrice: 850, appPrice: 169.90 },
 ];
 
 const PriceComparison = () => {
@@ -65,7 +65,7 @@ const PriceComparison = () => {
                   <div className="flex items-center justify-center gap-1 text-muted-foreground">
                     <X className="h-4 w-4 text-destructive" />
                     <span className="line-through text-sm md:text-base">
-                      R$ {item.lovablePrice.toFixed(2)}
+                      US$ {item.lovablePrice.toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -80,10 +80,10 @@ const PriceComparison = () => {
                   </div>
                 </div>
 
-                {/* Savings */}
+                {/* Savings Badge */}
                 <div className="text-center">
                   <span className="inline-flex items-center justify-center bg-emerald-500/10 text-emerald-500 font-bold text-sm md:text-base px-2 md:px-3 py-1 rounded-full">
-                    -{item.savings}%
+                    💰
                   </span>
                 </div>
               </div>
