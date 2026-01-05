@@ -15,6 +15,8 @@ interface RemarketingData {
   productName: string;
   couponCode: string;
   discount: number;
+  pixId?: string;
+  qrCode?: string;
 }
 
 const Index = () => {
@@ -23,29 +25,53 @@ const Index = () => {
   const [remarketingData, setRemarketingData] = useState<RemarketingData | null>(null);
   const [showRemarketingModal, setShowRemarketingModal] = useState(false);
 
-  // Check for remarketing parameters on mount
+  // Check for remarketing parameters on mount OR localStorage
   useEffect(() => {
     const isRemarketing = searchParams.get('remarketing') === 'true';
     const produto = searchParams.get('produto');
     const cupom = searchParams.get('cupom');
     const desconto = searchParams.get('desconto');
+    const pixId = searchParams.get('pix_id');
+    const qrCode = searchParams.get('qr_code');
 
     if (isRemarketing && produto && cupom && desconto) {
-      setRemarketingData({
+      const data: RemarketingData = {
         productName: produto,
         couponCode: cupom,
         discount: parseInt(desconto, 10),
-      });
+        pixId: pixId || undefined,
+        qrCode: qrCode || undefined,
+      };
+      
+      // Persist to localStorage to survive page refreshes
+      localStorage.setItem('remarketing_session', JSON.stringify(data));
+      
+      setRemarketingData(data);
       setShowRemarketingModal(true);
 
       // Clear URL params after capturing (cleaner URL)
       setSearchParams({});
+    } else {
+      // Check localStorage for persisted remarketing session
+      const savedSession = localStorage.getItem('remarketing_session');
+      if (savedSession) {
+        try {
+          const data = JSON.parse(savedSession) as RemarketingData;
+          setRemarketingData(data);
+          setShowRemarketingModal(true);
+        } catch (e) {
+          console.error('Error parsing remarketing session:', e);
+          localStorage.removeItem('remarketing_session');
+        }
+      }
     }
   }, [searchParams, setSearchParams]);
 
   const handleCloseRemarketingModal = () => {
     setShowRemarketingModal(false);
     setRemarketingData(null);
+    // Clear persisted session when user closes
+    localStorage.removeItem('remarketing_session');
   };
   
   return (

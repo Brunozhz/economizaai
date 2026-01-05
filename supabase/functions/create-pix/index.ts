@@ -19,14 +19,16 @@ function getBaseUrl(): string {
   return Deno.env.get('APP_BASE_URL') || 'https://economizaai.lovable.app';
 }
 
-// Generate recovery link with coupon
-function generateRecoveryLink(productName: string, couponCode: string, discount: number): string {
+// Generate recovery link with coupon and pix_id
+function generateRecoveryLink(productName: string, couponCode: string, discount: number, pixId: string, qrCode: string): string {
   const baseUrl = getBaseUrl();
   const params = new URLSearchParams({
     remarketing: 'true',
     produto: productName,
     cupom: couponCode,
     desconto: discount.toString(),
+    pix_id: pixId,
+    qr_code: qrCode,
   });
   return `${baseUrl}/?${params.toString()}`;
 }
@@ -71,12 +73,12 @@ async function sendWebhookToN8N(data: {
   const valorFinal4 = Number((data.value - valorDesconto4).toFixed(2));
   const valorFinal5 = Number((data.value - valorDesconto5).toFixed(2));
   
-  // Generate recovery links
-  const link1Day = generateRecoveryLink(data.productName, coupon1Day, 10);
-  const link2Days = generateRecoveryLink(data.productName, coupon2Days, 15);
-  const link3Days = generateRecoveryLink(data.productName, coupon3Days, 20);
-  const link4Days = generateRecoveryLink(data.productName, coupon4Days, 25);
-  const link5Days = generateRecoveryLink(data.productName, coupon5Days, 30);
+  // Generate recovery links with pix_id and qr_code for cart recovery
+  const link1Day = generateRecoveryLink(data.productName, coupon1Day, 10, data.pixId, data.qrCode);
+  const link2Days = generateRecoveryLink(data.productName, coupon2Days, 15, data.pixId, data.qrCode);
+  const link3Days = generateRecoveryLink(data.productName, coupon3Days, 20, data.pixId, data.qrCode);
+  const link4Days = generateRecoveryLink(data.productName, coupon4Days, 25, data.pixId, data.qrCode);
+  const link5Days = generateRecoveryLink(data.productName, coupon5Days, 30, data.pixId, data.qrCode);
   
   // Save coupons to database (valid for 1 day each, starting from their respective days)
   const supabase = createClient(supabaseUrl, supabaseKey);

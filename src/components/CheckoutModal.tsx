@@ -267,10 +267,26 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             setAppliedCouponCode(remarketing.code);
             setDiscountPercent(remarketing.discount);
             setCouponApplied(true);
-            toast({
-              title: "🎁 Cupom exclusivo aplicado!",
-              description: `Desconto de ${remarketing.discount}% válido apenas para ${product.name}.`,
-            });
+            
+            // If we have an existing PIX from remarketing, use it instead of creating new
+            if (remarketing.pixId && remarketing.qrCode) {
+              setPixData({
+                pixId: remarketing.pixId,
+                qrCode: decodeURIComponent(remarketing.qrCode),
+                qrCodeBase64: '', // Will show text code instead of QR image
+              });
+              setStatus('created');
+              setTimeLeft(900); // 15 minutes
+              toast({
+                title: "🎁 Sua compra foi recuperada!",
+                description: `Desconto de ${remarketing.discount}% aplicado. Complete o pagamento abaixo!`,
+              });
+            } else {
+              toast({
+                title: "🎁 Cupom exclusivo aplicado!",
+                description: `Desconto de ${remarketing.discount}% válido apenas para ${product.name}.`,
+              });
+            }
             // Clear it after applying
             localStorage.removeItem('remarketing_offer');
             return;

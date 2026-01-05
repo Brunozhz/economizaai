@@ -35,6 +35,8 @@ interface RemarketingData {
   productName: string;
   couponCode: string;
   discount: number;
+  pixId?: string;
+  qrCode?: string;
 }
 
 interface RemarketingModalProps {
@@ -73,11 +75,17 @@ const RemarketingModal = ({ isOpen, onClose, remarketingData }: RemarketingModal
 
   const handleContinueCheckout = () => {
     // Store remarketing offer in localStorage for CheckoutModal to pick up
+    // Include pixId and qrCode to recover the existing payment instead of creating new
     localStorage.setItem('remarketing_offer', JSON.stringify({
       code: remarketingData.couponCode,
       discount: remarketingData.discount,
       productName: remarketingData.productName,
+      pixId: remarketingData.pixId,
+      qrCode: remarketingData.qrCode,
     }));
+    
+    // Clear the remarketing session since user is proceeding
+    localStorage.removeItem('remarketing_session');
     
     // Hide remarketing UI but keep modal mounted
     setHideRemarketingUI(true);
