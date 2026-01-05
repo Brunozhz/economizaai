@@ -1,11 +1,11 @@
 import { Check, X, TrendingDown, Sparkles } from "lucide-react";
 
 const comparisonData = [
-  { credits: 100, lovablePrice: 25, appPrice: 5 },
-  { credits: 500, lovablePrice: 100, appPrice: 19.90 },
-  { credits: 1000, lovablePrice: 200, appPrice: 37.90 },
-  { credits: 2500, lovablePrice: 450, appPrice: 89.90 },
-  { credits: 5000, lovablePrice: 850, appPrice: 169.90 },
+  { credits: 50, lovablePrice: 10, appPrice: 14.90 },
+  { credits: 100, lovablePrice: 20, appPrice: 27.90 },
+  { credits: 200, lovablePrice: 40, appPrice: 49.90 },
+  { credits: 400, lovablePrice: 80, appPrice: 89.90 },
+  { credits: 800, lovablePrice: 160, appPrice: 149.90 },
 ];
 
 const PriceComparison = () => {
