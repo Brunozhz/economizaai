@@ -157,7 +157,7 @@ const Header = () => {
           <div className="flex items-center gap-3 group cursor-pointer">
             <LovableHeart3D className="h-10 w-10 group-hover:scale-110 transition-transform duration-500" />
             <span className="font-display font-bold text-xl text-foreground">
-              Economiza<span className="text-primary">.IA</span>
+              Lovable
             </span>
           </div>
 
