@@ -52,38 +52,46 @@ async function sendWebhookToN8N(data: {
     return { success: false, error: 'Webhook URL not configured' };
   }
   
-  // Generate 3 progressive coupons (10%, 20%, 30%)
+  // Generate 5 progressive coupons (10%, 15%, 20%, 25%, 30%)
   const coupon1Day = generateCouponCode(10, 1);
-  const coupon2Days = generateCouponCode(20, 2);
-  const coupon3Days = generateCouponCode(30, 3);
+  const coupon2Days = generateCouponCode(15, 2);
+  const coupon3Days = generateCouponCode(20, 3);
+  const coupon4Days = generateCouponCode(25, 4);
+  const coupon5Days = generateCouponCode(30, 5);
   
   // Calculate discounted values
   const valorDesconto1 = data.value * 0.10;
-  const valorDesconto2 = data.value * 0.20;
-  const valorDesconto3 = data.value * 0.30;
+  const valorDesconto2 = data.value * 0.15;
+  const valorDesconto3 = data.value * 0.20;
+  const valorDesconto4 = data.value * 0.25;
+  const valorDesconto5 = data.value * 0.30;
   
   const valorFinal1 = data.value - valorDesconto1;
   const valorFinal2 = data.value - valorDesconto2;
   const valorFinal3 = data.value - valorDesconto3;
+  const valorFinal4 = data.value - valorDesconto4;
+  const valorFinal5 = data.value - valorDesconto5;
   
   // Generate recovery links
   const link1Day = generateRecoveryLink(data.productName, coupon1Day, 10);
-  const link2Days = generateRecoveryLink(data.productName, coupon2Days, 20);
-  const link3Days = generateRecoveryLink(data.productName, coupon3Days, 30);
+  const link2Days = generateRecoveryLink(data.productName, coupon2Days, 15);
+  const link3Days = generateRecoveryLink(data.productName, coupon3Days, 20);
+  const link4Days = generateRecoveryLink(data.productName, coupon4Days, 25);
+  const link5Days = generateRecoveryLink(data.productName, coupon5Days, 30);
   
   // Save coupons to database (valid for 1 day each, starting from their respective days)
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   const now = new Date();
   
-  // Coupon 1: Available from day 1, expires day 2
-  const expires1Day = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // Expires in 2 days (valid on day 1)
-  // Coupon 2: Available from day 2, expires day 3  
-  const expires2Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // Expires in 3 days (valid on day 2)
-  // Coupon 3: Available from day 3, expires day 4
-  const expires3Days = new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000); // Expires in 4 days (valid on day 3)
+  // Each coupon expires 1 day after its activation day
+  const expires1Day = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);   // Day 1 -> expires day 2
+  const expires2Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);  // Day 2 -> expires day 3
+  const expires3Days = new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000);  // Day 3 -> expires day 4
+  const expires4Days = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);  // Day 4 -> expires day 5
+  const expires5Days = new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000);  // Day 5 -> expires day 6
   
-  // Insert all 3 coupons into remarketing_coupons table
+  // Insert all 5 coupons into remarketing_coupons table
   const couponsToInsert = [
     {
       email: data.customerEmail.toLowerCase().trim(),
@@ -99,7 +107,7 @@ async function sendWebhookToN8N(data: {
       product_name: data.productName,
       product_price: data.value,
       coupon_code: coupon2Days,
-      discount_percent: 20,
+      discount_percent: 15,
       pix_id: data.pixId,
       expires_at: expires2Days.toISOString(),
     },
@@ -108,9 +116,27 @@ async function sendWebhookToN8N(data: {
       product_name: data.productName,
       product_price: data.value,
       coupon_code: coupon3Days,
-      discount_percent: 30,
+      discount_percent: 20,
       pix_id: data.pixId,
       expires_at: expires3Days.toISOString(),
+    },
+    {
+      email: data.customerEmail.toLowerCase().trim(),
+      product_name: data.productName,
+      product_price: data.value,
+      coupon_code: coupon4Days,
+      discount_percent: 25,
+      pix_id: data.pixId,
+      expires_at: expires4Days.toISOString(),
+    },
+    {
+      email: data.customerEmail.toLowerCase().trim(),
+      product_name: data.productName,
+      product_price: data.value,
+      coupon_code: coupon5Days,
+      discount_percent: 30,
+      pix_id: data.pixId,
+      expires_at: expires5Days.toISOString(),
     },
   ];
   
@@ -121,7 +147,7 @@ async function sendWebhookToN8N(data: {
   if (couponError) {
     console.error('Error saving remarketing coupons:', couponError);
   } else {
-    console.log('Saved 3 remarketing coupons for', data.customerEmail);
+    console.log('Saved 5 remarketing coupons for', data.customerEmail);
   }
   
   try {
@@ -149,21 +175,37 @@ async function sendWebhookToN8N(data: {
       link_cupom_1_dia: link1Day,
       expira_1_dia: expires1Day.toISOString(),
       
-      // Coupon 2 (20% - Day 2)
+      // Coupon 2 (15% - Day 2)
       cupom_2_dias: coupon2Days,
-      desconto_2_dias: 20,
+      desconto_2_dias: 15,
       valor_desconto_2_dias: valorDesconto2,
       valor_final_2_dias: valorFinal2,
       link_cupom_2_dias: link2Days,
       expira_2_dias: expires2Days.toISOString(),
       
-      // Coupon 3 (30% - Day 3)
+      // Coupon 3 (20% - Day 3)
       cupom_3_dias: coupon3Days,
-      desconto_3_dias: 30,
+      desconto_3_dias: 20,
       valor_desconto_3_dias: valorDesconto3,
       valor_final_3_dias: valorFinal3,
       link_cupom_3_dias: link3Days,
       expira_3_dias: expires3Days.toISOString(),
+      
+      // Coupon 4 (25% - Day 4)
+      cupom_4_dias: coupon4Days,
+      desconto_4_dias: 25,
+      valor_desconto_4_dias: valorDesconto4,
+      valor_final_4_dias: valorFinal4,
+      link_cupom_4_dias: link4Days,
+      expira_4_dias: expires4Days.toISOString(),
+      
+      // Coupon 5 (30% - Day 5)
+      cupom_5_dias: coupon5Days,
+      desconto_5_dias: 30,
+      valor_desconto_5_dias: valorDesconto5,
+      valor_final_5_dias: valorFinal5,
+      link_cupom_5_dias: link5Days,
+      expira_5_dias: expires5Days.toISOString(),
     };
     
     console.log('Webhook payload:', JSON.stringify(webhookPayload, null, 2));
