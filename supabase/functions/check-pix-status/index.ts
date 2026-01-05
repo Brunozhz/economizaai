@@ -7,6 +7,61 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Function to send webhook to n8n when payment is confirmed
+async function sendPaymentWebhook(data: {
+  pixId: string;
+  productName: string;
+  productId: string;
+  value: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  userId: string | null;
+  couponCode: string | null;
+  isRecovery: boolean;
+  payerName: string | null;
+  payerDocument: string | null;
+  endToEndId: string | null;
+}) {
+  const webhookUrl = Deno.env.get('N8N_WEBHOOK_PIX_GERADO') || 'https://n8n.infinityunlocker.com.br/webhook-test/pix-gerado';
+  
+  const payload = {
+    pix_id: data.pixId,
+    status: 'paid',
+    produto: data.productName,
+    produto_id: data.productId,
+    valor: data.value,
+    valor_formatado: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.value / 100),
+    cliente_nome: data.customerName,
+    cliente_email: data.customerEmail,
+    cliente_whatsapp: data.customerPhone,
+    user_id: data.userId,
+    cupom_usado: data.couponCode,
+    is_recovery: data.isRecovery,
+    pagador_nome: data.payerName,
+    pagador_documento: data.payerDocument,
+    end_to_end_id: data.endToEndId,
+    pago_em: new Date().toISOString(),
+  };
+  
+  console.log('Sending payment webhook to n8n:', JSON.stringify(payload));
+  
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    
+    const result = await response.text();
+    console.log('Payment webhook response:', response.status, result);
+    return { success: response.ok, status: response.status };
+  } catch (error) {
+    console.error('Error sending payment webhook:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
 // Function to notify admins
 async function notifyAdmins(supabaseUrl: string, supabaseKey: string, title: string, body: string, data?: Record<string, unknown>) {
   try {
@@ -47,9 +102,21 @@ serve(async (req) => {
       throw new Error('API key not configured');
     }
 
-    const { pixId, productName, value } = await req.json();
+    const { 
+      pixId, 
+      productName, 
+      productId,
+      value,
+      customerName,
+      customerEmail,
+      customerPhone,
+      userId,
+      couponCode,
+      isRecovery,
+    } = await req.json();
     
     console.log('Checking PIX status for:', pixId);
+    console.log('With data:', { productName, productId, customerName, customerEmail, isRecovery });
 
     const response = await fetch(`https://api.pushinpay.com.br/api/transactions/${pixId}`, {
       method: 'GET',
@@ -69,12 +136,13 @@ serve(async (req) => {
       throw new Error(data.message || 'Erro ao consultar PIX');
     }
 
-    // 🔔 Send push notification to admins when payment is approved
+    // 🔔 When payment is approved: send push notification to admins AND webhook to n8n
     if (data.status === 'paid' || data.status === 'approved' || data.status === 'completed') {
       const formattedValue = value 
         ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value / 100)
         : `R$ ${(data.value / 100).toFixed(2)}`;
 
+      // Send push notification to admins
       await notifyAdmins(
         supabaseUrl,
         supabaseKey,
@@ -88,6 +156,25 @@ serve(async (req) => {
           payerName: data.payer_name,
         }
       );
+      
+      // 🔗 Send webhook to n8n with status: "paid"
+      const webhookResult = await sendPaymentWebhook({
+        pixId: data.id,
+        productName: productName || 'Produto',
+        productId: productId || '',
+        value: value || data.value,
+        customerName: customerName || data.payer_name || '',
+        customerEmail: customerEmail || '',
+        customerPhone: customerPhone || '',
+        userId: userId || null,
+        couponCode: couponCode || null,
+        isRecovery: isRecovery || false,
+        payerName: data.payer_name || null,
+        payerDocument: data.payer_national_registration || null,
+        endToEndId: data.end_to_end_id || null,
+      });
+      
+      console.log('Payment webhook result:', webhookResult);
     }
 
     return new Response(JSON.stringify({
