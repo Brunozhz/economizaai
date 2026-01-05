@@ -1,4 +1,4 @@
-import { Check, X, TrendingDown, Sparkles } from "lucide-react";
+import { Check, X, TrendingDown, Sparkles, Heart } from "lucide-react";
 
 const comparisonData = [
   { credits: 50, lovablePrice: 68.00, appPrice: 14.90 },
@@ -82,8 +82,9 @@ const PriceComparison = () => {
 
                 {/* Savings Badge */}
                 <div className="text-center">
-                  <span className="inline-flex items-center justify-center bg-emerald-500/10 text-emerald-500 font-bold text-sm md:text-base px-2 md:px-3 py-1 rounded-full">
-                    💰
+                  <span className="inline-flex items-center justify-center gap-1 bg-emerald-500/10 text-emerald-500 font-bold text-sm md:text-base px-2 md:px-3 py-1 rounded-full">
+                    <Heart className="h-3.5 w-3.5 fill-primary text-primary" />
+                    -{Math.round((1 - item.appPrice / item.lovablePrice) * 100)}%
                   </span>
                 </div>
               </div>
