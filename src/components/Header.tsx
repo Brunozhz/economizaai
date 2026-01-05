@@ -1,4 +1,5 @@
-import { Search, Menu, Brain, Download, X, Share, Plus, Monitor, Smartphone, User, ShoppingBag, MessageCircle, Settings } from "lucide-react";
+import { Search, Menu, Download, X, Share, Plus, Monitor, Smartphone, User, ShoppingBag, MessageCircle, Settings } from "lucide-react";
+import lovableLogo from "@/assets/lovable-logo-transparent.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -217,13 +218,13 @@ const Header = () => {
                 {/* Top shine */}
                 <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent rounded-t-xl" />
                 
-                {/* Brain icon with premium glow */}
-                <Brain 
-                  className="h-5 w-5 relative z-10 transition-all duration-500 group-hover:scale-110"
-                  strokeWidth={1.5}
+                {/* Lovable logo */}
+                <img 
+                  src={lovableLogo}
+                  alt="Economiza.IA"
+                  className="h-8 w-auto relative z-10 transition-all duration-500 group-hover:scale-110"
                   style={{
-                    color: '#f472b6',
-                    filter: 'drop-shadow(0 0 4px rgba(244,114,182,0.8)) drop-shadow(0 0 12px rgba(236,72,153,0.6)) drop-shadow(0 0 20px rgba(168,85,247,0.4))'
+                    filter: 'drop-shadow(0 0 8px rgba(244,114,182,0.6))'
                   }}
                 />
               </div>
