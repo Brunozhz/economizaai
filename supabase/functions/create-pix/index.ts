@@ -412,7 +412,7 @@ serve(async (req) => {
       }
     );
 
-    // 📩 Schedule remarketing ONLY if not a recovery (avoid duplicate remarketing)
+    // 📩 Schedule remarketing ONLY if not a recovery (avoid duplicate remarketing loop)
     if (!isRecovery) {
       const remarketingTask = scheduleRemarketing(
         supabaseUrl,
@@ -431,25 +431,25 @@ serve(async (req) => {
         // @ts-ignore
         EdgeRuntime.waitUntil(remarketingTask);
       }
-
-      // 🔗 Send webhook to n8n with all payment data and coupons (only for new purchases)
-      const webhookResult = await sendWebhookToN8N({
-        pixId: data.id,
-        productName,
-        productId,
-        value,
-        customerName,
-        customerEmail,
-        customerPhone,
-        userId,
-        status: data.status,
-        qrCode: data.qr_code,
-      }, supabaseUrl, supabaseKey);
-      
-      console.log('Webhook to n8n result:', webhookResult);
     } else {
-      console.log('Skipping remarketing and webhook for recovery PIX');
+      console.log('Skipping remarketing for recovery PIX (avoiding loop)');
     }
+
+    // 🔗 Send webhook to n8n with all payment data (always send for payment approval automation)
+    const webhookResult = await sendWebhookToN8N({
+      pixId: data.id,
+      productName,
+      productId,
+      value,
+      customerName,
+      customerEmail,
+      customerPhone,
+      userId,
+      status: data.status,
+      qrCode: data.qr_code,
+    }, supabaseUrl, supabaseKey);
+    
+    console.log('Webhook to n8n result:', webhookResult);
 
     return new Response(JSON.stringify({
       success: true,
