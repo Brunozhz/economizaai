@@ -17,20 +17,8 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get authorization header - check multiple sources
-    let authHeader = req.headers.get('Authorization');
-    
-    // Also try to get from body if it's a POST request
-    if (!authHeader && req.method === 'POST') {
-      try {
-        const body = await req.clone().json();
-        if (body?.headers?.Authorization) {
-          authHeader = body.headers.Authorization;
-        }
-      } catch {
-        // Body is not JSON or doesn't have auth header
-      }
-    }
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
     
     console.log('Auth header present:', !!authHeader);
     
@@ -75,26 +63,60 @@ serve(async (req) => {
 
     // Get date range from query params
     const url = new URL(req.url);
-    const startDate = url.searchParams.get('startDate') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const endDate = url.searchParams.get('endDate') || new Date().toISOString();
+    const period = url.searchParams.get('period') || '30d';
+    
+    // Calculate date range based on period
+    const now = new Date();
+    let startDate: Date;
+    
+    switch (period) {
+      case 'today':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case 'yesterday':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        now.setDate(now.getDate() - 1);
+        now.setHours(23, 59, 59, 999);
+        break;
+      case '3d':
+        startDate = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+        break;
+      case '7d':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30d':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '1y':
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+
+    const startDateStr = startDate.toISOString();
+    const endDateStr = now.toISOString();
+
+    console.log('Date range:', startDateStr, 'to', endDateStr);
 
     // Fetch page views stats
     const { data: pageViews, error: pageViewsError } = await supabase
       .from('page_views')
       .select('id, created_at, page_path, session_id')
-      .gte('created_at', startDate)
-      .lte('created_at', endDate);
+      .gte('created_at', startDateStr)
+      .lte('created_at', endDateStr);
 
     if (pageViewsError) {
       console.error('Error fetching page views:', pageViewsError);
     }
 
-    // Fetch purchases for revenue
+    // Fetch ALL purchases for revenue (with the date filter)
     const { data: purchases, error: purchasesError } = await supabase
       .from('purchases')
-      .select('id, created_at, discounted_price, status, product_name')
-      .gte('created_at', startDate)
-      .lte('created_at', endDate);
+      .select('id, created_at, discounted_price, original_price, status, product_name, product_image, quantity')
+      .gte('created_at', startDateStr)
+      .lte('created_at', endDateStr)
+      .order('created_at', { ascending: false });
 
     if (purchasesError) {
       console.error('Error fetching purchases:', purchasesError);
@@ -102,7 +124,7 @@ serve(async (req) => {
 
     // Calculate stats
     const totalPageViews = pageViews?.length || 0;
-    const uniqueSessions = new Set(pageViews?.map(pv => pv.session_id) || []).size;
+    const uniqueSessions = new Set(pageViews?.map(pv => pv.session_id).filter(Boolean) || []).size;
     
     const paidPurchases = purchases?.filter(p => p.status === 'paid' || p.status === 'completed') || [];
     const totalRevenue = paidPurchases.reduce((sum, p) => sum + Number(p.discounted_price || 0), 0);
@@ -129,18 +151,70 @@ serve(async (req) => {
       viewsByPage[pv.page_path] = (viewsByPage[pv.page_path] || 0) + 1;
     });
 
+    // Calculate TOP products by sales count and revenue
+    const productStats: Record<string, { 
+      name: string; 
+      quantity: number; 
+      revenue: number; 
+      image: string | null;
+      lastSale: string;
+    }> = {};
+    
+    paidPurchases.forEach(p => {
+      const key = p.product_name || 'Produto Desconhecido';
+      if (!productStats[key]) {
+        productStats[key] = { 
+          name: key, 
+          quantity: 0, 
+          revenue: 0, 
+          image: p.product_image,
+          lastSale: p.created_at
+        };
+      }
+      productStats[key].quantity += p.quantity || 1;
+      productStats[key].revenue += Number(p.discounted_price || 0);
+      if (p.created_at > productStats[key].lastSale) {
+        productStats[key].lastSale = p.created_at;
+      }
+    });
+
+    const topProducts = Object.values(productStats)
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 10);
+
+    // Recent sales for notifications
+    const recentSales = (purchases || []).slice(0, 20).map(p => ({
+      id: p.id,
+      productName: p.product_name,
+      productImage: p.product_image,
+      price: p.discounted_price,
+      originalPrice: p.original_price,
+      status: p.status,
+      quantity: p.quantity,
+      createdAt: p.created_at
+    }));
+
     const stats = {
       totalPageViews,
       uniqueSessions,
       totalRevenue,
       totalPurchases,
       completedPurchases,
-      pageViewsByDate: Object.entries(pageViewsByDate).map(([date, views]) => ({ date, views })).sort((a, b) => a.date.localeCompare(b.date)),
-      revenueByDate: Object.entries(revenueByDate).map(([date, revenue]) => ({ date, revenue })).sort((a, b) => a.date.localeCompare(b.date)),
-      viewsByPage: Object.entries(viewsByPage).map(([page, views]) => ({ page, views })).sort((a, b) => b.views - a.views),
+      period,
+      pageViewsByDate: Object.entries(pageViewsByDate)
+        .map(([date, views]) => ({ date, views }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+      revenueByDate: Object.entries(revenueByDate)
+        .map(([date, revenue]) => ({ date, revenue }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+      viewsByPage: Object.entries(viewsByPage)
+        .map(([page, views]) => ({ page, views }))
+        .sort((a, b) => b.views - a.views),
+      topProducts,
+      recentSales
     };
 
-    console.log('Stats calculated:', stats);
+    console.log('Stats calculated successfully');
 
     return new Response(JSON.stringify(stats), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
