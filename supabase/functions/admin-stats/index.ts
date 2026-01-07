@@ -17,10 +17,26 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get authorization header
-    const authHeader = req.headers.get('Authorization');
+    // Get authorization header - check multiple sources
+    let authHeader = req.headers.get('Authorization');
+    
+    // Also try to get from body if it's a POST request
+    if (!authHeader && req.method === 'POST') {
+      try {
+        const body = await req.clone().json();
+        if (body?.headers?.Authorization) {
+          authHeader = body.headers.Authorization;
+        }
+      } catch {
+        // Body is not JSON or doesn't have auth header
+      }
+    }
+    
+    console.log('Auth header present:', !!authHeader);
+    
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      console.error('No authorization header found');
+      return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -31,11 +47,14 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      console.error('Auth error:', authError?.message || 'User not found');
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    
+    console.log('User authenticated:', user.id, user.email);
 
     // Check if user is admin
     const { data: roleData, error: roleError } = await supabase
