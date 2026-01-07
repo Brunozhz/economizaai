@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Eye, DollarSign, ShoppingCart, TrendingUp, AlertCircle, Package, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Eye, DollarSign, ShoppingCart, TrendingUp, AlertCircle, Package, Clock, CheckCircle, XCircle, Download } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { toast } from 'sonner';
 
 interface TopProduct {
   name: string;
@@ -124,6 +125,147 @@ const Dashboard = () => {
     }
   };
 
+  // Funções de exportação CSV
+  const downloadCSV = (data: string, filename: string) => {
+    const blob = new Blob(['\ufeff' + data], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast.success(`Relatório ${filename} exportado com sucesso!`);
+  };
+
+  const exportSalesCSV = () => {
+    if (!stats?.recentSales || stats.recentSales.length === 0) {
+      toast.error('Nenhuma venda para exportar');
+      return;
+    }
+    
+    const headers = ['ID', 'Produto', 'Preço', 'Preço Original', 'Quantidade', 'Status', 'Data'];
+    const rows = stats.recentSales.map(sale => [
+      sale.id,
+      `"${sale.productName}"`,
+      sale.price.toFixed(2).replace('.', ','),
+      sale.originalPrice.toFixed(2).replace('.', ','),
+      sale.quantity,
+      sale.status === 'paid' || sale.status === 'completed' ? 'Pago' : sale.status === 'pending' ? 'Pendente' : 'Cancelado',
+      new Date(sale.createdAt).toLocaleString('pt-BR')
+    ]);
+    
+    const csv = [headers.join(';'), ...rows.map(row => row.join(';'))].join('\n');
+    downloadCSV(csv, `vendas_${periodLabels[period]}_${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  const exportProductsCSV = () => {
+    if (!stats?.topProducts || stats.topProducts.length === 0) {
+      toast.error('Nenhum produto para exportar');
+      return;
+    }
+    
+    const headers = ['Posição', 'Produto', 'Quantidade Vendida', 'Faturamento', 'Última Venda'];
+    const rows = stats.topProducts.map((product, index) => [
+      index + 1,
+      `"${product.name}"`,
+      product.quantity,
+      product.revenue.toFixed(2).replace('.', ','),
+      product.lastSale ? new Date(product.lastSale).toLocaleString('pt-BR') : 'N/A'
+    ]);
+    
+    const csv = [headers.join(';'), ...rows.map(row => row.join(';'))].join('\n');
+    downloadCSV(csv, `produtos_${periodLabels[period]}_${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  const exportPageViewsCSV = () => {
+    if (!stats?.pageViewsByDate || stats.pageViewsByDate.length === 0) {
+      toast.error('Nenhuma visualização para exportar');
+      return;
+    }
+    
+    const headers = ['Data', 'Visualizações'];
+    const rows = stats.pageViewsByDate.map(item => [
+      new Date(item.date).toLocaleDateString('pt-BR'),
+      item.views
+    ]);
+    
+    const csv = [headers.join(';'), ...rows.map(row => row.join(';'))].join('\n');
+    downloadCSV(csv, `visualizacoes_${periodLabels[period]}_${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  const exportRevenueCSV = () => {
+    if (!stats?.revenueByDate || stats.revenueByDate.length === 0) {
+      toast.error('Nenhum faturamento para exportar');
+      return;
+    }
+    
+    const headers = ['Data', 'Faturamento (R$)'];
+    const rows = stats.revenueByDate.map(item => [
+      new Date(item.date).toLocaleDateString('pt-BR'),
+      item.revenue.toFixed(2).replace('.', ',')
+    ]);
+    
+    const csv = [headers.join(';'), ...rows.map(row => row.join(';'))].join('\n');
+    downloadCSV(csv, `faturamento_${periodLabels[period]}_${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  const exportFullReportCSV = () => {
+    if (!stats) return;
+    
+    let csv = 'RELATÓRIO COMPLETO DO DASHBOARD\n';
+    csv += `Período: ${periodLabels[period]}\n`;
+    csv += `Data do Relatório: ${new Date().toLocaleString('pt-BR')}\n\n`;
+    
+    // Resumo
+    csv += '=== RESUMO ===\n';
+    csv += `Total de Visualizações;${stats.totalPageViews}\n`;
+    csv += `Visitantes Únicos;${stats.uniqueSessions}\n`;
+    csv += `Faturamento Total;R$ ${stats.totalRevenue.toFixed(2).replace('.', ',')}\n`;
+    csv += `Pedidos Pagos;${stats.completedPurchases}\n`;
+    csv += `Total de Pedidos;${stats.totalPurchases}\n\n`;
+    
+    // Visualizações por data
+    if (stats.pageViewsByDate.length > 0) {
+      csv += '=== VISUALIZAÇÕES POR DIA ===\n';
+      csv += 'Data;Visualizações\n';
+      stats.pageViewsByDate.forEach(item => {
+        csv += `${new Date(item.date).toLocaleDateString('pt-BR')};${item.views}\n`;
+      });
+      csv += '\n';
+    }
+    
+    // Faturamento por data
+    if (stats.revenueByDate.length > 0) {
+      csv += '=== FATURAMENTO POR DIA ===\n';
+      csv += 'Data;Faturamento (R$)\n';
+      stats.revenueByDate.forEach(item => {
+        csv += `${new Date(item.date).toLocaleDateString('pt-BR')};${item.revenue.toFixed(2).replace('.', ',')}\n`;
+      });
+      csv += '\n';
+    }
+    
+    // Top Produtos
+    if (stats.topProducts && stats.topProducts.length > 0) {
+      csv += '=== PRODUTOS MAIS VENDIDOS ===\n';
+      csv += 'Posição;Produto;Quantidade;Faturamento (R$)\n';
+      stats.topProducts.forEach((product, index) => {
+        csv += `${index + 1};"${product.name}";${product.quantity};${product.revenue.toFixed(2).replace('.', ',')}\n`;
+      });
+      csv += '\n';
+    }
+    
+    // Vendas Recentes
+    if (stats.recentSales && stats.recentSales.length > 0) {
+      csv += '=== VENDAS RECENTES ===\n';
+      csv += 'ID;Produto;Preço (R$);Status;Data\n';
+      stats.recentSales.forEach(sale => {
+        const status = sale.status === 'paid' || sale.status === 'completed' ? 'Pago' : sale.status === 'pending' ? 'Pendente' : 'Cancelado';
+        csv += `${sale.id};"${sale.productName}";${sale.price.toFixed(2).replace('.', ',')};${status};${new Date(sale.createdAt).toLocaleString('pt-BR')}\n`;
+      });
+    }
+    
+    downloadCSV(csv, `relatorio_completo_${periodLabels[period]}_${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -171,7 +313,7 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Visão geral das métricas do seu app</p>
         </div>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {(Object.keys(periodLabels) as PeriodFilter[]).map((key) => (
             <Button
               key={key}
@@ -183,6 +325,18 @@ const Dashboard = () => {
               {periodLabels[key]}
             </Button>
           ))}
+          
+          <div className="h-6 w-px bg-border mx-2" />
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportFullReportCSV}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Exportar CSV
+          </Button>
         </div>
       </div>
 
