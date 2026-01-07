@@ -61,9 +61,16 @@ serve(async (req) => {
 
     console.log('Admin verified, fetching stats...');
 
-    // Get date range from query params
-    const url = new URL(req.url);
-    const period = url.searchParams.get('period') || '30d';
+    // Get period from request body
+    let period = '30d';
+    try {
+      const body = await req.json();
+      period = body.period || '30d';
+    } catch {
+      // If no body, use default
+    }
+    
+    console.log('Period filter:', period);
     
     // Calculate date range based on period
     const now = new Date();
