@@ -142,9 +142,9 @@ serve(async (req) => {
 
     // 🔔 When payment is approved: send push notification to admins AND webhook to n8n
     if (effectiveStatus === 'paid' || effectiveStatus === 'approved' || effectiveStatus === 'completed') {
-      const formattedValue = value 
-        ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value / 100)
-        : `R$ ${(data.value / 100).toFixed(2)}`;
+      // Value comes in centavos from PushinPay, but we receive `value` in reais from frontend
+      const valueInReais = value || (data.value / 100);
+      const formattedValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valueInReais);
 
       // Send push notification to admins
       await notifyAdmins(
@@ -162,11 +162,13 @@ serve(async (req) => {
       );
       
       // 🔗 Send webhook to n8n with status: "paid"
+      // Note: value should be in reais for the webhook
+      const valueForWebhook = value || (data.value / 100);
       const webhookResult = await sendPaymentWebhook({
         pixId: data.id,
         productName: productName || 'Produto',
         productId: productId || '',
-        value: value || data.value,
+        value: Math.round(valueForWebhook * 100), // Convert to centavos for webhook consistency
         customerName: customerName || data.payer_name || '',
         customerEmail: customerEmail || '',
         customerPhone: customerPhone || '',
