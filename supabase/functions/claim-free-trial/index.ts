@@ -98,53 +98,74 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Registrar o resgate
-    const { error: insertError } = await supabase
+    // Registrar o resgate (retornar ID para usar como pix_id no webhook)
+    const { data: claimRow, error: insertError } = await supabase
       .from('free_trial_claims')
       .insert({
         email: email.toLowerCase().trim(),
         phone: phoneWithCountry,
         name: name.trim(),
-      });
+      })
+      .select('id, created_at, email, phone, name')
+      .single();
 
     if (insertError) {
       console.error('Error inserting claim:', insertError);
-      
+
       // Verificar se é erro de constraint (duplicado)
       if (insertError.code === '23505') {
         return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: 'Este e-mail ou telefone já foi utilizado' 
+          JSON.stringify({
+            success: false,
+            error: 'Este e-mail ou telefone já foi utilizado',
           }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
       }
-      
+
       throw insertError;
     }
 
-    console.log('Free trial claimed successfully:', { email, phone: phoneWithCountry, name });
+    console.log('Free trial claimed successfully:', {
+      claim_id: claimRow?.id,
+      email,
+      phone: phoneWithCountry,
+      name,
+    });
 
-    // Enviar webhook para n8n (status: paid, sem evento Meta)
+    // Enviar webhook para n8n com as MESMAS variáveis do webhook de pagamento aprovado (check-pix-status)
     const webhookUrl = Deno.env.get('N8N_WEBHOOK_PIX_GERADO');
     if (webhookUrl) {
       try {
+        const valorCentavos = 0;
+        const paidAt = new Date().toISOString();
+
         const webhookPayload = {
+          pix_id: claimRow?.id ?? '',
+          status: 'paid',
+          produto: 'Demonstração - 20 Créditos Grátis',
+          produto_id: 'free_trial_20',
+          valor: valorCentavos,
+          valor_formatado: new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }).format(valorCentavos / 100),
+          nome: name.trim(),
           email: email.toLowerCase().trim(),
           whatsapp: phoneWithCountry,
-          status: 'paid',
-          plano: 'Demonstração - 20 Créditos Grátis',
-          valor: 0,
-          nome: name.trim(),
-          creditos: 20,
-          tipo: 'demonstracao_gratuita',
+          user_id: null,
+          cupom_usado: null,
+          is_recovery: false,
+          pagador_nome: name.trim(),
+          pagador_documento: null,
+          end_to_end_id: `E${Date.now()}`,
+          pago_em: paidAt,
         };
 
-        console.log('Sending webhook to n8n:', webhookPayload);
+        console.log('Sending webhook to n8n:', JSON.stringify(webhookPayload));
 
         const webhookResponse = await fetch(webhookUrl, {
           method: 'POST',
@@ -152,7 +173,8 @@ Deno.serve(async (req) => {
           body: JSON.stringify(webhookPayload),
         });
 
-        console.log('Webhook response status:', webhookResponse.status);
+        const webhookResult = await webhookResponse.text();
+        console.log('Webhook response:', webhookResponse.status, webhookResult);
       } catch (webhookError) {
         console.error('Webhook error (non-blocking):', webhookError);
         // Não bloquear o sucesso por falha no webhook
