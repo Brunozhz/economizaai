@@ -205,23 +205,16 @@ const SupportChatWidget = () => {
 
   return (
     <>
-      {/* Floating Button */}
-      <button
-        onClick={() => {
-          setIsOpen(true);
-          setHasNewResponse(false);
-        }}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-all duration-300 flex items-center justify-center ${isOpen ? 'hidden' : ''}`}
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://api.whatsapp.com/send/?phone=558796760040&text&type=phone_number&app_absent=0"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#25D366] text-white shadow-lg hover:scale-110 transition-all duration-300 flex items-center justify-center hover:shadow-[0_0_20px_rgba(37,211,102,0.5)]"
       >
         <MessageCircle className="w-6 h-6" />
-        {hasNewResponse ? (
-          <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full animate-bounce flex items-center justify-center text-xs font-bold text-white">
-            !
-          </span>
-        ) : (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse" />
-        )}
-      </button>
+        <span className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full animate-pulse" />
+      </a>
 
       {/* Chat Window */}
       {isOpen && (
