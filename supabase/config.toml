@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.test-webhook]
 verify_jwt = false
+
+[functions.claim-free-trial]
+verify_jwt = false
