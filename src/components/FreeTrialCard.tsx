@@ -154,11 +154,11 @@ const FreeTrialCard = ({ onClaim }: FreeTrialCardProps) => {
           <div className="p-2.5 rounded-lg border bg-emerald-500/10 border-emerald-500/20 text-xs space-y-2">
             <div className="flex items-center gap-2">
               <Check className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-foreground font-semibold">Teste a plataforma</span>
+              <span className="text-foreground font-semibold">Sem precisar de pagamento</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-foreground font-semibold">Sem cartão de crédito</span>
+              <span className="text-foreground font-semibold">Usável apenas uma vez</span>
             </div>
             <div className="flex items-center gap-2">
               <Zap className="h-3.5 w-3.5 text-yellow-400" />
