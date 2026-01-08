@@ -72,15 +72,15 @@ const Footer = () => {
             <h4 className="font-bold text-lg text-foreground">Suporte</h4>
             <ul className="space-y-4">
               <li>
-                <a href="#" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <MessageCircle className="h-5 w-5 text-primary" />
+                <a href="https://api.whatsapp.com/send/?phone=558796760040&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
+                  <div className="h-10 w-10 rounded-xl bg-[#25D366]/20 flex items-center justify-center group-hover:bg-[#25D366]/30 transition-colors">
+                    <MessageCircle className="h-5 w-5 text-[#25D366]" />
                   </div>
                   <span>WhatsApp</span>
                 </a>
               </li>
               <li>
-                <a href="#" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
+                <a href="mailto:contato@economiza.ia" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
                   <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                     <Mail className="h-5 w-5 text-primary" />
                   </div>
@@ -88,6 +88,25 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
+          </div>
+        </div>
+        
+        {/* WhatsApp CTA Section */}
+        <div className="mb-12 p-8 rounded-3xl bg-gradient-to-r from-[#25D366]/10 via-card to-[#25D366]/10 border border-[#25D366]/30 shadow-lg">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left">
+              <h3 className="text-2xl font-bold text-foreground mb-2">💬 Precisa tirar mais dúvidas?</h3>
+              <p className="text-muted-foreground">Clique no link e fale direto com nosso especialista no WhatsApp!</p>
+            </div>
+            
+            <Button 
+              className="h-14 px-8 bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-base rounded-xl shadow-lg shadow-[#25D366]/30 hover:shadow-xl hover:shadow-[#25D366]/40 hover:scale-105 transition-all duration-300"
+              onClick={() => window.open('https://api.whatsapp.com/send/?phone=558796760040&text&type=phone_number&app_absent=0', '_blank')}
+            >
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Falar com Especialista
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </div>
 
