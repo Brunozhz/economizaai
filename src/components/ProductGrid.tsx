@@ -209,6 +209,40 @@ const ProductGrid = () => {
             </div>
           </div>
 
+          {/* Guarantee Banner */}
+          <div className="flex justify-center mb-8 md:mb-12">
+            <div className="relative group">
+              {/* Glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-500 rounded-2xl blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+              
+              <div className="relative flex items-center gap-3 md:gap-4 px-6 md:px-8 py-4 md:py-5 bg-gradient-to-r from-emerald-500/20 via-green-500/15 to-emerald-500/20 border-2 border-emerald-500/50 rounded-2xl backdrop-blur-sm">
+                {/* Shield icon */}
+                <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                  <svg className="w-6 h-6 md:w-7 md:h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                
+                {/* Text */}
+                <div className="text-center md:text-left">
+                  <p className="text-lg md:text-xl lg:text-2xl font-black text-emerald-400 tracking-tight">
+                    Acesso garantido ou seu dinheiro de volta em 24h
+                  </p>
+                  <p className="text-xs md:text-sm text-emerald-300/70 mt-1">
+                    Sua compra 100% protegida • Sem riscos
+                  </p>
+                </div>
+                
+                {/* Checkmark badge */}
+                <div className="hidden md:flex flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500 items-center justify-center shadow-lg shadow-emerald-500/50">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Products Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 sm:gap-4 md:gap-5 xl:gap-4">
             {/* Free Trial Card - First Position */}
