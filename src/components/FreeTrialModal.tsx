@@ -146,6 +146,41 @@ const FreeTrialModal = ({ isOpen, onClose }: FreeTrialModalProps) => {
         console.log('Meta Pixel Purchase event fired: Free Trial');
       }
 
+      // Fire Google Analytics purchase event
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'purchase', {
+          transaction_id: `free_trial_${Date.now()}`,
+          value: 0,
+          currency: 'BRL',
+          items: [{
+            item_id: 'free_trial_20',
+            item_name: 'Demonstração - 20 Créditos Grátis',
+            price: 0,
+            quantity: 1,
+          }],
+        });
+        console.log('Google Analytics Purchase event fired: Free Trial');
+      }
+
+      // Fire dataLayer push for GTM
+      if (typeof window !== 'undefined' && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          event: 'purchase',
+          ecommerce: {
+            transaction_id: `free_trial_${Date.now()}`,
+            value: 0,
+            currency: 'BRL',
+            items: [{
+              item_id: 'free_trial_20',
+              item_name: 'Demonstração - 20 Créditos Grátis',
+              price: 0,
+              quantity: 1,
+            }],
+          },
+        });
+        console.log('DataLayer Purchase event pushed: Free Trial');
+      }
+
       // Fire confetti celebration
       const duration = 3000;
       const animationEnd = Date.now() + duration;
