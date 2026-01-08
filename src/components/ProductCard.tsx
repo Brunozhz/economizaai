@@ -201,21 +201,21 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
           </div>
 
           {/* Pricing */}
-          <div className="space-y-4 md:space-y-3 text-center py-2 md:py-1">
+          <div className="space-y-3 md:space-y-3 text-center py-2 md:py-1">
             {/* Original price */}
             <div className="flex items-center justify-center gap-2">
               <X className="h-4 w-4 md:h-3.5 md:w-3.5 text-red-400/80" />
-              <span className="text-red-400/90 line-through text-base md:text-sm font-medium">
+              <span className="text-red-400/90 line-through text-lg md:text-sm font-medium">
                 R$ {originalPrice.toFixed(2).replace('.', ',')}
               </span>
               <span className="text-red-400/60 text-xs md:text-[10px] font-medium">(Oficial)</span>
             </div>
             
-            {/* Our price - Destacado */}
-            <p className={`text-4xl md:text-[32px] font-black leading-none bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}
-              style={isHot ? {
+            {/* Our price - Destacado - Sempre visível */}
+            <p className={`text-5xl md:text-[32px] font-black leading-none bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}
+              style={{
                 filter: `drop-shadow(0 0 12px ${colors.glow})`,
-              } : {}}
+              }}
             >
               R$ {price.toFixed(2).replace('.', ',')}
             </p>
