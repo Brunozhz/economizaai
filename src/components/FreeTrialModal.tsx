@@ -29,11 +29,12 @@ const FreeTrialModal = ({ isOpen, onClose }: FreeTrialModalProps) => {
   const isLoggedIn = !!user && !!profile;
 
   const formatPhone = (value: string) => {
+    // Remove tudo que não for número
     let numbers = value.replace(/\D/g, '');
-    if (numbers.startsWith('55')) {
-      numbers = numbers.slice(2);
-    }
+    
+    // Limitar a 11 dígitos (DDD + 9 dígitos) - NÃO remover 55 pois está fixo visualmente
     const limited = numbers.slice(0, 11);
+    
     if (limited.length <= 2) {
       return limited;
     } else if (limited.length <= 7) {

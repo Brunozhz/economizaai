@@ -66,12 +66,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     // Remove tudo que não for número
     let numbers = value.replace(/\D/g, '');
     
-    // Remove o 55 do início se o usuário digitar (já está fixo)
-    if (numbers.startsWith('55')) {
-      numbers = numbers.slice(2);
-    }
-    
-    // Limitar a 11 dígitos (DDD + 9 dígitos)
+    // Limitar a 11 dígitos (DDD + 9 dígitos) - NÃO remover 55 pois está fixo visualmente
     const limited = numbers.slice(0, 11);
     
     // Formatar como (XX) XXXXX-XXXX
