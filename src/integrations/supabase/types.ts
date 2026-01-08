@@ -77,6 +77,30 @@ export type Database = {
         }
         Relationships: []
       }
+      free_trial_claims: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          phone?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           coupon_code: string | null

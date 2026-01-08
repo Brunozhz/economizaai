@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import confetti from "canvas-confetti";
 
 interface FreeTrialModalProps {
@@ -91,33 +92,32 @@ const FreeTrialModal = ({ isOpen, onClose }: FreeTrialModalProps) => {
     const effectivePhone = getEffectivePhone();
 
     try {
-      // Send webhook as "paid" directly (free trial = instant activation)
-      const webhookPayload = {
-        email: effectiveEmail,
-        whatsapp: effectivePhone.replace(/\D/g, ''),
-        status: 'paid', // Free trial is always "paid"
-        plano: 'Demonstração - 20 Créditos Grátis',
-        valor: 0,
-        nome: effectiveName,
-        creditos: 20,
-        tipo: 'demonstracao_gratuita',
-      };
-
-      console.log('Sending free trial webhook:', webhookPayload);
-
-      const response = await fetch('https://n8n.infinityunlocker.com.br/webhook/v1/pix-gerado', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Chamar edge function para validar e registrar o resgate
+      const { data, error } = await supabase.functions.invoke('claim-free-trial', {
+        body: {
+          email: effectiveEmail,
+          phone: effectivePhone,
+          name: effectiveName,
         },
-        body: JSON.stringify(webhookPayload),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send webhook');
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error('Erro ao processar resgate');
       }
 
-      console.log('Free trial webhook sent successfully');
+      if (!data.success) {
+        // Erro de validação (email/telefone já usado)
+        setStatus('form');
+        toast({
+          title: "Não foi possível resgatar",
+          description: data.error || "Este e-mail ou telefone já foi utilizado.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Free trial claimed successfully');
       setStatus('success');
 
       // Fire confetti celebration
