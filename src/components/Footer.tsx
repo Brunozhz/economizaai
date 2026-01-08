@@ -72,7 +72,7 @@ const Footer = () => {
             <h4 className="font-bold text-lg text-foreground">Suporte</h4>
             <ul className="space-y-4">
               <li>
-                <a href="https://api.whatsapp.com/send/?phone=558796760040&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
+                <a href="https://api.whatsapp.com/send/?phone=5521965987305&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
                   <div className="h-10 w-10 rounded-xl bg-[#25D366]/20 flex items-center justify-center group-hover:bg-[#25D366]/30 transition-colors">
                     <MessageCircle className="h-5 w-5 text-[#25D366]" />
                   </div>
@@ -101,7 +101,7 @@ const Footer = () => {
             
             <Button 
               className="h-14 px-8 bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-base rounded-xl shadow-lg shadow-[#25D366]/30 hover:shadow-xl hover:shadow-[#25D366]/40 hover:scale-105 transition-all duration-300"
-              onClick={() => window.open('https://api.whatsapp.com/send/?phone=558796760040&text&type=phone_number&app_absent=0', '_blank')}
+              onClick={() => window.open('https://api.whatsapp.com/send/?phone=5521965987305&text&type=phone_number&app_absent=0', '_blank')}
             >
               <MessageCircle className="mr-2 h-5 w-5" />
               Falar com Especialista
