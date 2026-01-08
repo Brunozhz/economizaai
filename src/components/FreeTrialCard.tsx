@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Gift, Sparkles, PartyPopper, Star, Zap, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
+import cardBackground from "@/assets/card-background.png";
 
 interface FreeTrialCardProps {
   onClaim: () => void;
@@ -117,32 +118,34 @@ const FreeTrialCard = ({ onClaim }: FreeTrialCardProps) => {
           </div>
         </div>
 
-        {/* Product Preview */}
+        {/* Product Preview with Background Image */}
         <div
           className="relative p-5 pt-14 flex items-center justify-center overflow-hidden"
           style={{
-            background: 'radial-gradient(ellipse at top, rgba(34,197,94,0.4) 0%, transparent 70%), linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%)',
+            backgroundImage: `url(${cardBackground})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         >
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+          
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl opacity-50 bg-emerald-500 animate-pulse" />
           </div>
 
           <div className="relative text-center space-y-2 z-10">
-            <h3 className="text-lg font-bold tracking-wide uppercase text-emerald-400">
+            <h3 className="text-lg font-bold tracking-wide uppercase text-emerald-400 drop-shadow-lg">
               Demonstração
             </h3>
             <div className="relative">
               <p
-                className="text-5xl font-black font-display bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent"
-                style={{
-                  filter: 'drop-shadow(0 0 20px rgba(34,197,94,0.5))',
-                }}
+                className="text-6xl font-black bg-gradient-to-r from-emerald-400 via-green-300 to-teal-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]"
               >
                 20
               </p>
             </div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+            <p className="text-sm font-bold text-white uppercase tracking-widest drop-shadow-lg">
               Créditos Grátis
             </p>
           </div>
