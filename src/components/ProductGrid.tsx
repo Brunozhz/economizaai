@@ -4,6 +4,8 @@ import { Flame, TrendingUp, Rocket, Building2, Zap, Users, TrendingDown, Sparkle
 import ProductCard from "./ProductCard";
 import CheckoutModal from "./CheckoutModal";
 import EnterpriseChatModal from "./EnterpriseChatModal";
+import FreeTrialCard from "./FreeTrialCard";
+import FreeTrialModal from "./FreeTrialModal";
 import { Button } from "@/components/ui/button";
 import lovableLogo from "@/assets/lovable-logo-new.png";
 
@@ -71,6 +73,7 @@ const ProductGrid = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEnterpriseChatOpen, setIsEnterpriseChatOpen] = useState(false);
+  const [isFreeTrialOpen, setIsFreeTrialOpen] = useState(false);
 
   // Check for remarketing redirect on mount
   useEffect(() => {
@@ -207,12 +210,20 @@ const ProductGrid = () => {
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-4 md:gap-5 xl:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 sm:gap-4 md:gap-5 xl:gap-4">
+            {/* Free Trial Card - First Position */}
+            <div
+              className="animate-fade-in"
+              style={{ animationDelay: '0s' }}
+            >
+              <FreeTrialCard onClaim={() => setIsFreeTrialOpen(true)} />
+            </div>
+            
             {products.map((product, index) => (
               <div
                 key={index}
                 className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                style={{ animationDelay: `${(index + 1) * 0.1}s` }}
               >
                 <ProductCard {...product} onBuy={handleBuy} />
               </div>
@@ -322,6 +333,12 @@ const ProductGrid = () => {
       <EnterpriseChatModal 
         isOpen={isEnterpriseChatOpen} 
         onClose={() => setIsEnterpriseChatOpen(false)} 
+      />
+
+      {/* Free Trial Modal */}
+      <FreeTrialModal 
+        isOpen={isFreeTrialOpen} 
+        onClose={() => setIsFreeTrialOpen(false)} 
       />
     </>
   );
