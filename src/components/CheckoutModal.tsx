@@ -127,14 +127,20 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   };
   
   // Get effective name, email and phone (from profile if logged in, otherwise from form)
-  const getEffectiveName = () => isLoggedIn && profile?.name ? profile.name : customerName.trim();
-  const getEffectiveEmail = () => isLoggedIn && profile?.email ? profile.email : email;
-  const getEffectivePhone = () => {
+  const getEffectiveName = useCallback(() => {
+    return isLoggedIn && profile?.name ? profile.name : customerName.trim();
+  }, [isLoggedIn, profile?.name, customerName]);
+  
+  const getEffectiveEmail = useCallback(() => {
+    return isLoggedIn && profile?.email ? profile.email : email;
+  }, [isLoggedIn, profile?.email, email]);
+  
+  const getEffectivePhone = useCallback(() => {
     const phoneValue = isLoggedIn && profile?.phone ? profile.phone : phone;
     const phoneNumbers = phoneValue.replace(/\D/g, '');
     // Add 55 prefix if not already present
     return phoneNumbers.startsWith('55') ? phoneNumbers : `55${phoneNumbers}`;
-  };
+  }, [isLoggedIn, profile?.phone, phone]);
   
 
   const handleSubmitForm = () => {
@@ -222,7 +228,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         variant: "destructive",
       });
     }
-  }, [product, phone, email, customerName, toast, couponApplied, discountedPrice, isLoggedIn, user, profile, getEffectiveName, getEffectiveEmail, getEffectivePhone, isRecoveryMode, appliedCouponCode]);
+  }, [product, toast, couponApplied, discountedPrice, user, isRecoveryMode, appliedCouponCode, getEffectiveName, getEffectiveEmail, getEffectivePhone]);
 
   // Reset form when modal opens
   useEffect(() => {
