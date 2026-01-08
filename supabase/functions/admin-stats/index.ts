@@ -201,12 +201,120 @@ serve(async (req) => {
       createdAt: p.created_at
     }));
 
+    // Fetch customers - from profiles, leads, and abandoned_carts
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, user_id, email, name, phone, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    const { data: leads } = await supabase
+      .from('leads')
+      .select('id, email, coupon_code, source, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    const { data: abandonedCarts } = await supabase
+      .from('abandoned_carts')
+      .select('id, email, phone, product_name, product_price, created_at, is_converted')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    const { data: freeTrials } = await supabase
+      .from('free_trial_claims')
+      .select('id, email, name, phone, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    // Combine all customers into a unified list
+    const customerMap = new Map<string, {
+      id: string;
+      email: string;
+      name: string | null;
+      phone: string | null;
+      source: string;
+      createdAt: string;
+      productInterest?: string;
+      isConverted?: boolean;
+    }>();
+
+    // Add profiles
+    profiles?.forEach(p => {
+      customerMap.set(p.email, {
+        id: p.id,
+        email: p.email,
+        name: p.name,
+        phone: p.phone,
+        source: 'registered',
+        createdAt: p.created_at
+      });
+    });
+
+    // Add leads (only if not already in map or is newer)
+    leads?.forEach(l => {
+      if (!customerMap.has(l.email)) {
+        customerMap.set(l.email, {
+          id: l.id,
+          email: l.email,
+          name: null,
+          phone: null,
+          source: l.source || 'lead',
+          createdAt: l.created_at
+        });
+      }
+    });
+
+    // Add free trial claims
+    freeTrials?.forEach(ft => {
+      const existing = customerMap.get(ft.email);
+      if (!existing) {
+        customerMap.set(ft.email, {
+          id: ft.id,
+          email: ft.email,
+          name: ft.name,
+          phone: ft.phone,
+          source: 'free_trial',
+          createdAt: ft.created_at
+        });
+      } else if (!existing.phone && ft.phone) {
+        existing.phone = ft.phone;
+        if (!existing.name && ft.name) existing.name = ft.name;
+      }
+    });
+
+    // Add abandoned carts
+    abandonedCarts?.forEach(ac => {
+      const existing = customerMap.get(ac.email);
+      if (!existing) {
+        customerMap.set(ac.email, {
+          id: ac.id,
+          email: ac.email,
+          name: null,
+          phone: ac.phone,
+          source: 'abandoned_cart',
+          createdAt: ac.created_at,
+          productInterest: ac.product_name,
+          isConverted: ac.is_converted
+        });
+      } else {
+        if (!existing.phone && ac.phone) existing.phone = ac.phone;
+        if (!existing.productInterest) existing.productInterest = ac.product_name;
+      }
+    });
+
+    const customers = Array.from(customerMap.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 50);
+
+    const totalCustomers = customerMap.size;
+
     const stats = {
       totalPageViews,
       uniqueSessions,
       totalRevenue,
       totalPurchases,
       completedPurchases,
+      totalCustomers,
       period,
       pageViewsByDate: Object.entries(pageViewsByDate)
         .map(([date, views]) => ({ date, views }))
@@ -218,7 +326,8 @@ serve(async (req) => {
         .map(([page, views]) => ({ page, views }))
         .sort((a, b) => b.views - a.views),
       topProducts,
-      recentSales
+      recentSales,
+      customers
     };
 
     console.log('Stats calculated successfully');

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Eye, DollarSign, ShoppingCart, TrendingUp, AlertCircle, Package, Clock, CheckCircle, XCircle, Download } from 'lucide-react';
+import { Users, Eye, DollarSign, ShoppingCart, TrendingUp, AlertCircle, Package, Clock, CheckCircle, XCircle, Download, Phone, Mail, MessageCircle, User } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { toast } from 'sonner';
 
@@ -27,18 +27,31 @@ interface RecentSale {
   createdAt: string;
 }
 
+interface Customer {
+  id: string;
+  email: string;
+  name: string | null;
+  phone: string | null;
+  source: string;
+  createdAt: string;
+  productInterest?: string;
+  isConverted?: boolean;
+}
+
 interface AdminStats {
   totalPageViews: number;
   uniqueSessions: number;
   totalRevenue: number;
   totalPurchases: number;
   completedPurchases: number;
+  totalCustomers: number;
   period: string;
   pageViewsByDate: { date: string; views: number }[];
   revenueByDate: { date: string; revenue: number }[];
   viewsByPage: { page: string; views: number }[];
   topProducts: TopProduct[];
   recentSales: RecentSale[];
+  customers: Customer[];
 }
 
 type PeriodFilter = 'today' | 'yesterday' | '3d' | '7d' | '30d' | '1y';
@@ -123,6 +136,29 @@ const Dashboard = () => {
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const getSourceBadge = (source: string) => {
+    switch (source) {
+      case 'registered':
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Cadastrado</Badge>;
+      case 'lead':
+      case 'popup_cupom':
+        return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Lead</Badge>;
+      case 'free_trial':
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Trial Grátis</Badge>;
+      case 'abandoned_cart':
+        return <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">Carrinho Abandonado</Badge>;
+      default:
+        return <Badge variant="outline">{source}</Badge>;
+    }
+  };
+
+  const formatWhatsAppLink = (phone: string | null) => {
+    if (!phone) return null;
+    const cleanPhone = phone.replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    return `https://wa.me/${phoneWithCountry}`;
   };
 
   // Funções de exportação CSV
@@ -341,7 +377,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Visualizações</CardTitle>
@@ -383,6 +419,17 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{stats.completedPurchases} / {stats.totalPurchases}</div>
             <p className="text-xs text-muted-foreground">Pagos / Total</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-pink-500/10 to-pink-600/5 border-pink-500/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Clientes</CardTitle>
+            <User className="h-4 w-4 text-pink-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalCustomers?.toLocaleString('pt-BR') || 0}</div>
+            <p className="text-xs text-muted-foreground">Total de contatos</p>
           </CardContent>
         </Card>
       </div>
@@ -585,6 +632,77 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Customers Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Clientes Recentes
+          </CardTitle>
+          <CardDescription>Contatos capturados - clique no WhatsApp para entrar em contato</CardDescription>
+        </CardHeader>
+        <CardContent className="max-h-[500px] overflow-y-auto">
+          {stats.customers && stats.customers.length > 0 ? (
+            <div className="space-y-3">
+              {stats.customers.map((customer) => (
+                <div 
+                  key={customer.id} 
+                  className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-all"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium truncate">{customer.name || 'Sem nome'}</p>
+                      {getSourceBadge(customer.source)}
+                      {customer.isConverted === false && customer.source === 'abandoned_cart' && (
+                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Não convertido</Badge>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Mail className="h-3.5 w-3.5" />
+                        {customer.email}
+                      </span>
+                      {customer.phone && (
+                        <span className="flex items-center gap-1">
+                          <Phone className="h-3.5 w-3.5" />
+                          {customer.phone}
+                        </span>
+                      )}
+                    </div>
+                    {customer.productInterest && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Interesse: {customer.productInterest}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(customer.createdAt)}
+                    </span>
+                    {customer.phone && formatWhatsAppLink(customer.phone) && (
+                      <a
+                        href={formatWhatsAppLink(customer.phone)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        WhatsApp
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">Nenhum cliente encontrado</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Top Pages */}
       <Card>
