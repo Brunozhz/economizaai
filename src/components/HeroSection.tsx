@@ -98,7 +98,7 @@ const HeroSection = () => {
             ✨ Não pague mais caro para criar sem limites.
           </p>
           
-          {/* Enhanced CTAs */}
+          {/* Enhanced CTA */}
           <div className="flex flex-wrap justify-center gap-5 pt-4">
             <Button size="lg" className="h-16 px-10 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white font-bold text-lg rounded-2xl shadow-[0_0_40px_rgba(236,72,153,0.4)] hover:shadow-[0_0_60px_rgba(236,72,153,0.6)] transition-all duration-500 hover:scale-105 animate-gradient group" style={{
               backgroundSize: '200% auto'
@@ -108,12 +108,8 @@ const HeroSection = () => {
               });
             }}>
               <Zap className="mr-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
-              Ver Catálogo
+              COMPRAR AGORA
               <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button size="lg" variant="outline" className="h-16 px-10 border-2 border-primary/50 text-primary hover:bg-primary/10 font-bold text-lg rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:shadow-[0_0_30px_rgba(236,72,153,0.3)] group" onClick={() => window.open('https://chat.whatsapp.com/LFYmqa09RCI5e7KecBQ8FG', '_blank')}>
-              <Sparkles className="mr-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
-              Grupo VIP
             </Button>
           </div>
 
