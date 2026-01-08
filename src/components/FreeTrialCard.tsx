@@ -120,34 +120,61 @@ const FreeTrialCard = ({ onClaim }: FreeTrialCardProps) => {
 
         {/* Product Preview with Background Image */}
         <div
-          className="relative p-5 pt-14 flex items-center justify-center overflow-hidden"
+          className="relative px-5 py-8 pt-14 flex items-center justify-center overflow-hidden"
           style={{
             backgroundImage: `url(${cardBackground})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
         >
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+          {/* Overlay mais fraco */}
+          <div className="absolute inset-0 bg-black/50" />
           
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl opacity-50 bg-emerald-500 animate-pulse" />
-          </div>
+          {/* Glow verde */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse at center, rgba(0, 255, 136, 0.4) 0%, transparent 70%)'
+            }}
+          />
 
           <div className="relative text-center space-y-2 z-10">
-            <h3 className="text-lg font-bold tracking-wide uppercase text-emerald-400 drop-shadow-lg">
-              Demonstração
-            </h3>
-            <div className="relative">
-              <p
-                className="text-6xl font-black bg-gradient-to-r from-emerald-400 via-green-300 to-teal-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]"
+            {/* Title com fundo semi-transparente - estilo neon */}
+            <div className="inline-block px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/10">
+              <h3 
+                className="text-base font-extrabold tracking-[0.15em] uppercase text-white"
+                style={{
+                  textShadow: '0 0 20px rgb(0, 255, 136), 0 2px 4px rgba(0,0,0,0.8)'
+                }}
+              >
+                Demonstração
+              </h3>
+            </div>
+            
+            {/* Credits display - neon style como ProductCard */}
+            <div className="relative py-3">
+              <p 
+                className="text-7xl font-black font-display leading-none text-white"
+                style={{
+                  textShadow: '0 0 40px rgb(0, 255, 136), 0 0 80px rgba(0, 255, 136, 0.4), 0 4px 8px rgba(0,0,0,0.9)',
+                  WebkitTextStroke: '1px rgb(0, 255, 136)',
+                }}
               >
                 20
               </p>
             </div>
-            <p className="text-sm font-bold text-white uppercase tracking-widest drop-shadow-lg">
-              Créditos Grátis
-            </p>
+            
+            {/* Label Créditos com estilo neon */}
+            <div className="inline-block px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">
+              <p 
+                className="text-xs font-bold uppercase tracking-[0.25em] text-white/95"
+                style={{
+                  textShadow: '0 0 10px rgb(0, 255, 136), 0 1px 2px rgba(0,0,0,0.8)'
+                }}
+              >
+                Créditos Grátis
+              </p>
+            </div>
           </div>
         </div>
 
