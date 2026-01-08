@@ -212,9 +212,11 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             </div>
             
             {/* Our price - Destacado - Sempre visível */}
-            <p className={`text-5xl md:text-[32px] font-black leading-none bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}
+            <p 
+              className={`text-5xl md:text-[32px] font-black leading-none ${colors.textClass}`}
               style={{
                 filter: `drop-shadow(0 0 12px ${colors.glow})`,
+                textShadow: `0 0 20px ${colors.primary}, 0 0 40px ${colors.glow}`,
               }}
             >
               R$ {price.toFixed(2).replace('.', ',')}
