@@ -680,9 +680,10 @@ const Dashboard = () => {
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(customer.createdAt)}
-                    </span>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">Cadastrado em</p>
+                      <p className="text-sm font-medium">{formatDate(customer.createdAt)}</p>
+                    </div>
                     {customer.phone && formatWhatsAppLink(customer.phone) && (
                       <a
                         href={formatWhatsAppLink(customer.phone)!}
