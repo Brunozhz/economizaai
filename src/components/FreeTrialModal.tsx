@@ -91,6 +91,19 @@ const FreeTrialModal = ({ isOpen, onClose }: FreeTrialModalProps) => {
     const effectiveEmail = getEffectiveEmail();
     const effectivePhone = getEffectivePhone();
 
+    // Fire Meta Pixel InitiateCheckout event
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'InitiateCheckout', {
+        value: 0,
+        currency: 'BRL',
+        content_name: 'Demonstração - 20 Créditos Grátis',
+        content_type: 'product',
+        content_ids: ['free_trial_20'],
+        num_items: 1,
+      });
+      console.log('Meta Pixel InitiateCheckout event fired: Free Trial');
+    }
+
     try {
       // Chamar edge function para validar e registrar o resgate
       const { data, error } = await supabase.functions.invoke('claim-free-trial', {
@@ -119,6 +132,18 @@ const FreeTrialModal = ({ isOpen, onClose }: FreeTrialModalProps) => {
 
       console.log('Free trial claimed successfully');
       setStatus('success');
+
+      // Fire Meta Pixel Purchase event
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'Purchase', {
+          value: 0,
+          currency: 'BRL',
+          content_name: 'Demonstração - 20 Créditos Grátis',
+          content_type: 'product',
+          content_ids: ['free_trial_20'],
+        });
+        console.log('Meta Pixel Purchase event fired: Free Trial');
+      }
 
       // Fire confetti celebration
       const duration = 3000;
