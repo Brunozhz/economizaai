@@ -1,65 +1,15 @@
-import { Search, Menu, Download, X, Share, Plus, Monitor, Smartphone, User, ShoppingBag, MessageCircle, Settings } from "lucide-react";
+import { Search, Menu, Download, X, Monitor, Smartphone } from "lucide-react";
 import LovableHeart3D from "./LovableHeart3D";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { useNotificationSound } from "@/hooks/useNotificationSound";
-import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import PushNotificationToggle from "./PushNotificationToggle";
 type DeviceType = 'android' | 'ios' | 'desktop-chrome' | 'desktop-edge' | 'desktop-other';
 
 const Header = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
   const { isInstallable, isInstalled, isIOS, installApp, canShowInstall } = usePWAInstall();
-  const { playNotificationSound } = useNotificationSound();
-  const { isAdmin } = useAdminCheck();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop-other');
-  const [unreadMessages, setUnreadMessages] = useState(0);
-
-  // Fetch unread messages count
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchUnreadCount = async () => {
-      const { count } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_read', false);
-      
-      setUnreadMessages(count || 0);
-    };
-
-    fetchUnreadCount();
-
-    // Listen for new messages
-    const channel = supabase
-      .channel('header-messages')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        () => {
-          setUnreadMessages(prev => prev + 1);
-          // Play notification sound when new message arrives
-          playNotificationSound();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'messages' },
-        () => fetchUnreadCount()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
 
   useEffect(() => {
     const detectDevice = () => {
@@ -188,62 +138,6 @@ const Header = () => {
               >
                 <Download className="h-3.5 w-3.5 mr-1.5" />
                 Baixar App
-              </Button>
-            )}
-
-            {/* Push Notifications Toggle */}
-            {user && <PushNotificationToggle />}
-
-            {/* Messages Button */}
-            {user && (
-              <Button 
-                size="sm"
-                variant="ghost"
-                onClick={() => navigate('/messages')}
-                className="h-9 w-9 p-0 relative"
-              >
-                <MessageCircle className="h-5 w-5" />
-                {unreadMessages > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
-                    {unreadMessages > 9 ? '9+' : unreadMessages}
-                  </span>
-                )}
-              </Button>
-            )}
-
-            {/* Admin Panel Button */}
-            {isAdmin && (
-              <Button 
-                size="sm"
-                variant="ghost"
-                onClick={() => navigate('/admin')}
-                className="h-9 w-9 p-0"
-                title="Painel Admin"
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-            )}
-
-            {/* User/Auth Button */}
-            {user ? (
-              <Button 
-                size="sm"
-                variant="outline"
-                onClick={() => navigate('/purchases')}
-                className="h-9 px-3 gap-1.5"
-              >
-                <ShoppingBag className="h-4 w-4" />
-                <span className="hidden md:inline">Compras</span>
-              </Button>
-            ) : (
-              <Button 
-                size="sm"
-                variant="outline"
-                onClick={() => navigate('/auth')}
-                className="h-9 px-3 gap-1.5"
-              >
-                <User className="h-4 w-4" />
-                <span className="hidden md:inline">Entrar</span>
               </Button>
             )}
             

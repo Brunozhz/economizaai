@@ -56,7 +56,7 @@ const Footer = () => {
           <div className="space-y-5">
             <h4 className="font-bold text-lg text-foreground">Links Úteis</h4>
             <ul className="space-y-3">
-              {['Catálogo', 'Meus Pedidos', 'FAQ', 'Termos de Uso'].map((item) => (
+              {['Catálogo', 'Termos de Uso'].map((item) => (
                 <li key={item}>
                   <a href="#" className="text-base text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary/50 group-hover:bg-primary transition-colors" />

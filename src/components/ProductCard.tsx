@@ -9,7 +9,7 @@ interface ProductCardProps {
   duration: string;
   usage: string;
   originalPrice: number;
-  tier: 'start' | 'basic' | 'plus' | 'advanced' | 'elite';
+  tier: 'start' | 'basic' | 'plus' | 'advanced' | 'elite' | 'noob' | 'escala' | 'pesado';
   popular?: boolean;
   onBuy: (product: { name: string; credits: number; price: number }) => void;
 }
@@ -56,11 +56,32 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
       textClass: 'text-yellow-400',
       bgClass: 'bg-gradient-to-r from-yellow-400 to-orange-500',
     },
+    noob: {
+      primary: 'rgb(0, 255, 136)', // green neon
+      glow: 'rgba(0, 255, 136, 0.4)',
+      gradient: 'from-emerald-400 to-cyan-400',
+      textClass: 'text-emerald-400',
+      bgClass: 'bg-emerald-500',
+    },
+    escala: {
+      primary: 'rgb(250, 204, 21)', // yellow-400
+      glow: 'rgba(250, 204, 21, 0.6)',
+      gradient: 'from-yellow-400 via-amber-500 to-orange-500',
+      textClass: 'text-yellow-400',
+      bgClass: 'bg-gradient-to-r from-yellow-400 to-orange-500',
+    },
+    pesado: {
+      primary: 'rgb(168, 85, 247)', // purple-500
+      glow: 'rgba(168, 85, 247, 0.5)',
+      gradient: 'from-purple-500 via-violet-500 to-fuchsia-500',
+      textClass: 'text-purple-400',
+      bgClass: 'bg-purple-500',
+    },
   };
 
-  const colors = tierColors[tier];
-  const isElite = tier === 'elite';
-  const isAdvanced = tier === 'advanced';
+  const colors = tierColors[tier] || tierColors.start;
+  const isElite = tier === 'elite' || tier === 'escala';
+  const isAdvanced = tier === 'advanced' || tier === 'pesado';
   const isHot = isElite || isAdvanced;
 
   return (
@@ -184,10 +205,11 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         <div className="relative px-5 md:px-4 py-6 md:py-5 space-y-5 md:space-y-4 bg-gradient-to-b from-card via-card to-background/90">
           {/* Duration & Usage */}
           <div className={`p-4 md:p-3 rounded-xl border text-sm md:text-xs ${
-            isElite ? 'bg-yellow-500/8 border-yellow-500/25' :
-            isAdvanced ? 'bg-purple-500/8 border-purple-500/25' :
+            isElite ? (tier === 'escala' ? 'bg-yellow-500/8 border-yellow-500/25' : 'bg-yellow-500/8 border-yellow-500/25') :
+            isAdvanced ? (tier === 'pesado' ? 'bg-purple-500/8 border-purple-500/25' : 'bg-purple-500/8 border-purple-500/25') :
             tier === 'plus' ? 'bg-purple-500/8 border-purple-500/25' :
             tier === 'basic' ? 'bg-cyan-500/8 border-cyan-500/25' :
+            tier === 'noob' ? 'bg-emerald-500/8 border-emerald-500/25' :
             'bg-emerald-500/8 border-emerald-500/25'
           }`}>
             <div className="flex items-center gap-2.5 mb-2">
@@ -202,14 +224,16 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
 
           {/* Pricing */}
           <div className="space-y-3 md:space-y-3 text-center py-2 md:py-1">
-            {/* Original price */}
-            <div className="flex items-center justify-center gap-2">
-              <X className="h-4 w-4 md:h-3.5 md:w-3.5 text-red-400/80" />
-              <span className="text-red-400/90 line-through text-lg md:text-sm font-medium">
-                R$ {originalPrice.toFixed(2).replace('.', ',')}
-              </span>
-              <span className="text-red-400/60 text-xs md:text-[10px] font-medium">(Oficial)</span>
-            </div>
+            {/* Original price - só mostra se tiver originalPrice > 0 */}
+            {originalPrice > 0 && (
+              <div className="flex items-center justify-center gap-2">
+                <X className="h-4 w-4 md:h-3.5 md:w-3.5 text-red-400/80" />
+                <span className="text-red-400/90 line-through text-lg md:text-sm font-medium">
+                  R$ {originalPrice.toFixed(2).replace('.', ',')}
+                </span>
+                <span className="text-red-400/60 text-xs md:text-[10px] font-medium">(Oficial)</span>
+              </div>
+            )}
             
             {/* Our price - Destacado - Sempre visível */}
             <p 
@@ -224,10 +248,11 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             
             {/* Pix badge */}
             <div className={`inline-flex items-center justify-center gap-2.5 md:gap-2 px-5 md:px-4 py-2.5 md:py-2 rounded-lg ${
-              isElite ? 'bg-yellow-500/12 border border-yellow-500/20' :
-              isAdvanced ? 'bg-purple-500/12 border border-purple-500/20' :
+              isElite ? (tier === 'escala' ? 'bg-yellow-500/12 border border-yellow-500/20' : 'bg-yellow-500/12 border border-yellow-500/20') :
+              isAdvanced ? (tier === 'pesado' ? 'bg-purple-500/12 border border-purple-500/20' : 'bg-purple-500/12 border border-purple-500/20') :
               tier === 'plus' ? 'bg-purple-500/12 border border-purple-500/20' :
               tier === 'basic' ? 'bg-cyan-500/12 border border-cyan-500/20' :
+              tier === 'noob' ? 'bg-emerald-500/12 border border-emerald-500/20' :
               'bg-emerald-500/12 border border-emerald-500/20'
             }`}>
               <span className={`h-5 w-5 md:h-4 md:w-4 rounded-full flex items-center justify-center ${colors.bgClass}`}>

@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { X, Copy, Check, Loader2, CheckCircle, Clock, AlertCircle, Gift, Sparkles, Tag } from "lucide-react";
+import { X, Copy, Check, Loader2, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -20,22 +18,15 @@ interface CheckoutModalProps {
 
 type PaymentStatus = 'form' | 'loading' | 'created' | 'paid' | 'expired' | 'error';
 
-const VALID_COUPONS: Record<string, number> = {
-  'BEMVINDO20': 20,
-  'DESCONTO15': 15,
-  'VIP10': 10,
-  'SAIANAO15': 15,
-};
+// Webhook URL e API Key - usar variáveis de ambiente
+const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL || 'https://n8n.infinityunlocker.com.br/webhook-test/e2bdd7b8-2639-4ea8-8800-64f2e92b5401';
+const PIX_API_KEY = import.meta.env.VITE_PIX_API_KEY || '60414|Qm6v4i3AsBBomQV7S4sXmMGMVBeOZDYKRf2P2u3g32aafa32';
 
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
-  const { profile, user } = useAuth();
   const [status, setStatus] = useState<PaymentStatus>('form');
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  
-  // Check if user is logged in
-  const isLoggedIn = !!user && !!profile;
   const [nameError, setNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -46,21 +37,8 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   } | null>(null);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
-  const [showExitOffer, setShowExitOffer] = useState(false);
-  const [couponApplied, setCouponApplied] = useState(false);
-  const [hasSeenExitOffer, setHasSeenExitOffer] = useState(false);
-  const [couponTimeLeft, setCouponTimeLeft] = useState(120); // 2 minutes countdown
   const [remarketingSent, setRemarketingSent] = useState(false);
-  const [couponCode, setCouponCode] = useState('');
-  const [couponError, setCouponError] = useState('');
-  const [appliedCouponCode, setAppliedCouponCode] = useState('');
-  const [discountPercent, setDiscountPercent] = useState(15);
-  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const { toast } = useToast();
-
-  const EXIT_OFFER_DISCOUNT = 15;
-  const COUPON_EXPIRE_SECONDS = 120; // 2 minutes
-  const discountedPrice = product ? product.discountPrice * (1 - discountPercent / 100) : 0;
 
   const formatPhone = (value: string) => {
     // Remove tudo que não for número
@@ -99,7 +77,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     let isValid = true;
     
     // Se usuário está logado, usar dados do perfil
-    if (isLoggedIn) {
+    if (false) { // Auth removed
       return true; // Dados já validados pelo sistema de auth
     }
     
@@ -126,21 +104,20 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     return isValid;
   };
   
-  // Get effective name, email and phone (from profile if logged in, otherwise from form)
+  // Get effective name, email and phone (from form fields)
   const getEffectiveName = useCallback(() => {
-    return isLoggedIn && profile?.name ? profile.name : customerName.trim();
-  }, [isLoggedIn, profile?.name, customerName]);
+    return customerName.trim();
+  }, [customerName]);
   
   const getEffectiveEmail = useCallback(() => {
-    return isLoggedIn && profile?.email ? profile.email : email;
-  }, [isLoggedIn, profile?.email, email]);
+    return email;
+  }, [email]);
   
   const getEffectivePhone = useCallback(() => {
-    const phoneValue = isLoggedIn && profile?.phone ? profile.phone : phone;
-    const phoneNumbers = phoneValue.replace(/\D/g, '');
+    const phoneNumbers = phone.replace(/\D/g, '');
     // Add 55 prefix if not already present
     return phoneNumbers.startsWith('55') ? phoneNumbers : `55${phoneNumbers}`;
-  }, [isLoggedIn, profile?.phone, phone]);
+  }, [phone]);
   
 
   const handleSubmitForm = () => {
@@ -155,69 +132,88 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     setStatus('loading');
     setPixData(null);
     
-    const finalPrice = couponApplied ? discountedPrice : product.discountPrice;
-    const couponLabel = appliedCouponCode ? `(cupom ${appliedCouponCode})` : '(com cupom 15%)';
-    
+    const finalPrice = product.discountPrice;
     const effectiveName = getEffectiveName();
     const effectiveEmail = getEffectiveEmail();
     const effectivePhone = getEffectivePhone();
     
     try {
-      const { data, error } = await supabase.functions.invoke('create-pix', {
-        body: {
-          value: finalPrice,
-          productName: couponApplied ? `${product.name} ${couponLabel}` : product.name,
-          productId: `credits-${product.credits}`,
-          customerName: effectiveName,
-          customerPhone: effectivePhone.replace(/\D/g, ''),
-          customerEmail: effectiveEmail,
-          userId: user?.id || null,
-          isRecovery: isRecoveryMode, // Flag to skip remarketing automation
+      // Call PIX API directly using API key from environment
+      const response = await fetch('https://api.pushinpay.com.br/api/pix/cashIn', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${PIX_API_KEY}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          value: Math.round(finalPrice * 100), // Value in centavos
+        }),
       });
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Erro ao criar PIX');
+      }
       
-      if (data.success) {
+      if (data.id && data.qr_code) {
         setPixData({
-          pixId: data.pixId,
-          qrCode: data.qrCode,
-          qrCodeBase64: data.qrCodeBase64,
+          pixId: data.id,
+          qrCode: data.qr_code,
+          qrCodeBase64: data.qr_code_base64 || data.qr_code,
         });
         setStatus('created');
         setTimeLeft(900);
         
-        // 🔔 Send PIX generated webhook to n8n (recovery route)
+        // 🔔 Send webhook with ALL variables to n8n
         try {
-          const pixGeneratedPayload = {
-            email: effectiveEmail,
-            whatsapp: effectivePhone.replace(/\D/g, ''),
-            status: 'pending',
-            plano: product.name,
+          const webhookPayload = {
+            // Product info
+            productName: product.name,
+            productId: `credits-${product.credits}`,
+            credits: product.credits,
+            originalPrice: product.originalPrice,
+            discountPrice: product.discountPrice,
+            finalPrice: finalPrice,
+            
+            // Customer info
+            customerName: effectiveName,
+            customerEmail: effectiveEmail,
+            customerPhone: effectivePhone.replace(/\D/g, ''),
+            
+            // PIX info
+            pixId: data.id,
+            qrCode: data.qr_code,
+            status: data.status || 'pending',
+            createdAt: new Date().toISOString(),
+            
+            // Additional info
+            timestamp: Date.now(),
           };
           
-          console.log('Sending PIX generated webhook:', pixGeneratedPayload);
+          console.log('Sending webhook with all data:', webhookPayload);
           
-          fetch('https://n8n.infinityunlocker.com.br/webhook/v1/pix-gerado', {
+          fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(pixGeneratedPayload),
+            body: JSON.stringify(webhookPayload),
           }).then(res => {
             if (res.ok) {
-              console.log('PIX generated webhook sent successfully');
+              console.log('Webhook sent successfully');
             } else {
-              console.error('PIX generated webhook failed:', res.status);
+              console.error('Webhook failed:', res.status);
             }
           }).catch(err => {
-            console.error('Error sending PIX generated webhook:', err);
+            console.error('Error sending webhook:', err);
           });
         } catch (webhookError) {
-          console.error('Error sending PIX generated webhook:', webhookError);
+          console.error('Error sending webhook:', webhookError);
         }
       } else {
-        throw new Error(data.error || 'Erro ao criar PIX');
+        throw new Error('Resposta inválida da API PIX');
       }
     } catch (error: any) {
       console.error('Error creating PIX:', error);
@@ -228,7 +224,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         variant: "destructive",
       });
     }
-  }, [product, toast, couponApplied, discountedPrice, user, isRecoveryMode, appliedCouponCode, getEffectiveName, getEffectiveEmail, getEffectivePhone]);
+  }, [product, toast, getEffectiveName, getEffectiveEmail, getEffectivePhone]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -236,16 +232,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setStatus('form');
       setCustomerName('');
       setPhone('');
+      setEmail('');
       setNameError('');
       setPhoneError('');
       setEmailError('');
       setPixData(null);
       setTimeLeft(900);
-      setShowExitOffer(false);
-      setHasSeenExitOffer(false);
       setRemarketingSent(false);
-      setCouponError('');
-      setIsRecoveryMode(false);
 
       // Fire Meta Pixel InitiateCheckout event
       if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -259,230 +252,15 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         });
         console.log('Meta Pixel InitiateCheckout event fired:', product.name);
       }
-
-      // Check for remarketing offer first (priority)
-      const savedRemarketing = localStorage.getItem('remarketing_offer');
-      if (savedRemarketing) {
-        try {
-          const remarketing = JSON.parse(savedRemarketing);
-          // Only apply if the product matches
-          if (remarketing.code && remarketing.discount && remarketing.productName === product.name) {
-            setCouponCode(remarketing.code);
-            setAppliedCouponCode(remarketing.code);
-            setDiscountPercent(remarketing.discount);
-            setCouponApplied(true);
-            setIsRecoveryMode(true); // Mark as recovery to skip remarketing automation
-            
-            toast({
-              title: "🎁 Cupom de recuperação aplicado!",
-              description: `Desconto de ${remarketing.discount}% aplicado. Preencha seus dados para gerar o PIX!`,
-            });
-            
-            // Clear it after applying
-            localStorage.removeItem('remarketing_offer');
-            return;
-          } else if (remarketing.productName && remarketing.productName !== product.name) {
-            // Clear invalid remarketing offer for wrong product
-            localStorage.removeItem('remarketing_offer');
-          }
-        } catch (e) {
-          console.error('Error parsing remarketing offer:', e);
-        }
-      }
-
-      // Check for saved promo coupon from email capture
-      const savedPromo = localStorage.getItem('promo_coupon');
-      if (savedPromo) {
-        try {
-          const promo = JSON.parse(savedPromo);
-          if (promo.code && promo.discount && promo.email) {
-            setEmail(promo.email);
-            setCouponCode(promo.code);
-            setAppliedCouponCode(promo.code);
-            setDiscountPercent(promo.discount);
-            setCouponApplied(true);
-            toast({
-              title: "🎁 Cupom aplicado automaticamente!",
-              description: `Seu desconto de ${promo.discount}% foi aplicado.`,
-            });
-            return;
-          }
-        } catch (e) {
-          console.error('Error parsing promo coupon:', e);
-        }
-      }
-
-      // Reset coupon state if no saved promo
-      setEmail('');
-      setCouponApplied(false);
-      setCouponCode('');
-      setAppliedCouponCode('');
-      setDiscountPercent(15);
     }
   }, [isOpen, product, toast]);
 
-  // Handle close with exit offer
+  // Handle close
   const handleClose = () => {
-    // Show exit offer only if user hasn't seen it and hasn't applied coupon yet
-    if (!hasSeenExitOffer && !couponApplied && status !== 'paid' && status !== 'loading') {
-      setShowExitOffer(true);
-      setHasSeenExitOffer(true);
-      setCouponTimeLeft(COUPON_EXPIRE_SECONDS); // Reset coupon timer
-    } else {
-      onClose();
-    }
-  };
-
-  // Coupon countdown timer
-  useEffect(() => {
-    if (!showExitOffer || couponTimeLeft <= 0) return;
-
-    const timer = setInterval(() => {
-      setCouponTimeLeft((prev) => {
-        if (prev <= 1) {
-          // Coupon expired, close the offer
-          setShowExitOffer(false);
-          onClose();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [showExitOffer, couponTimeLeft, onClose]);
-
-  // Apply exit offer coupon
-  const applyExitCoupon = () => {
-    setCouponApplied(true);
-    setShowExitOffer(false);
-    setDiscountPercent(EXIT_OFFER_DISCOUNT);
-    setAppliedCouponCode('SAIANAO15');
-    toast({
-      title: "🎉 Cupom aplicado!",
-      description: `Desconto de ${EXIT_OFFER_DISCOUNT}% aplicado com sucesso!`,
-    });
-  };
-
-  // Apply manual coupon
-  const handleApplyCoupon = async () => {
-    const code = couponCode.toUpperCase().trim();
-    
-    if (!code) {
-      setCouponError('Digite um código de cupom');
-      return;
-    }
-
-    const effectiveEmail = getEffectiveEmail();
-    
-    if (!effectiveEmail || !effectiveEmail.includes('@')) {
-      setCouponError('Preencha seu e-mail primeiro para validar o cupom');
-      return;
-    }
-
-    if (!product) {
-      setCouponError('Erro: produto não selecionado');
-      return;
-    }
-
-    // Check for static coupons first
-    let discount = VALID_COUPONS[code];
-    let isRemarketingCoupon = false;
-    let isRouletteCoupon = false;
-    
-    // If not a static coupon, check for roulette coupons (user_coupons) in database
-    if (!discount) {
-      const { data: rouletteCoupon } = await supabase
-        .from('user_coupons')
-        .select('*')
-        .eq('coupon_code', code)
-        .eq('email', effectiveEmail.toLowerCase().trim())
-        .eq('is_used', false)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
-
-      if (rouletteCoupon) {
-        discount = rouletteCoupon.discount_percent;
-        isRouletteCoupon = true;
-      }
-    }
-    
-    // If not a roulette coupon, check for remarketing coupons in database
-    if (!discount) {
-      const { data: remarketingCoupon } = await supabase
-        .from('remarketing_coupons')
-        .select('*')
-        .eq('coupon_code', code)
-        .eq('email', effectiveEmail.toLowerCase().trim())
-        .eq('is_used', false)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
-
-      if (remarketingCoupon) {
-        // Check if coupon is for this specific product
-        if (remarketingCoupon.product_name !== product.name) {
-          setCouponError(`Este cupom é válido apenas para o produto "${remarketingCoupon.product_name}"`);
-          return;
-        }
-        discount = remarketingCoupon.discount_percent;
-        isRemarketingCoupon = true;
-      }
-    }
-    
-    if (!discount) {
-      setCouponError('Cupom inválido, expirado ou não é seu');
-      return;
-    }
-
-    // Check if static coupon was already used by this email
-    if (!isRemarketingCoupon && !isRouletteCoupon) {
-      const { data: existingUsage } = await supabase
-        .from('coupon_usage')
-        .select('id')
-        .eq('email', effectiveEmail.toLowerCase().trim())
-        .eq('coupon_code', code)
-        .maybeSingle();
-
-      if (existingUsage) {
-        setCouponError('Você já utilizou este cupom');
-        return;
-      }
-    }
-
-    setCouponApplied(true);
-    setDiscountPercent(discount);
-    setAppliedCouponCode(code);
-    setCouponError('');
-    toast({
-      title: "🎉 Cupom aplicado!",
-      description: `Desconto de ${discount}% aplicado com sucesso!`,
-    });
-  };
-
-  // Remove coupon
-  const handleRemoveCoupon = () => {
-    setCouponApplied(false);
-    setCouponCode('');
-    setAppliedCouponCode('');
-    setDiscountPercent(15);
-    toast({
-      title: "Cupom removido",
-      description: "O desconto foi removido do seu pedido.",
-    });
-  };
-
-  // Continue without coupon
-  const continueWithoutCoupon = () => {
-    setShowExitOffer(false);
     onClose();
   };
 
-  // Format coupon time
-  const formatCouponTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  // All coupon-related functions removed
 
   // Check payment status periodically
   useEffect(() => {
@@ -490,31 +268,37 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
     const checkStatus = async () => {
       try {
-        const effectiveEmailForPayment = isLoggedIn && profile?.email ? profile.email : email;
-        const effectivePhoneForPayment = isLoggedIn && profile?.phone ? profile.phone : phone;
-        const effectiveNameForPayment = isLoggedIn && profile?.name ? profile.name : customerName;
+        const effectiveEmailForPayment = email;
+        const effectivePhoneForPayment = phone;
+        const effectiveNameForPayment = customerName;
         
-        const { data, error } = await supabase.functions.invoke('check-pix-status', {
-          body: { 
+        // Call check-pix-status API directly
+        const response = await fetch('/api/check-pix-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             pixId: pixData.pixId,
             productName: product?.name,
             productId: `credits-${product?.credits}`,
-            value: couponApplied ? Math.round(discountedPrice * 100) : Math.round((product?.discountPrice || 0) * 100),
+            value: Math.round((product?.discountPrice || 0) * 100),
             customerName: effectiveNameForPayment,
             customerEmail: effectiveEmailForPayment,
             customerPhone: effectivePhoneForPayment.replace(/\D/g, ''),
-            userId: user?.id || null,
-            couponCode: appliedCouponCode || null,
-            isRecovery: isRecoveryMode,
-          },
+            userId: null,
+          }),
         });
 
+        const data = await response.json();
+        const error = !response.ok ? new Error(data.error || 'Erro ao verificar PIX') : null;
+        
         if (error) throw error;
 
         if (data.success && data.status === 'paid') {
           setStatus('paid');
           
-          const finalPrice = couponApplied ? discountedPrice : product?.discountPrice;
+          const finalPrice = product?.discountPrice || 0;
           
           // Fire Meta Pixel Purchase event
           if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -527,39 +311,6 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             });
             console.log('Meta Pixel Purchase event fired:', finalPrice);
           }
-          
-          // Webhook is now sent by the edge function, no need to send from frontend
-          
-          // Register coupon usage if a coupon was applied
-          const effectiveEmailForCoupon = isLoggedIn && profile?.email ? profile.email : email;
-          if (couponApplied && appliedCouponCode && effectiveEmailForCoupon) {
-            // Mark roulette coupon as used
-            await supabase
-              .from('user_coupons')
-              .update({ is_used: true })
-              .eq('coupon_code', appliedCouponCode)
-              .eq('email', effectiveEmailForCoupon.toLowerCase().trim());
-
-            // Mark remarketing coupon as used
-            await supabase
-              .from('remarketing_coupons')
-              .update({ is_used: true })
-              .eq('coupon_code', appliedCouponCode)
-              .eq('email', effectiveEmailForCoupon.toLowerCase().trim());
-
-            // Also register in coupon_usage for tracking
-            await supabase
-              .from('coupon_usage')
-              .insert({
-                email: effectiveEmailForCoupon.toLowerCase().trim(),
-                coupon_code: appliedCouponCode,
-              })
-              .single();
-          }
-          
-          // Clear saved promo coupon after successful payment
-          localStorage.removeItem('promo_coupon');
-          localStorage.removeItem('remarketing_offer');
           
           toast({
             title: "Pagamento Confirmado! 🎉",
@@ -602,15 +353,18 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       if (status === 'created' && !remarketingSent) {
         console.log('Sending remarketing message...');
         try {
-          await supabase.functions.invoke('send-remarketing', {
-            body: {
+          // Send remarketing via API (if needed)
+          await fetch('/api/send-remarketing', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
               email,
               phone: phone.replace(/\D/g, ''),
               productName: product.name,
-              productPrice: couponApplied ? discountedPrice : product.discountPrice,
+              productPrice: product.discountPrice,
               pixId: pixData.pixId,
-              userName: profile?.name || '',
-            },
+              userName: customerName,
+            }),
           });
           setRemarketingSent(true);
           console.log('Remarketing message sent');
@@ -621,7 +375,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     }, 60000); // 1 minute
 
     return () => clearTimeout(remarketingTimer);
-  }, [status, remarketingSent, pixData?.pixId, product, email, phone, couponApplied, discountedPrice, profile?.name]);
+  }, [status, remarketingSent, pixData?.pixId, product, email, phone, customerName]);
 
   const copyToClipboard = async () => {
     if (!pixData?.qrCode) return;
@@ -658,101 +412,10 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={handleClose}
       />
-      
-      {/* Exit Offer Modal */}
-      {showExitOffer && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-sm bg-card border-2 border-primary/50 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
-            {/* Glow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary via-emerald-400 to-primary rounded-2xl blur-lg opacity-30 animate-pulse" />
-            
-            <div className="relative bg-card rounded-2xl overflow-hidden">
-              {/* Header with gift icon */}
-              <div className="bg-gradient-to-r from-primary/20 via-emerald-500/20 to-primary/20 p-6 text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,197,94,0.3),transparent_70%)]" />
-                <div className="relative">
-                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-primary to-emerald-500 mb-4 animate-bounce">
-                    <Gift className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-black text-foreground mb-1">Espera! 🎁</h3>
-                  <p className="text-muted-foreground text-sm">Temos um presente especial para você</p>
-                </div>
-              </div>
-              
-              {/* Content */}
-              <div className="p-6 space-y-4">
-                {/* Countdown Timer */}
-                <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-destructive/10 border border-destructive/30">
-                  <Clock className="h-5 w-5 text-destructive animate-pulse" />
-                  <span className="text-sm font-medium text-destructive">
-                    Oferta expira em: <strong className="text-lg">{formatCouponTime(couponTimeLeft)}</strong>
-                  </span>
-                </div>
-
-                <div className="text-center space-y-2">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
-                    <Tag className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-bold text-primary">CUPOM EXCLUSIVO</span>
-                    <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-                  </div>
-                  
-                  <p className="text-4xl font-black bg-gradient-to-r from-primary via-emerald-400 to-primary bg-clip-text text-transparent">
-                    {EXIT_OFFER_DISCOUNT}% OFF
-                  </p>
-                  
-                  <p className="text-muted-foreground text-sm">
-                    Aplicado automaticamente no seu pedido!
-                  </p>
-                  
-                  {product && (
-                    <div className="mt-4 p-3 rounded-xl bg-secondary/50 border border-border">
-                      <p className="text-sm text-muted-foreground">Novo valor:</p>
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-lg text-muted-foreground line-through">R$ {product.discountPrice.toFixed(2)}</span>
-                        <span className="text-2xl font-black text-primary">R$ {discountedPrice.toFixed(2)}</span>
-                      </div>
-                      <p className="text-xs text-primary mt-1 font-medium">
-                        Você economiza R$ {(product.discountPrice - discountedPrice).toFixed(2)}!
-                      </p>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="space-y-3">
-                  <Button
-                    onClick={applyExitCoupon}
-                    className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl shadow-glow-sm hover:scale-[1.02] transition-transform animate-pulse"
-                  >
-                    <Gift className="h-5 w-5 mr-2" />
-                    Aplicar Desconto Agora!
-                  </Button>
-                  
-                  <button
-                    onClick={continueWithoutCoupon}
-                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-                  >
-                    Não, obrigado. Sair mesmo assim.
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Modal */}
       <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in">
-        {/* Coupon Applied Badge */}
-        {couponApplied && (
-          <div className="absolute top-0 left-0 right-0 z-30 bg-gradient-to-r from-primary via-emerald-500 to-primary text-white text-xs font-bold py-2 text-center flex items-center justify-center gap-2">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>CUPOM DE {discountPercent}% APLICADO!</span>
-            <Sparkles className="h-3.5 w-3.5" />
-          </div>
-        )}
-        
         {/* Header */}
-        <div className={`flex items-center justify-between p-5 border-b border-border ${couponApplied ? 'pt-10' : ''}`}>
+        <div className="flex items-center justify-between p-5 border-b border-border">
           <div>
             <h2 className="text-xl font-bold text-foreground">Checkout</h2>
             <p className="text-sm text-muted-foreground">Pagamento via PIX</p>
@@ -770,26 +433,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           {/* Product Info */}
           {product && (
             <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 mb-5 relative overflow-hidden">
-              {couponApplied && (
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-emerald-500/5" />
-              )}
               <div className="relative">
                 <p className="font-semibold text-foreground">{product.name}</p>
                 <p className="text-sm text-muted-foreground">+{product.credits} créditos</p>
               </div>
               <div className="text-right relative">
-                {couponApplied ? (
-                  <>
-                    <p className="text-sm text-muted-foreground line-through">R$ {product.discountPrice.toFixed(2)}</p>
-                    <p className="text-xl font-bold text-primary">R$ {discountedPrice.toFixed(2)}</p>
-                    <span className="text-xs text-primary font-medium">-{discountPercent}%</span>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm text-price-old line-through">R$ {product.originalPrice.toFixed(2)}</p>
-                    <p className="text-xl font-bold text-price-new">R$ {product.discountPrice.toFixed(2)}</p>
-                  </>
-                )}
+                <p className="text-sm text-price-old line-through">R$ {product.originalPrice.toFixed(2)}</p>
+                <p className="text-xl font-bold text-price-new">R$ {product.discountPrice.toFixed(2)}</p>
               </div>
             </div>
           )}
@@ -797,122 +447,52 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           {/* Form State */}
           {status === 'form' && (
             <div className="space-y-4">
-              {/* Logged in user info */}
-              {isLoggedIn ? (
-                <div className="p-4 rounded-xl bg-primary/10 border border-primary/30 space-y-2">
-                  <div className="flex items-center gap-2 text-primary font-medium">
-                    <Check className="h-5 w-5" />
-                    <span>Dados preenchidos automaticamente</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    ✅ Você já tem uma conta logada e seus dados para pedido já foram preenchidos automaticamente.
-                  </p>
-                  <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-primary/20">
-                    {profile?.name && <p><strong>Nome:</strong> {profile.name}</p>}
-                    <p><strong>E-mail:</strong> {profile?.email}</p>
-                    {profile?.phone && <p><strong>Telefone:</strong> {profile.phone}</p>}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="customerName" className="text-foreground">Nome Completo</Label>
-                    <Input
-                      id="customerName"
-                      type="text"
-                      placeholder="Seu nome completo"
-                      value={customerName}
-                      onChange={handleNameChange}
-                      className={nameError ? 'border-destructive' : ''}
-                    />
-                    {nameError && (
-                      <p className="text-xs text-destructive">{nameError}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-foreground">Telefone (WhatsApp)</Label>
-                    <div className="flex">
-                      <div className="flex items-center justify-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-muted-foreground text-sm font-medium">
-                        +55
-                      </div>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="(11) 99999-9999"
-                        value={phone}
-                        onChange={handlePhoneChange}
-                        className={`rounded-l-none ${phoneError ? 'border-destructive' : ''}`}
-                      />
-                    </div>
-                    {phoneError && (
-                      <p className="text-xs text-destructive">{phoneError}</p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-foreground">E-mail</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={email}
-                      onChange={handleEmailChange}
-                      className={emailError ? 'border-destructive' : ''}
-                    />
-                    {emailError && (
-                      <p className="text-xs text-destructive">{emailError}</p>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Coupon Area */}
               <div className="space-y-2">
-                <Label className="text-foreground flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-primary" />
-                  Tem um cupom?
-                </Label>
-                
-                {!couponApplied ? (
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="Digite o código"
-                      value={couponCode}
-                      onChange={(e) => {
-                        setCouponCode(e.target.value.toUpperCase());
-                        setCouponError('');
-                      }}
-                      className={`flex-1 uppercase ${couponError ? 'border-destructive' : ''}`}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleApplyCoupon}
-                      className="border-primary/50 text-primary hover:bg-primary/10"
-                    >
-                      Aplicar
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/30">
-                    <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-primary">{appliedCouponCode}</span>
-                      <span className="text-sm text-primary">(-{discountPercent}%)</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveCoupon}
-                      className="text-xs text-muted-foreground hover:text-destructive transition-colors"
-                    >
-                      Remover
-                    </button>
-                  </div>
+                <Label htmlFor="customerName" className="text-foreground">Nome Completo</Label>
+                <Input
+                  id="customerName"
+                  type="text"
+                  placeholder="Seu nome completo"
+                  value={customerName}
+                  onChange={handleNameChange}
+                  className={nameError ? 'border-destructive' : ''}
+                />
+                {nameError && (
+                  <p className="text-xs text-destructive">{nameError}</p>
                 )}
-                
-                {couponError && (
-                  <p className="text-xs text-destructive">{couponError}</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-foreground">Telefone (WhatsApp)</Label>
+                <div className="flex">
+                  <div className="flex items-center justify-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-muted-foreground text-sm font-medium">
+                    +55
+                  </div>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="(11) 99999-9999"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    className={`rounded-l-none ${phoneError ? 'border-destructive' : ''}`}
+                  />
+                </div>
+                {phoneError && (
+                  <p className="text-xs text-destructive">{phoneError}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-foreground">E-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className={emailError ? 'border-destructive' : ''}
+                />
+                {emailError && (
+                  <p className="text-xs text-destructive">{emailError}</p>
                 )}
               </div>
 

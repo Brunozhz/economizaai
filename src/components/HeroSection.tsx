@@ -1,17 +1,5 @@
 import { Sparkles, ArrowRight, Zap, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import carousel1 from "@/assets/carousel-1.png";
-import carousel2 from "@/assets/carousel-2.png";
-import carousel3 from "@/assets/carousel-3.png";
-import carousel4 from "@/assets/carousel-4.png";
 
 const HeroSection = () => {
   return <section className="relative py-24 md:py-36 overflow-hidden bg-background">
@@ -65,21 +53,15 @@ const HeroSection = () => {
               <span className="text-foreground">Créditos Lovable</span>
             </h1>
             
-            <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground/70 font-medium opacity-0 animate-[fade-in-up_0.8s_ease-out_0.4s_forwards]">
-              com o
-            </p>
-            
-            <div className="relative inline-block opacity-0 animate-[fade-in-up_0.8s_ease-out_0.6s_forwards]">
+            <div className="relative inline-block opacity-0 animate-[fade-in-up_0.8s_ease-out_0.4s_forwards]">
               <span className="font-display text-5xl md:text-6xl lg:text-7xl font-black text-gradient-animated tracking-tight">
-                Melhor Preço
+                a partir de R$ 24,90
               </span>
               <div className="absolute -inset-6 bg-gradient-to-r from-purple-500/20 via-pink-500/15 to-orange-500/20 blur-3xl rounded-full opacity-50 -z-10 animate-pulse" />
             </div>
             
-            <p className="opacity-0 animate-[fade-in-up_0.8s_ease-out_0.8s_forwards]">
-              <span className="text-xl md:text-2xl lg:text-3xl text-muted-foreground/70 font-medium">do </span>
-              <span className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-gradient-animated">Brasil</span>
-              <span className="text-primary text-4xl md:text-5xl lg:text-6xl font-black">.</span>
+            <p className="opacity-0 animate-[fade-in-up_0.8s_ease-out_0.6s_forwards]">
+              <span className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-gradient-animated">melhor preço do Brasil</span>
             </p>
           </div>
           
@@ -111,35 +93,6 @@ const HeroSection = () => {
               COMPRAR AGORA
               <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
             </Button>
-          </div>
-
-          {/* Enhanced Carousel */}
-          <div className="w-full max-w-lg pt-8">
-            <Carousel 
-              className="w-full" 
-              opts={{ loop: true, duration: 15, dragFree: true }}
-              plugins={[Autoplay({ delay: 2500, stopOnInteraction: false, stopOnMouseEnter: true })]}
-            >
-              <CarouselContent className="-ml-2">
-                {[carousel1, carousel2, carousel3, carousel4].map((image, index) => (
-                  <CarouselItem key={index} className="pl-2">
-                    <div className="p-2">
-                      <div className="relative group overflow-hidden rounded-2xl">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
-                        <img 
-                          src={image} 
-                          alt={`Motivo ${index + 1}`} 
-                          className="w-full h-auto rounded-2xl shadow-2xl transition-all duration-500 group-hover:scale-105"
-                          loading="eager"
-                        />
-                      </div>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-2 h-12 w-12 bg-background/90 border-2 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110 shadow-lg" />
-              <CarouselNext className="right-2 h-12 w-12 bg-background/90 border-2 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110 shadow-lg" />
-            </Carousel>
           </div>
         </div>
       </div>

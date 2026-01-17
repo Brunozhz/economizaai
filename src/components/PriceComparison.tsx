@@ -1,11 +1,9 @@
 import { Check, X, TrendingDown, Sparkles, Heart, Crown, Zap } from "lucide-react";
 
 const comparisonData = [
-  { credits: 50, lovablePrice: 68.00, appPrice: 14.90 },
-  { credits: 100, lovablePrice: 135.00, appPrice: 27.90 },
-  { credits: 200, lovablePrice: 270.00, appPrice: 49.90 },
-  { credits: 400, lovablePrice: 540.00, appPrice: 89.90 },
-  { credits: 800, lovablePrice: 1080.00, appPrice: 149.90, bestValue: true },
+  { credits: 250, lovablePrice: 0, appPrice: 24.90 },
+  { credits: 500, lovablePrice: 0, appPrice: 37.00, bestValue: true },
+  { credits: 1000, lovablePrice: 0, appPrice: 67.99 },
 ];
 
 const PriceComparison = () => {
@@ -45,26 +43,22 @@ const PriceComparison = () => {
         {/* Mobile Cards Layout */}
         <div className="max-w-4xl mx-auto">
           {/* Desktop Table Header - Hidden on Mobile */}
-          <div className="hidden md:grid grid-cols-4 gap-4 mb-6 px-6">
+          <div className="hidden md:grid grid-cols-3 gap-4 mb-6 px-6">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm font-bold text-foreground">Créditos</span>
             </div>
             <div className="text-center">
-              <span className="text-sm font-bold text-muted-foreground">Lovable</span>
+              <span className="text-sm font-bold text-primary">Preço</span>
             </div>
             <div className="text-center">
-              <span className="text-sm font-bold text-primary">Nosso App</span>
-            </div>
-            <div className="text-center">
-              <span className="text-sm font-bold text-emerald-500">Economia</span>
+              <span className="text-sm font-bold text-emerald-500">Plano</span>
             </div>
           </div>
 
           {/* Cards */}
           <div className="space-y-4">
             {comparisonData.map((item, index) => {
-              const savings = Math.round((1 - item.appPrice / item.lovablePrice) * 100);
               const isBestValue = 'bestValue' in item && item.bestValue;
               
               return (
@@ -120,29 +114,15 @@ const PriceComparison = () => {
                           : 'bg-emerald-500/15 text-emerald-500'
                       }`}>
                         <Heart className={`h-4 w-4 ${isBestValue ? 'fill-white' : 'fill-primary text-primary'}`} />
-                        -{savings}%
+                        {item.credits === 250 ? 'Noob marketing' : item.credits === 500 ? 'Escala fofo' : 'Escala Pesado'}
                       </span>
                     </div>
                     
                     {/* Price Comparison Row */}
                     <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-background/50">
-                      {/* Lovable Price */}
-                      <div className="flex-1 text-center">
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Lovable</p>
-                        <div className="flex items-center justify-center gap-1">
-                          <X className="h-3.5 w-3.5 text-destructive/70" />
-                          <span className="line-through text-sm text-muted-foreground font-medium">
-                            R$ {item.lovablePrice.toFixed(2).replace('.', ',')}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Divider */}
-                      <div className="w-px h-10 bg-border" />
-                      
                       {/* App Price */}
                       <div className="flex-1 text-center">
-                        <p className="text-[10px] uppercase tracking-wider text-primary mb-1">Nosso App</p>
+                        <p className="text-[10px] uppercase tracking-wider text-primary mb-1">Preço</p>
                         <div className="flex items-center justify-center gap-1">
                           <Check className="h-4 w-4 text-emerald-500" />
                           <span className={`font-black text-lg ${isBestValue ? 'text-emerald-500' : 'text-primary'}`}>
@@ -150,11 +130,23 @@ const PriceComparison = () => {
                           </span>
                         </div>
                       </div>
+                      
+                      {/* Savings Badge - Mobile */}
+                      <div className="flex-1 text-center">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">1 Conta</p>
+                        <span className={`inline-flex items-center justify-center gap-1.5 font-black text-sm px-2 py-1 rounded-full ${
+                          isBestValue 
+                            ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg' 
+                            : 'bg-emerald-500/15 text-emerald-500'
+                        }`}>
+                          {item.credits} créditos
+                        </span>
+                      </div>
                     </div>
                   </div>
                   
                   {/* Desktop Row Layout */}
-                  <div className={`relative hidden md:grid grid-cols-4 gap-4 items-center p-6 rounded-2xl border backdrop-blur-sm ${
+                  <div className={`relative hidden md:grid grid-cols-3 gap-4 items-center p-6 rounded-2xl border backdrop-blur-sm ${
                     isBestValue 
                       ? 'bg-card border-emerald-500/50' 
                       : 'bg-card/80 border-border/50 hover:border-primary/50'
@@ -173,16 +165,6 @@ const PriceComparison = () => {
                       </span>
                     </div>
 
-                    {/* Lovable Price */}
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
-                        <X className="h-4 w-4 text-destructive/70" />
-                        <span className="line-through text-base font-medium">
-                          R$ {item.lovablePrice.toFixed(2).replace('.', ',')}
-                        </span>
-                      </div>
-                    </div>
-
                     {/* App Price */}
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1.5">
@@ -195,7 +177,7 @@ const PriceComparison = () => {
                       </div>
                     </div>
 
-                    {/* Savings Badge */}
+                    {/* Plan Name */}
                     <div className="text-center">
                       <span className={`inline-flex items-center justify-center gap-1.5 font-black text-base px-4 py-2 rounded-full ${
                         isBestValue 
@@ -203,7 +185,7 @@ const PriceComparison = () => {
                           : 'bg-emerald-500/15 text-emerald-500'
                       }`}>
                         <Heart className={`h-4 w-4 ${isBestValue ? 'fill-white animate-pulse' : 'fill-primary text-primary'}`} />
-                        -{savings}%
+                        {item.credits === 250 ? 'Noob marketing' : item.credits === 500 ? 'Escala fofo' : 'Escala Pesado'}
                       </span>
                     </div>
                   </div>
@@ -215,38 +197,8 @@ const PriceComparison = () => {
           {/* Bottom CTA */}
           <div className="mt-10 md:mt-12 text-center">
             <p className="text-muted-foreground text-xs md:text-sm mb-4 md:mb-6">
-              * Preços comparativos baseados nos valores oficiais da Lovable
+              * Método garantido 100%. Acesso imediato da conta no seu email. Sem golpe e sem burocracia. 100% transparente.
             </p>
-            
-            {/* Mobile CTA */}
-            <div className="md:hidden inline-flex flex-col items-center gap-2 bg-gradient-to-r from-primary/10 via-emerald-500/10 to-cyan-500/10 text-foreground px-6 py-4 rounded-2xl border border-primary/20 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center">
-                  <TrendingDown className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xs text-muted-foreground">Economize até</p>
-                  <p className="text-xl font-black bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">
-                    R$ 930,10
-                  </p>
-                </div>
-              </div>
-              <span className="text-muted-foreground text-xs">em 800 créditos</span>
-            </div>
-            
-            {/* Desktop CTA */}
-            <div className="hidden md:inline-flex items-center gap-3 bg-gradient-to-r from-primary/10 via-emerald-500/10 to-cyan-500/10 text-foreground px-8 py-4 rounded-2xl border border-primary/20 backdrop-blur-sm shadow-xl shadow-primary/5">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center">
-                <TrendingDown className="h-6 w-6 text-white" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground">Economize até</p>
-                <p className="text-2xl font-black bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">
-                  R$ 930,10
-                </p>
-              </div>
-              <span className="text-muted-foreground text-sm">em 800 créditos</span>
-            </div>
           </div>
         </div>
       </div>

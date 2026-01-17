@@ -6,12 +6,10 @@ import HeroSection from "@/components/HeroSection";
 import BenefitsBar from "@/components/BenefitsBar";
 import ProductGrid from "@/components/ProductGrid";
 import PriceComparison from "@/components/PriceComparison";
-import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import InstallAppBanner from "@/components/InstallAppBanner";
 import SupportChatWidget from "@/components/SupportChatWidget";
 import RemarketingModal from "@/components/RemarketingModal";
-import { useGreeting } from "@/hooks/useGreeting";
 
 interface RemarketingData {
   productName: string;
@@ -20,7 +18,6 @@ interface RemarketingData {
 }
 
 const Index = () => {
-  useGreeting();
   const [searchParams, setSearchParams] = useSearchParams();
   const [remarketingData, setRemarketingData] = useState<RemarketingData | null>(null);
   const [showRemarketingModal, setShowRemarketingModal] = useState(false);
@@ -79,7 +76,6 @@ const Index = () => {
         <ProductGrid />
         <BenefitsBar />
         <PriceComparison />
-        <FAQ />
       </main>
       <Footer />
       <InstallAppBanner />
