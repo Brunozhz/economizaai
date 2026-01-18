@@ -272,21 +272,6 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
               R$ {price.toFixed(2).replace('.', ',')}
             </p>
             
-            {/* Pix badge */}
-            <div className={`inline-flex items-center justify-center gap-2.5 md:gap-2 px-5 md:px-4 py-2.5 md:py-2 rounded-lg ${
-              isLegendary ? 'bg-gradient-to-r from-yellow-500/15 via-pink-500/15 to-purple-500/15 border border-yellow-400/30' :
-              isElite ? (tier === 'escala' ? 'bg-yellow-500/12 border border-yellow-500/20' : 'bg-yellow-500/12 border border-yellow-500/20') :
-              isAdvanced ? (tier === 'pesado' ? 'bg-purple-500/12 border border-purple-500/20' : 'bg-purple-500/12 border border-purple-500/20') :
-              tier === 'plus' ? 'bg-purple-500/12 border border-purple-500/20' :
-              tier === 'basic' ? 'bg-cyan-500/12 border border-cyan-500/20' :
-              tier === 'noob' ? 'bg-emerald-500/12 border border-emerald-500/20' :
-              'bg-emerald-500/12 border border-emerald-500/20'
-            }`}>
-              <span className={`h-5 w-5 md:h-4 md:w-4 rounded-full flex items-center justify-center ${colors.bgClass}`}>
-                <Check className="h-3 w-3 md:h-2.5 md:w-2.5 text-white" />
-              </span>
-              <span className="text-sm md:text-[11px] text-foreground/90 font-medium">À vista no <span className={`font-bold ${colors.textClass}`}>Pix</span></span>
-            </div>
           </div>
 
           {/* Action Button - Premium */}
