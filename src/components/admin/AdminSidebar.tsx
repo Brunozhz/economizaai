@@ -10,8 +10,7 @@ import {
   LogOut,
   Brain,
   Gift,
-  Headphones,
-  CreditCard
+  Headphones
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -30,7 +29,6 @@ const menuItems = [
   { path: '/admin/orders', icon: ShoppingCart, label: 'Pedidos' },
   { path: '/admin/messages', icon: MessageSquare, label: 'Mensagens' },
   { path: '/admin/support', icon: Headphones, label: 'Suporte Chat' },
-  { path: '/admin/test-payments', icon: CreditCard, label: 'Pagamentos Teste' },
   { path: '/admin/settings', icon: Settings, label: 'Configurações' },
 ];
 

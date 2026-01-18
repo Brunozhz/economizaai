@@ -1,4 +1,4 @@
-import { Search, Menu, Download, X, Monitor, Smartphone } from "lucide-react";
+import { Search, Download, X, Monitor, Smartphone } from "lucide-react";
 import LovableHeart3D from "./LovableHeart3D";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,10 +125,6 @@ const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
-              <Menu className="h-5 w-5" />
-            </Button>
-            
             {/* Install App Button - Always visible when available */}
             {canShowInstall && (
               <Button 
@@ -140,14 +136,6 @@ const Header = () => {
                 Baixar App
               </Button>
             )}
-            
-            <Button 
-              size="sm" 
-              className="hidden md:flex h-9 px-4 bg-primary text-primary-foreground font-medium"
-              onClick={() => window.open('https://chat.whatsapp.com/LFYmqa09RCI5e7KecBQ8FG', '_blank')}
-            >
-              Grupo VIP
-            </Button>
           </div>
         </div>
       </header>

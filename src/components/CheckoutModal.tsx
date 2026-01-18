@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import ExitOfferModal from "./ExitOfferModal";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -18,18 +19,19 @@ interface CheckoutModalProps {
 
 type PaymentStatus = 'form' | 'loading' | 'created' | 'paid' | 'expired' | 'error';
 
-// Webhook URL e API Key - usar variáveis de ambiente
-const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL || 'https://n8n.infinityunlocker.com.br/webhook-test/e2bdd7b8-2639-4ea8-8800-64f2e92b5401';
-const PIX_API_KEY = import.meta.env.VITE_PIX_API_KEY || '60414|Qm6v4i3AsBBomQV7S4sXmMGMVBeOZDYKRf2P2u3g32aafa32';
+// Webhook URL - usar variáveis de ambiente
+const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
 
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [status, setStatus] = useState<PaymentStatus>('form');
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [lovableInviteLink, setLovableInviteLink] = useState('');
   const [nameError, setNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [lovableLinkError, setLovableLinkError] = useState('');
   const [pixData, setPixData] = useState<{
     pixId: string;
     qrCode: string;
@@ -38,7 +40,18 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
   const [remarketingSent, setRemarketingSent] = useState(false);
+  const [showExitOffer, setShowExitOffer] = useState(false);
+  const [currentDiscount, setCurrentDiscount] = useState(0);
   const { toast } = useToast();
+
+  // Calculate final price with discount
+  const getFinalPrice = useCallback(() => {
+    if (!product) return 0;
+    if (currentDiscount > 0) {
+      return product.discountPrice * (1 - currentDiscount / 100);
+    }
+    return product.discountPrice;
+  }, [product, currentDiscount]);
 
   const formatPhone = (value: string) => {
     // Remove tudo que não for número
@@ -73,6 +86,11 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     setNameError('');
   };
 
+  const handleLovableLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLovableInviteLink(e.target.value);
+    setLovableLinkError('');
+  };
+
   const validateForm = () => {
     let isValid = true;
     
@@ -98,6 +116,12 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError('Digite um e-mail válido');
+      isValid = false;
+    }
+    
+    // Validar link de convite do Lovable
+    if (!lovableInviteLink.trim() || lovableInviteLink.trim().length < 10) {
+      setLovableLinkError('Digite o link de convite do Lovable');
       isValid = false;
     }
     
@@ -132,131 +156,273 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     setStatus('loading');
     setPixData(null);
     
-    const finalPrice = product.discountPrice;
+    const finalPrice = Number(getFinalPrice().toFixed(2)); // Use discounted price
     const effectiveName = getEffectiveName();
     const effectiveEmail = getEffectiveEmail();
     const effectivePhone = getEffectivePhone();
-    
-    try {
-      // Call PIX API directly using API key from environment
-      const response = await fetch('https://api.pushinpay.com.br/api/pix/cashIn', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${PIX_API_KEY}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          value: Math.round(finalPrice * 100), // Value in centavos
-        }),
-      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Erro ao criar PIX');
-      }
-      
-      if (data.id && data.qr_code) {
-        setPixData({
-          pixId: data.id,
-          qrCode: data.qr_code,
-          qrCodeBase64: data.qr_code_base64 || data.qr_code,
+    // Função de retry com exponential backoff
+    const attemptCreatePix = async (attempt = 1, maxAttempts = 3): Promise<any> => {
+      try {
+        console.log('=== TENTATIVA', attempt, 'DE', maxAttempts, '===');
+        console.log('Criando PIX via API backend:', { 
+          finalPrice, 
+          product: product.name,
         });
-        setStatus('created');
-        setTimeLeft(900);
-        
-        // 🔔 Send webhook with ALL variables to n8n
-        try {
-          const webhookPayload = {
-            // Product info
+
+        // Chamar endpoint backend que fará a autenticação e criação do pedido na Cakto
+        const response = await fetch('/api/create-pix', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            value: finalPrice,
             productName: product.name,
             productId: `credits-${product.credits}`,
-            credits: product.credits,
-            originalPrice: product.originalPrice,
-            discountPrice: product.discountPrice,
-            finalPrice: finalPrice,
-            
-            // Customer info
             customerName: effectiveName,
             customerEmail: effectiveEmail,
-            customerPhone: effectivePhone.replace(/\D/g, ''),
+            customerPhone: effectivePhone,
+            lovableInviteLink: lovableInviteLink.trim(),
+            userId: '',
+          }),
+        });
+
+        // Verificar se a resposta é JSON válido antes de fazer parse
+        let data: any;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          // Se não for JSON, tentar ler como texto para debug
+          const text = await response.text();
+          console.error('Resposta não é JSON:', text);
+          throw new Error(`Resposta inválida da API: ${text.substring(0, 100)}`);
+        }
+        console.log('Resposta API backend (status:', response.status, '):', JSON.stringify(data, null, 2));
+
+        if (!response.ok) {
+          // Log completo do erro para debug
+          console.error('Erro detalhado da API:', {
+            status: response.status,
+            statusText: response.statusText,
+            data: data,
+          });
+          
+          // Se for erro 400 e ainda tem tentativas, retry
+          if (response.status === 400 && attempt < maxAttempts) {
+            const waitTime = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+            console.log(`⏳ Aguardando ${waitTime/1000}s antes de tentar novamente...`);
             
-            // PIX info
-            pixId: data.id,
-            qrCode: data.qr_code,
-            status: data.status || 'pending',
-            createdAt: new Date().toISOString(),
+            toast({
+              title: "Tentando novamente...",
+              description: `Aguarde ${waitTime/1000} segundos (tentativa ${attempt + 1}/${maxAttempts})`,
+            });
             
-            // Additional info
-            timestamp: Date.now(),
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            return attemptCreatePix(attempt + 1, maxAttempts);
+          }
+          
+          // Mensagens de erro mais amigáveis
+          let errorMessage = 'Erro ao criar pedido PIX';
+          
+          if (data.error && typeof data.error === 'string') {
+            console.error('Erro da API:', data.error);
+            errorMessage = data.error;
+          } else if (data.message) {
+            console.error('Mensagem da API:', data.message);
+            errorMessage = data.message;
+          }
+          
+          throw new Error(errorMessage);
+        }
+
+        // Verificar se recebemos os dados necessários
+        if (!data.success || !data.pixId || !data.qrCode) {
+          throw new Error('Resposta inválida da API de pagamento');
+        }
+
+        return {
+          id: data.pixId,
+          qr_code: data.qrCode,
+          qr_code_base64: data.qrCodeBase64 || data.qrCode,
+          status: data.status || 'pending',
+        };
+      } catch (error) {
+        if (attempt < maxAttempts && error instanceof Error && !error.message.includes('máximo')) {
+          const waitTime = Math.pow(2, attempt) * 1000;
+          console.log(`⏳ Erro de rede, aguardando ${waitTime/1000}s antes de tentar novamente...`);
+          
+          toast({
+            title: "Reconectando...",
+            description: `Tentativa ${attempt + 1}/${maxAttempts}`,
+          });
+          
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          return attemptCreatePix(attempt + 1, maxAttempts);
+        }
+        throw error;
+      }
+    };
+
+    try {
+      // Tentar criar PIX com retry
+      const data = await attemptCreatePix();
+
+      // Enviar webhook para n8n com status "pending"
+      if (WEBHOOK_URL) {
+        try {
+          const webhookPayload = {
+            pix_id: data.id,
+            produto: product.name,
+            produto_id: `credits-${product.credits}`,
+            valor: finalPrice,
+            nome: effectiveName,
+            email: effectiveEmail,
+            whatsapp: effectivePhone,
+            lovable_invite_link: lovableInviteLink.trim(),
+            user_id: '',
+            status: 'pending',
+            qr_code: data.qr_code,
+            created_at: new Date().toISOString(),
           };
-          
-          console.log('Sending webhook with all data:', webhookPayload);
-          
-          fetch(WEBHOOK_URL, {
+
+          console.log('Enviando webhook (pending):', webhookPayload);
+
+          await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(webhookPayload),
-          }).then(res => {
-            if (res.ok) {
-              console.log('Webhook sent successfully');
-            } else {
-              console.error('Webhook failed:', res.status);
-            }
-          }).catch(err => {
-            console.error('Error sending webhook:', err);
           });
         } catch (webhookError) {
-          console.error('Error sending webhook:', webhookError);
+          console.error('Erro ao enviar webhook:', webhookError);
+          // Não bloquear o fluxo se o webhook falhar
         }
-      } else {
-        throw new Error('Resposta inválida da API PIX');
       }
+
+      // Salvar dados do PIX
+      setPixData({
+        pixId: data.id,
+        qrCode: data.qr_code,
+        qrCodeBase64: data.qr_code_base64 || data.qr_code,
+      });
+      setStatus('created');
+      setTimeLeft(900);
+
+      // Meta Pixel: Track Purchase Initiation
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'InitiateCheckout', {
+          content_name: product.name,
+          content_ids: [`credits-${product.credits}`],
+          content_type: 'product',
+          value: finalPrice,
+          currency: 'BRL'
+        });
+        console.log('Meta Pixel InitiateCheckout event fired:', product.name, 'ID:', `noob_marketing`);
+      }
+
     } catch (error: any) {
       console.error('Error creating PIX:', error);
       setStatus('error');
       toast({
-        title: "Erro",
+        title: "Erro ao Gerar PIX",
         description: error.message || "Não foi possível gerar o PIX. Tente novamente.",
         variant: "destructive",
+        duration: 8000,
       });
     }
-  }, [product, toast, getEffectiveName, getEffectiveEmail, getEffectivePhone]);
+  }, [product, toast, getEffectiveName, getEffectiveEmail, getEffectivePhone, lovableInviteLink, getFinalPrice]);
 
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen && product) {
+      // Check if discount was already applied for this product
+      const discountApplied = sessionStorage.getItem(`discount_applied_${product.name}`);
+      if (discountApplied === 'true') {
+        setCurrentDiscount(15); // Apply saved discount
+      } else {
+        setCurrentDiscount(0); // Start with no discount
+      }
+      
       setStatus('form');
       setCustomerName('');
       setPhone('');
       setEmail('');
+      setLovableInviteLink('');
       setNameError('');
       setPhoneError('');
       setEmailError('');
+      setLovableLinkError('');
       setPixData(null);
       setTimeLeft(900);
       setRemarketingSent(false);
+      setShowExitOffer(false);
 
       // Fire Meta Pixel InitiateCheckout event
       if (typeof window !== 'undefined' && (window as any).fbq) {
+        const productId = product.name.toLowerCase().replace(/\s+/g, '_');
         (window as any).fbq('track', 'InitiateCheckout', {
-          value: product.discountPrice,
+          value: getFinalPrice(),
           currency: 'BRL',
           content_name: product.name,
           content_type: 'product',
-          content_ids: [`credits-${product.credits}`],
+          content_ids: [productId],
+          content_category: 'Créditos Lovable',
           num_items: 1,
         });
-        console.log('Meta Pixel InitiateCheckout event fired:', product.name);
+        console.log('Meta Pixel InitiateCheckout event fired:', product.name, 'ID:', productId);
       }
     }
-  }, [isOpen, product, toast]);
+  }, [isOpen, product, toast, getFinalPrice]);
 
-  // Handle close
+  // Handle close - intercept to show exit offer
   const handleClose = () => {
+    // Only show exit offer if modal is in form status (not paid, expired, loading, created, etc.)
+    // And if no PIX was generated yet
+    if (status === 'form' && product && !pixData) {
+      // Check if user already rejected the offer for this product
+      const exitOfferRejected = sessionStorage.getItem(`exit_offer_rejected_${product.name}`);
+      
+      if (!exitOfferRejected) {
+        setShowExitOffer(true);
+        return;
+      }
+    }
+    
+    // Close normally if offer was rejected, status is not form, or PIX was already generated
+    onClose();
+  };
+
+  // Handle exit offer acceptance
+  const handleAcceptExitOffer = () => {
+    const discountPercent = 15;
+    
+    // Apply discount
+    setCurrentDiscount(discountPercent);
+    setShowExitOffer(false);
+    
+    // Save discount acceptance in sessionStorage
+    if (product) {
+      sessionStorage.setItem(`discount_applied_${product.name}`, 'true');
+    }
+    
+    toast({
+      title: "🎉 Desconto Aplicado!",
+      description: `Você ganhou ${discountPercent}% de desconto! Agora preencha os dados e gere seu PIX.`,
+      duration: 5000,
+    });
+  };
+
+  // Handle exit offer rejection
+  const handleRejectExitOffer = () => {
+    setShowExitOffer(false);
+    // Mark offer as rejected for this product
+    if (product) {
+      sessionStorage.setItem(`exit_offer_rejected_${product.name}`, 'true');
+    }
     onClose();
   };
 
@@ -272,44 +438,98 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         const effectivePhoneForPayment = phone;
         const effectiveNameForPayment = customerName;
         
-        // Call check-pix-status API directly
+        // Chamar endpoint backend para verificar status do pedido
         const response = await fetch('/api/check-pix-status', {
           method: 'POST',
           headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             pixId: pixData.pixId,
             productName: product?.name,
             productId: `credits-${product?.credits}`,
-            value: Math.round((product?.discountPrice || 0) * 100),
+            value: getFinalPrice(),
             customerName: effectiveNameForPayment,
             customerEmail: effectiveEmailForPayment,
-            customerPhone: effectivePhoneForPayment.replace(/\D/g, ''),
-            userId: null,
+            customerPhone: effectivePhoneForPayment,
+            lovableInviteLink: lovableInviteLink.trim(),
+            userId: '',
           }),
         });
 
-        const data = await response.json();
-        const error = !response.ok ? new Error(data.error || 'Erro ao verificar PIX') : null;
+        // Verificar se a resposta é JSON válido antes de fazer parse
+        let data: any;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          console.error('Resposta não é JSON:', text);
+          throw new Error(`Resposta inválida da API: ${text.substring(0, 100)}`);
+        }
+        console.log('Status do PIX:', data);
         
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error(data.error || data.message || 'Erro ao verificar PIX');
+        }
 
-        if (data.success && data.status === 'paid') {
+        // Verificar se foi pago (status pode variar: 'paid', 'approved', 'completed', etc)
+        const paidStatuses = ['paid', 'PAID', 'approved', 'APPROVED', 'completed', 'COMPLETED', 'pago'];
+        if (paidStatuses.includes(data.status)) {
           setStatus('paid');
           
-          const finalPrice = product?.discountPrice || 0;
+          const finalPrice = getFinalPrice();
+          const productId = product?.name.toLowerCase().replace(/\s+/g, '_') || '';
+
+          // Enviar webhook para n8n com status "paid"
+          if (WEBHOOK_URL) {
+            try {
+              const webhookPayload = {
+                pix_id: pixData.pixId,
+                produto: product?.name,
+                produto_id: `credits-${product?.credits}`,
+                valor: finalPrice,
+                nome: effectiveNameForPayment,
+                email: effectiveEmailForPayment,
+                whatsapp: effectivePhoneForPayment,
+                lovable_invite_link: lovableInviteLink.trim(),
+                user_id: '',
+                status: 'paid',
+                qr_code: pixData.qrCode,
+                created_at: new Date().toISOString(),
+              };
+
+              console.log('Enviando webhook (paid):', webhookPayload);
+
+              await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(webhookPayload),
+              });
+            } catch (webhookError) {
+              console.error('Erro ao enviar webhook:', webhookError);
+            }
+          }
           
-          // Fire Meta Pixel Purchase event
+          // Fire Meta Pixel Purchase event (após confirmação de pagamento)
           if (typeof window !== 'undefined' && (window as any).fbq) {
             (window as any).fbq('track', 'Purchase', {
               value: finalPrice,
               currency: 'BRL',
               content_name: product?.name,
               content_type: 'product',
-              content_ids: [`credits-${product?.credits}`],
+              content_ids: [productId],
+              content_category: 'Créditos Lovable',
+              num_items: 1,
             });
-            console.log('Meta Pixel Purchase event fired:', finalPrice);
+            console.log('Meta Pixel Purchase event fired - Pagamento confirmado:', {
+              product: product?.name,
+              value: finalPrice,
+              id: productId
+            });
           }
           
           toast({
@@ -324,9 +544,9 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       }
     };
 
-    const interval = setInterval(checkStatus, 5000); // Check every 5 seconds
+    const interval = setInterval(checkStatus, 1000); // Check every 1 second
     return () => clearInterval(interval);
-  }, [pixData?.pixId, status, product?.credits, toast]);
+  }, [pixData?.pixId, status, product?.credits, toast, getFinalPrice, email, phone, customerName, lovableInviteLink, product]);
 
   // Countdown timer
   useEffect(() => {
@@ -361,7 +581,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               email,
               phone: phone.replace(/\D/g, ''),
               productName: product.name,
-              productPrice: product.discountPrice,
+              productPrice: getFinalPrice(),
               pixId: pixData.pixId,
               userName: customerName,
             }),
@@ -406,47 +626,85 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-        onClick={handleClose}
+    <>
+      {/* Exit Offer Modal */}
+      <ExitOfferModal
+        isOpen={showExitOffer}
+        onAccept={handleAcceptExitOffer}
+        onReject={handleRejectExitOffer}
+        product={product}
       />
-      {/* Modal */}
-      <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in">
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border">
-          <div>
-            <h2 className="text-xl font-bold text-foreground">Checkout</h2>
-            <p className="text-sm text-muted-foreground">Pagamento via PIX</p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
 
-        {/* Content */}
-        <div className="p-5">
-          {/* Product Info */}
-          {product && (
-            <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 mb-5 relative overflow-hidden">
-              <div className="relative">
-                <p className="font-semibold text-foreground">{product.name}</p>
-                <p className="text-sm text-muted-foreground">+{product.credits} créditos</p>
-              </div>
-              <div className="text-right relative">
-                <p className="text-sm text-price-old line-through">R$ {product.originalPrice.toFixed(2)}</p>
-                <p className="text-xl font-bold text-price-new">R$ {product.discountPrice.toFixed(2)}</p>
-              </div>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+          onClick={showExitOffer ? undefined : handleClose}
+        />
+        {/* Modal */}
+        <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
+          {/* Header */}
+          <div className="flex items-center justify-between p-5 border-b border-border">
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Checkout</h2>
+              <p className="text-sm text-muted-foreground">Pagamento via PIX</p>
             </div>
-          )}
+            <button
+              onClick={handleClose}
+              className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
 
-          {/* Form State */}
-          {status === 'form' && (
-            <div className="space-y-4">
+          {/* Content */}
+          <div className="p-5">
+            {/* Product Info */}
+            {product && (
+              <>
+                {currentDiscount > 0 && (
+                  <div className="mb-4 p-3 bg-gradient-to-r from-yellow-500/20 to-green-500/20 border-2 border-yellow-500 rounded-xl animate-pulse">
+                    <p className="text-center font-bold text-yellow-500 text-sm">
+                      🎉 DESCONTO ESPECIAL DE {currentDiscount}% ATIVADO! 🎉
+                    </p>
+                  </div>
+                )}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 mb-5 relative overflow-hidden">
+                  <div className="relative">
+                    <p className="font-semibold text-foreground">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">+{product.credits} créditos</p>
+                  </div>
+                  <div className="text-right relative">
+                    {currentDiscount > 0 ? (
+                      <>
+                        <p className="text-xs text-muted-foreground line-through">
+                          De: R$ {product.discountPrice.toFixed(2).replace('.', ',')}
+                        </p>
+                        <p className="text-2xl font-bold text-green-500">
+                          R$ {getFinalPrice().toFixed(2).replace('.', ',')}
+                        </p>
+                        <p className="text-xs font-semibold text-yellow-500 animate-pulse">
+                          Economia: R$ {(product.discountPrice - getFinalPrice()).toFixed(2).replace('.', ',')}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-price-old line-through">
+                          R$ {product.originalPrice.toFixed(2).replace('.', ',')}
+                        </p>
+                        <p className="text-xl font-bold text-price-new">
+                          R$ {product.discountPrice.toFixed(2).replace('.', ',')}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Form State */}
+            {status === 'form' && (
+              <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="customerName" className="text-foreground">Nome Completo</Label>
                 <Input
@@ -496,28 +754,53 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 )}
               </div>
 
+              {/* Campo Link de Convite Lovable */}
+              <div className="space-y-2">
+                <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                  <p className="text-sm font-bold text-yellow-500 mb-1 flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>Atenção</span>
+                  </p>
+                  <p className="text-xs text-foreground">
+                    Coloque abaixo o link de convite da sua conta do Lovable que irá receber os créditos. Caso não saiba como conseguir, volte para cima e veja o Vídeo.
+                  </p>
+                </div>
+                <Label htmlFor="lovableInviteLink" className="text-foreground">Link de Convite do Lovable</Label>
+                <Input
+                  id="lovableInviteLink"
+                  type="url"
+                  placeholder="https://lovable.dev/invite/..."
+                  value={lovableInviteLink}
+                  onChange={handleLovableLinkChange}
+                  className={lovableLinkError ? 'border-destructive' : ''}
+                />
+                {lovableLinkError && (
+                  <p className="text-xs text-destructive">{lovableLinkError}</p>
+                )}
+              </div>
+
               <Button
                 onClick={handleSubmitForm}
                 className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl mt-4"
               >
                 Gerar PIX
               </Button>
-            </div>
-          )}
-
-          {/* Loading State */}
-          {status === 'loading' && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="h-16 w-16 rounded-full gradient-primary flex items-center justify-center animate-pulse">
-                <Loader2 className="h-8 w-8 text-primary-foreground animate-spin" />
               </div>
-              <p className="text-muted-foreground">Gerando código PIX...</p>
-            </div>
-          )}
+            )}
 
-          {/* QR Code */}
-          {status === 'created' && pixData && (
-            <div className="space-y-5">
+            {/* Loading State */}
+            {status === 'loading' && (
+              <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                <div className="h-16 w-16 rounded-full gradient-primary flex items-center justify-center animate-pulse">
+                  <Loader2 className="h-8 w-8 text-primary-foreground animate-spin" />
+                </div>
+                <p className="text-muted-foreground">Gerando código PIX...</p>
+              </div>
+            )}
+
+            {/* QR Code */}
+            {status === 'created' && pixData && (
+              <div className="space-y-5">
               {/* Timer */}
               <div className="flex items-center justify-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
@@ -565,12 +848,12 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 <Loader2 className="h-4 w-4 text-yellow-500 animate-spin" />
                 <span className="text-sm text-yellow-500 font-medium">Aguardando pagamento...</span>
               </div>
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Payment Confirmed */}
-          {status === 'paid' && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-6">
+            {/* Payment Confirmed */}
+            {status === 'paid' && (
+              <div className="flex flex-col items-center justify-center py-12 space-y-6">
               <div className="h-20 w-20 rounded-full bg-pix-badge/20 flex items-center justify-center animate-pulse">
                 <CheckCircle className="h-12 w-12 text-pix-badge" />
               </div>
@@ -592,12 +875,12 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               >
                 Continuar
               </Button>
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Expired State */}
-          {status === 'expired' && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            {/* Expired State */}
+            {status === 'expired' && (
+              <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <div className="h-20 w-20 rounded-full bg-destructive/20 flex items-center justify-center">
                 <AlertCircle className="h-12 w-12 text-destructive" />
               </div>
@@ -613,19 +896,19 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               >
                 Gerar Novo PIX
               </Button>
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Error State */}
-          {status === 'error' && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            {/* Error State */}
+            {status === 'error' && (
+              <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <div className="h-20 w-20 rounded-full bg-destructive/20 flex items-center justify-center">
                 <AlertCircle className="h-12 w-12 text-destructive" />
               </div>
               <div className="text-center space-y-2">
                 <h3 className="text-2xl font-bold text-foreground">Erro ao Gerar PIX</h3>
                 <p className="text-muted-foreground text-sm px-4">
-                  {product && product.discountPrice > 150 
+                  {product && getFinalPrice() > 150 
                     ? "Valor máximo para PIX é R$ 150,00. Escolha um pacote menor."
                     : "Não foi possível criar o pagamento. Tente novamente."
                   }
@@ -638,19 +921,20 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               >
                 Escolher Outro Pacote
               </Button>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
 
-        {/* Footer */}
-        <div className="p-5 border-t border-border bg-secondary/20">
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <span>🔒 Pagamento seguro via</span>
-            <span className="font-semibold text-foreground">PushinPay</span>
+          {/* Footer */}
+          <div className="p-5 border-t border-border bg-secondary/20">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <span>🔒 Pagamento seguro via</span>
+              <span className="font-semibold text-foreground">PushinPay</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

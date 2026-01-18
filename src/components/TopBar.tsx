@@ -8,17 +8,24 @@ const TopBar = () => {
     navigate('/install');
   };
 
+  // Formata a data atual em português brasileiro
+  const getCurrentDate = () => {
+    const today = new Date();
+    const options: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'long' 
+    };
+    return today.toLocaleDateString('pt-BR', options);
+  };
+
   return (
     <div 
       onClick={handleClick}
       className="w-full bg-primary py-2.5 px-4 cursor-pointer hover:bg-primary/90 transition-colors"
     >
       <div className="container mx-auto flex items-center justify-center gap-2 text-sm font-medium text-primary-foreground">
-        <Download className="h-4 w-4 animate-bounce" />
-        <span className="hidden sm:inline">BAIXE O APP - Ganhe</span>
-        <span className="sm:hidden">Baixe o app e ganhe</span>
-        <span className="font-black text-yellow-300">20% OFF</span>
         <Gift className="h-4 w-4" />
+        <span>Oferta de créditos limitada apenas para hoje aqui nesta página 🔥</span>
       </div>
     </div>
   );

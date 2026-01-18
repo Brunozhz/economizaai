@@ -1,4 +1,4 @@
-import { Mail, MessageCircle, Instagram, Heart, ArrowRight, Brain } from "lucide-react";
+import { MessageCircle, Instagram, Heart, Brain, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {
@@ -11,24 +11,6 @@ const Footer = () => {
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* Newsletter Section - Enhanced */}
-        <div className="mb-16 p-8 rounded-3xl bg-gradient-to-r from-primary/10 via-card to-primary/10 border border-primary/30 shadow-lg shadow-primary/5">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold text-foreground mb-2">🎁 Receba ofertas exclusivas</h3>
-              <p className="text-muted-foreground">Seja o primeiro a saber das promoções e novidades</p>
-            </div>
-            
-            <Button 
-              className="h-14 px-8 bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground font-bold text-base rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 transition-all duration-300"
-              onClick={() => window.open('https://chat.whatsapp.com/LFYmqa09RCI5e7KecBQ8FG', '_blank')}
-            >
-              Entrar no Grupo VIP
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           {/* Brand - Enhanced */}
           <div className="lg:col-span-2 space-y-6">
@@ -77,14 +59,6 @@ const Footer = () => {
                     <MessageCircle className="h-5 w-5 text-[#25D366]" />
                   </div>
                   <span>WhatsApp</span>
-                </a>
-              </li>
-              <li>
-                <a href="mailto:contato@economiza.ia" className="flex items-center gap-3 text-base text-muted-foreground hover:text-foreground transition-colors group">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Mail className="h-5 w-5 text-primary" />
-                  </div>
-                  <span>contato@economiza.ia</span>
                 </a>
               </li>
             </ul>

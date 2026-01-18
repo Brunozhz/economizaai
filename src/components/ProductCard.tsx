@@ -9,17 +9,17 @@ interface ProductCardProps {
   duration: string;
   usage: string;
   originalPrice: number;
-  tier: 'start' | 'basic' | 'plus' | 'advanced' | 'elite' | 'noob' | 'escala' | 'pesado';
+  tier: 'start' | 'basic' | 'plus' | 'advanced' | 'elite' | 'noob' | 'escala' | 'pesado' | 'legendary';
   popular?: boolean;
-  onBuy: (product: { name: string; credits: number; price: number }) => void;
+  onBuy: (product: { name: string; credits: number; price: number; originalPrice: number }) => void;
 }
 
 const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tier, popular = false, onBuy }: ProductCardProps) => {
   const handleBuy = () => {
-    onBuy({ name, credits, price });
+    onBuy({ name, credits, price, originalPrice });
   };
 
-  // Tier-based color schemes: green/cyan → purple → purple
+  // Tier-based color schemes: green/cyan → purple → gold → rainbow legendary
   const tierColors = {
     start: {
       primary: 'rgb(0, 255, 136)', // green neon
@@ -77,22 +77,32 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
       textClass: 'text-purple-400',
       bgClass: 'bg-purple-500',
     },
+    legendary: {
+      primary: 'rgb(255, 215, 0)', // gold
+      glow: 'rgba(255, 215, 0, 0.8)',
+      gradient: 'from-yellow-300 via-pink-400 to-purple-500',
+      textClass: 'text-yellow-300',
+      bgClass: 'bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600',
+    },
   };
 
   const colors = tierColors[tier] || tierColors.start;
+  const isLegendary = tier === 'legendary';
   const isElite = tier === 'elite' || tier === 'escala';
   const isAdvanced = tier === 'advanced' || tier === 'pesado';
-  const isHot = isElite || isAdvanced;
+  const isHot = isElite || isAdvanced || isLegendary;
 
   return (
     <div 
       className={`group relative rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:-translate-y-2 ${
+        isLegendary ? 'shadow-[0_10px_60px_rgba(255,215,0,0.5)]' :
         isElite ? 'shadow-[0_8px_40px_rgba(250,204,21,0.35)]' :
         isAdvanced ? 'shadow-[0_8px_35px_rgba(168,85,247,0.3)]' :
         tier === 'plus' ? 'shadow-[0_8px_30px_rgba(168,85,247,0.25)]' :
         tier === 'basic' ? 'shadow-[0_8px_25px_rgba(0,255,255,0.25)]' :
         'shadow-[0_8px_25px_rgba(0,255,136,0.25)]'
       } ${
+        isLegendary ? 'hover:shadow-[0_20px_80px_rgba(255,215,0,0.7)]' :
         isElite ? 'hover:shadow-[0_16px_60px_rgba(250,204,21,0.5)]' :
         isAdvanced ? 'hover:shadow-[0_16px_50px_rgba(168,85,247,0.45)]' :
         tier === 'plus' ? 'hover:shadow-[0_16px_45px_rgba(168,85,247,0.4)]' :
@@ -100,8 +110,19 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         'hover:shadow-[0_16px_40px_rgba(0,255,136,0.35)]'
       }`}
     >
+      {/* Rainbow animated border for Legendary */}
+      {isLegendary && (
+        <div className="absolute inset-0 rounded-2xl p-[3px] animate-border-glow" style={{
+          background: 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000)',
+          backgroundSize: '400% 100%',
+          animation: 'gradient-x 3s linear infinite',
+        }}>
+          <div className="absolute inset-[3px] rounded-2xl bg-card" />
+        </div>
+      )}
+      
       {/* Animated gradient border for Elite */}
-      {isElite && (
+      {isElite && !isLegendary && (
         <div className="absolute inset-0 rounded-2xl p-[3px] animate-border-glow" style={{
           background: 'linear-gradient(90deg, #facc15, #f59e0b, #f97316, #f59e0b, #facc15)',
           backgroundSize: '300% 100%',
@@ -111,7 +132,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
       )}
       
       {/* Standard border - more visible with pulse */}
-      {!isElite && (
+      {!isElite && !isLegendary && (
         <div className={`absolute inset-0 rounded-2xl border-2 animate-pulse-border ${
           isAdvanced ? 'border-purple-500/70' :
           tier === 'plus' ? 'border-purple-500/60' :
@@ -123,13 +144,17 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
       )}
       
       {/* Card content */}
-      <div className={`relative bg-card rounded-2xl overflow-hidden ${isElite ? 'm-[2px]' : ''}`}>
-        {/* Popular Badge - Elite only */}
+      <div className={`relative bg-card rounded-2xl overflow-hidden ${isElite || isLegendary ? 'm-[2px]' : ''}`}>
+        {/* Popular Badge - Elite and Legendary */}
         {popular && (
           <div className="absolute top-0 left-0 right-0 z-20">
-            <div className="bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-2 flex items-center justify-center gap-1.5 shadow-[0_4px_20px_rgba(250,204,21,0.5)]">
+            <div className={`text-white text-xs font-bold px-3 py-2 flex items-center justify-center gap-1.5 ${
+              isLegendary 
+                ? 'bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 shadow-[0_4px_20px_rgba(255,215,0,0.6)] animate-pulse' 
+                : 'bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 shadow-[0_4px_20px_rgba(250,204,21,0.5)]'
+            }`}>
               <Crown className="h-3.5 w-3.5" />
-              <span className="tracking-wider">⚡ MAIS VENDIDO ⚡</span>
+              <span className="tracking-wider">{isLegendary ? '👑 LENDÁRIO 👑' : '⚡ MAIS VENDIDO ⚡'}</span>
               <Crown className="h-3.5 w-3.5" />
             </div>
           </div>
@@ -205,6 +230,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
         <div className="relative px-5 md:px-4 py-6 md:py-5 space-y-5 md:space-y-4 bg-gradient-to-b from-card via-card to-background/90">
           {/* Duration & Usage */}
           <div className={`p-4 md:p-3 rounded-xl border text-sm md:text-xs ${
+            isLegendary ? 'bg-gradient-to-r from-yellow-500/10 via-pink-500/10 to-purple-500/10 border-yellow-400/30' :
             isElite ? (tier === 'escala' ? 'bg-yellow-500/8 border-yellow-500/25' : 'bg-yellow-500/8 border-yellow-500/25') :
             isAdvanced ? (tier === 'pesado' ? 'bg-purple-500/8 border-purple-500/25' : 'bg-purple-500/8 border-purple-500/25') :
             tier === 'plus' ? 'bg-purple-500/8 border-purple-500/25' :
@@ -248,6 +274,7 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
             
             {/* Pix badge */}
             <div className={`inline-flex items-center justify-center gap-2.5 md:gap-2 px-5 md:px-4 py-2.5 md:py-2 rounded-lg ${
+              isLegendary ? 'bg-gradient-to-r from-yellow-500/15 via-pink-500/15 to-purple-500/15 border border-yellow-400/30' :
               isElite ? (tier === 'escala' ? 'bg-yellow-500/12 border border-yellow-500/20' : 'bg-yellow-500/12 border border-yellow-500/20') :
               isAdvanced ? (tier === 'pesado' ? 'bg-purple-500/12 border border-purple-500/20' : 'bg-purple-500/12 border border-purple-500/20') :
               tier === 'plus' ? 'bg-purple-500/12 border border-purple-500/20' :
@@ -266,20 +293,21 @@ const ProductCard = ({ name, price, credits, duration, usage, originalPrice, tie
           <Button 
             onClick={handleBuy}
             className={`w-full h-14 md:h-12 font-bold text-base md:text-[13px] rounded-xl transition-all duration-300 ease-out bg-gradient-to-r ${colors.gradient} hover:scale-[1.03] active:scale-[0.98] ${
+              isLegendary ? 'shadow-[0_6px_30px_rgba(255,215,0,0.5)] hover:shadow-[0_10px_40px_rgba(255,215,0,0.7)]' :
               isElite ? 'shadow-[0_4px_20px_rgba(250,204,21,0.35)] hover:shadow-[0_8px_30px_rgba(250,204,21,0.5)]' :
               isAdvanced ? 'shadow-[0_4px_16px_rgba(168,85,247,0.3)] hover:shadow-[0_8px_24px_rgba(168,85,247,0.45)]' :
               'shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.4)]'
             }`}
           >
             <Zap className="mr-2 h-5 w-5 md:h-4 md:w-4" />
-            Comprar Agora
+            {isLegendary ? 'Garantir Lendário' : 'Comprar Agora'}
             <ExternalLink className="ml-2 h-4 w-4 md:h-3.5 md:w-3.5 opacity-70" />
           </Button>
         </div>
       </div>
 
       {/* Elite energized effect */}
-      {isElite && (
+      {isElite && !isLegendary && (
         <div className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
           <div className="absolute inset-0 opacity-20"
             style={{

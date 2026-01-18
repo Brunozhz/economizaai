@@ -100,6 +100,7 @@ const FreeTrialModal = ({ isOpen, onClose }: FreeTrialModalProps) => {
         content_name: 'Demonstração - 20 Créditos Grátis',
         content_type: 'product',
         content_ids: ['free_trial_20'],
+        content_category: 'Trial Grátis',
         num_items: 1,
       });
       console.log('Meta Pixel InitiateCheckout event fired: Free Trial');
@@ -134,7 +135,7 @@ const FreeTrialModal = ({ isOpen, onClose }: FreeTrialModalProps) => {
       console.log('Free trial claimed successfully');
       setStatus('success');
 
-      // Fire Meta Pixel Purchase event
+      // Fire Meta Pixel Purchase event (após resgate confirmado)
       if (typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('track', 'Purchase', {
           value: 0,
@@ -142,8 +143,10 @@ const FreeTrialModal = ({ isOpen, onClose }: FreeTrialModalProps) => {
           content_name: 'Demonstração - 20 Créditos Grátis',
           content_type: 'product',
           content_ids: ['free_trial_20'],
+          content_category: 'Trial Grátis',
+          num_items: 1,
         });
-        console.log('Meta Pixel Purchase event fired: Free Trial');
+        console.log('Meta Pixel Purchase event fired - Trial resgatado: Free Trial');
       }
 
       // Fire Google Analytics purchase event

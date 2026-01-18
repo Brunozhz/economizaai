@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Flame, TrendingUp, Rocket, Building2, Zap, Users, TrendingDown, Sparkles, Crown, Gift, Infinity, Shield, Mail, CheckCircle2, Clock } from "lucide-react";
 import ProductCard from "./ProductCard";
@@ -7,36 +7,47 @@ import EnterpriseChatModal from "./EnterpriseChatModal";
 import { Button } from "@/components/ui/button";
 import lovableLogo from "@/assets/lovable-logo-new.png";
 import cardBackground from "@/assets/card-background.png";
+import confetti from "canvas-confetti";
 
 const products = [
   {
     name: "Noob marketing",
     price: 24.90,
-    originalPrice: 0,
+    originalPrice: 39.90,
     credits: 250,
-    duration: "Acesso imediato",
-    usage: "Método garantido 100%. Acesso imediato da conta no seu email. Sem golpe e sem burocracia. 100% transparente.",
+    duration: "Inserção imediata",
+    usage: "Método garantido 100%. Inserimos os créditos diretamente na sua conta Lovable. Sem golpe e sem burocracia. 100% transparente.",
     tier: "noob" as const,
     popular: false,
   },
   {
     name: "Escala fofo",
     price: 37.00,
-    originalPrice: 0,
+    originalPrice: 67.00,
     credits: 500,
-    duration: "Acesso imediato",
-    usage: "Método garantido 100%. Acesso imediato da conta no seu email. Sem golpe e sem burocracia. 100% transparente.",
+    duration: "Inserção imediata",
+    usage: "Método garantido 100%. Inserimos os créditos diretamente na sua conta Lovable. Sem golpe e sem burocracia. 100% transparente.",
     tier: "escala" as const,
     popular: false,
   },
   {
     name: "Escala Pesado",
     price: 67.99,
-    originalPrice: 0,
+    originalPrice: 119.90,
     credits: 1000,
-    duration: "Acesso imediato",
-    usage: "Método garantido 100%. Acesso imediato da conta no seu email. Sem golpe e sem burocracia. 100% transparente.",
+    duration: "Inserção imediata",
+    usage: "Método garantido 100%. Inserimos os créditos diretamente na sua conta Lovable. Sem golpe e sem burocracia. 100% transparente.",
     tier: "pesado" as const,
+    popular: false,
+  },
+  {
+    name: "Happy Nation",
+    price: 97.00,
+    originalPrice: 179.90,
+    credits: 1500,
+    duration: "Inserção imediata",
+    usage: "Perfeito para quem quer investir criando vários aplicativos, escalar infoprodutos com aplicativos, criar plataformas pesadas e muito do marketing digital. Máximo poder criativo!",
+    tier: "legendary" as const,
     popular: true,
   },
 ];
@@ -45,6 +56,7 @@ interface Product {
   name: string;
   credits: number;
   price: number;
+  originalPrice: number;
 }
 
 const ProductGrid = () => {
@@ -52,6 +64,14 @@ const ProductGrid = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showInfinitePrice, setShowInfinitePrice] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const confettiFired = useRef(false);
+
+  // Clean up checkout state on page load (don't persist open modal)
+  useEffect(() => {
+    // Remove checkout state on page load to prevent modal from reopening
+    sessionStorage.removeItem('checkout_state');
+  }, []);
 
   // Check for remarketing redirect on mount
   useEffect(() => {
@@ -65,9 +85,20 @@ const ProductGrid = () => {
         setSelectedProduct({
           name: product.name,
           credits: product.credits,
-          price: product.price
+          price: product.price,
+          originalPrice: product.originalPrice
         });
         setIsCheckoutOpen(true);
+        // Save to sessionStorage
+        sessionStorage.setItem('checkout_state', JSON.stringify({
+          isOpen: true,
+          product: {
+            name: product.name,
+            credits: product.credits,
+            price: product.price,
+            originalPrice: product.originalPrice
+          }
+        }));
       }
       
       // Clear the URL params
@@ -83,13 +114,98 @@ const ProductGrid = () => {
   const handleCloseCheckout = () => {
     setIsCheckoutOpen(false);
     setSelectedProduct(null);
-    // Clear remarketing offer after closing
+    // Clear persisted state and remarketing offer after closing
+    sessionStorage.removeItem('checkout_state');
+    // Clear exit offer rejection flags when modal closes completely
+    products.forEach(product => {
+      sessionStorage.removeItem(`exit_offer_rejected_${product.name}`);
+    });
     localStorage.removeItem('remarketing_offer');
   };
 
+  // Confetti effect when scrolling to products section (first time only)
+  useEffect(() => {
+    // Check if confetti was already fired in this session
+    const confettiAlreadyFired = sessionStorage.getItem('products_confetti_fired') === 'true';
+    
+    if (confettiAlreadyFired || !sectionRef.current) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !confettiFired.current) {
+            confettiFired.current = true;
+            sessionStorage.setItem('products_confetti_fired', 'true');
+
+            // Fire multiple confetti bursts for amazing effect
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            const interval = setInterval(() => {
+              if (Date.now() > end) {
+                return clearInterval(interval);
+              }
+
+              // Left confetti burst
+              confetti({
+                particleCount: 3,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3'],
+              });
+
+              // Right confetti burst
+              confetti({
+                particleCount: 3,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3'],
+              });
+            }, 200);
+
+            // Main confetti burst from center
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3'],
+            });
+
+            // Additional burst after 500ms
+            setTimeout(() => {
+              confetti({
+                particleCount: 50,
+                angle: 90,
+                spread: 60,
+                origin: { y: 0.6 },
+                colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3'],
+              });
+            }, 500);
+
+            // Disconnect observer after firing
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        threshold: 0.3, // Trigger when 30% of the section is visible
+      }
+    );
+
+    observer.observe(sectionRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <>
-      <section id="catalogo" className="py-20 md:py-28 relative overflow-hidden">
+      <section id="catalogo" ref={sectionRef} className="py-20 md:py-28 relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0">
           {/* Gradient base */}
@@ -178,7 +294,7 @@ const ProductGrid = () => {
               </div>
               <div className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl bg-primary/8 border border-primary/20 backdrop-blur-sm hover:bg-primary/12 transition-colors cursor-default">
                 <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                <span className="text-sm md:text-sm font-semibold"><span className="text-primary">{products.length + 1}</span> <span className="text-foreground">planos</span></span>
+                <span className="text-sm md:text-sm font-semibold"><span className="text-primary">{products.length}</span> <span className="text-foreground">planos</span></span>
               </div>
               <div className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl bg-orange-500/8 border border-orange-500/20 backdrop-blur-sm hover:bg-orange-500/12 transition-colors cursor-default">
                 <Zap className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
@@ -204,7 +320,7 @@ const ProductGrid = () => {
                 {/* Text - Centered on mobile */}
                 <div className="text-center md:text-left flex-1">
                   <p className="text-base md:text-xl lg:text-2xl font-black text-white tracking-tight leading-tight">
-                    🔒 Método garantido 100% • Acesso imediato da conta no seu email
+                    🔒 Método garantido 100% • Inserimos créditos diretamente na sua conta
                   </p>
                   <p className="text-sm md:text-base text-emerald-300 mt-1 font-semibold">
                     ✅ Sem golpe • Sem burocracia • 100% transparente
@@ -225,115 +341,6 @@ const ProductGrid = () => {
                 <ProductCard {...product} onBuy={handleBuy} />
               </div>
             ))}
-            
-            {/* Método Créditos Infinitos Card */}
-            <div
-              className="animate-fade-in"
-              style={{ animationDelay: `${products.length * 0.1}s` }}
-            >
-              <div className="group relative rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:shadow-[0_0_50px_rgba(168,85,247,0.5)] h-full">
-                {/* Animated gradient border */}
-                <div className="absolute inset-0 rounded-2xl p-[2px] animate-border-glow" style={{
-                  background: 'linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b, #ec4899, #8b5cf6)',
-                  backgroundSize: '300% 100%',
-                }}>
-                  <div className="absolute inset-[2px] rounded-2xl bg-card" />
-                </div>
-                
-                {/* Card content */}
-                <div className="relative bg-card rounded-2xl overflow-hidden m-[2px] h-full flex flex-col">
-                  {/* Header Badge */}
-                  <div className="absolute top-0 left-0 right-0 z-20">
-                    <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white text-xs font-bold px-3 py-2 flex items-center justify-center gap-1.5 shadow-[0_4px_20px_rgba(168,85,247,0.5)]">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span className="tracking-wider">EM BREVE</span>
-                      <Clock className="h-3.5 w-3.5" />
-                    </div>
-                  </div>
-
-                  {/* Product Preview */}
-                  <div
-                    className="relative p-5 pt-12 flex items-center justify-center overflow-hidden"
-                    style={{
-                      backgroundImage: `url(${cardBackground})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
-                  >
-                    {/* Overlay escuro */}
-                    <div className="absolute inset-0 bg-black/50" />
-                    
-                    {/* Glow roxo */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl opacity-40 bg-purple-500" />
-                    </div>
-                    
-                    <div className="relative text-center space-y-2 z-10">
-                      <h3 className="text-base font-extrabold tracking-[0.15em] uppercase text-white" style={{
-                        textShadow: '0 0 20px rgb(168, 85, 247), 0 2px 4px rgba(0,0,0,0.8)'
-                      }}>
-                        Painel Admin
-                      </h3>
-                      <div className="relative py-3">
-                        <Infinity className="h-16 w-16 mx-auto text-white" style={{
-                          filter: 'drop-shadow(0 0 20px rgb(168, 85, 247))',
-                          textShadow: '0 0 40px rgb(168, 85, 247)',
-                        }} />
-                      </div>
-                      <div className="inline-block px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">
-                        <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/95" style={{
-                          textShadow: '0 0 10px rgb(168, 85, 247), 0 1px 2px rgba(0,0,0,0.8)'
-                        }}>
-                          Créditos Infinitos
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="relative p-4 space-y-3 bg-gradient-to-b from-card to-background/80 flex-1 flex flex-col">
-                    {/* Features */}
-                    <div className="p-2.5 rounded-lg border bg-purple-500/10 border-purple-500/20 text-xs space-y-2">
-                      <div className="flex items-start gap-2">
-                        <Infinity className="h-3.5 w-3.5 text-purple-400 mt-0.5 shrink-0" />
-                        <span className="text-foreground font-semibold">Painel administrador (você pode colocar quantos créditos quiser)</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 mt-0.5 shrink-0" />
-                        <span className="text-foreground font-semibold">Instalação totalmente gratuita por nós</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Users className="h-3.5 w-3.5 text-cyan-400 mt-0.5 shrink-0" />
-                        <span className="text-foreground font-semibold">Mais de 30 clientes com esse painel</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Shield className="h-3.5 w-3.5 text-green-400 mt-0.5 shrink-0" />
-                        <span className="text-foreground font-semibold">Total suporte garantido</span>
-                      </div>
-                    </div>
-
-                    {/* Pricing - Em breve */}
-                    <div className="space-y-2 text-center flex-1 flex flex-col justify-center">
-                      <p className="text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
-                        Em breve
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Este produto estará disponível em breve
-                      </p>
-                    </div>
-
-                    {/* Action Button - Desabilitado */}
-                    <Button 
-                      disabled
-                      className="w-full h-11 font-bold text-sm rounded-xl transition-all duration-300 bg-muted text-muted-foreground cursor-not-allowed opacity-60"
-                    >
-                      <Clock className="mr-1.5 h-4 w-4" />
-                      Em breve
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -345,7 +352,7 @@ const ProductGrid = () => {
         product={selectedProduct ? {
           name: selectedProduct.name,
           credits: selectedProduct.credits,
-          originalPrice: selectedProduct.price,
+          originalPrice: selectedProduct.originalPrice,
           discountPrice: selectedProduct.price,
         } : null}
       />
