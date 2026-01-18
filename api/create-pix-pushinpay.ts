@@ -56,19 +56,9 @@ export default async function handler(
     const pushinPayApiKey = process.env.PUSHINPAY_API_KEY;
     const pushinPayApiUrl = process.env.PUSHINPAY_API_URL || 'https://api.pushinpay.com.br/api';
 
-    console.log('Variáveis de ambiente:', {
-      hasApiKey: !!pushinPayApiKey,
-      apiKeyLength: pushinPayApiKey?.length || 0,
-      apiUrl: pushinPayApiUrl,
-      allEnvKeys: Object.keys(process.env).filter(key => key.includes('PUSHIN') || key.includes('PIX'))
-    });
-
     if (!pushinPayApiKey) {
-      console.error('Chave da PushinPay não configurada. Variáveis disponíveis:', Object.keys(process.env).filter(key => key.includes('PUSHIN') || key.includes('PIX')));
-      return res.status(500).json({ 
-        error: 'Configuração de pagamento não disponível',
-        details: 'PUSHINPAY_API_KEY não encontrada nas variáveis de ambiente'
-      });
+      console.error('Chave da PushinPay não configurada');
+      return res.status(500).json({ error: 'Configuração de pagamento não disponível' });
     }
 
     // Gera correlationID único se não fornecido
