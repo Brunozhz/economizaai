@@ -45,7 +45,7 @@ export default async function handler(
 
     console.log('Verificando status do PIX:', correlationID);
 
-    const statusUrl = `${pushinPayApiUrl.replace(/\/$/, '')}/transaction/${encodeURIComponent(correlationID)}`;
+    const statusUrl = `${pushinPayApiUrl.replace(/\/$/, '')}/transactions/${encodeURIComponent(correlationID)}`;
 
     const response = await fetch(statusUrl, {
       method: 'GET',

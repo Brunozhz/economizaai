@@ -62,7 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log('[API CHECK-STATUS] Verificando status do PIX:', correlationID);
 
-    const statusUrl = `${pushinPayApiUrl.replace(/\/$/, '')}/transaction/${encodeURIComponent(
+    const statusUrl = `${pushinPayApiUrl.replace(/\/$/, '')}/transactions/${encodeURIComponent(
       correlationID
     )}`;
 
