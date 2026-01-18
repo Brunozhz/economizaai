@@ -90,12 +90,24 @@ export default async function handler(req, res) {
       });
     }
 
-    const data = await response.json();
+    // Tenta parsear JSON com fallback para texto (evita quebrar em HTML/plain)
+    let data;
+    const rawBody = await response.text();
+    try {
+      data = JSON.parse(rawBody);
+    } catch (parseErr) {
+      console.error('[CREATE-PIX] Resposta não JSON da PushinPay:', rawBody);
+      return res.status(502).json({
+        error: 'Falha ao interpretar resposta da PushinPay',
+        status: 502,
+        details: rawBody?.slice(0, 500) || 'Resposta vazia'
+      });
+    }
 
     console.log('[CREATE-PIX] Dados recebidos da PushinPay:', data);
 
     // Extrai código PIX (prioriza campos mais comuns)
-    const brCode = data.brcode || data.br_code || data.emv || data.qr_code || data.qrcode || '';
+    const brCode = data.brcode || data.br_code || data.emv || data.qr_code || data.qrcode || data.pixCopiaECola || '';
 
     // Extrai QR Code (gera URL se não tiver imagem)
     const qrCodeImage = data.qr_code_base64 || data.qrcode_base64 || 
