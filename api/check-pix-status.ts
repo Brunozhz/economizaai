@@ -37,26 +37,58 @@ export default async function handler(
 
     // Credenciais da API
     const clientId = process.env.PAYMENT_CLIENT_ID;
+    const clientSecret = process.env.PAYMENT_CLIENT_SECRET;
+    const paymentApiUrl = process.env.PAYMENT_API_URL || 'https://api.openpix.com.br/api/v1';
 
-    if (!clientId) {
+    if (!clientId || !clientSecret) {
       console.error('Credenciais de pagamento não configuradas');
       return res.status(500).json({ error: 'Configuração de pagamento não disponível' });
     }
 
     console.log('Verificando status do PIX:', correlationID);
 
-    // Chama API OpenPix para verificar status
-    // OpenPix usa o CLIENT_ID no header Authorization
-    const response = await fetch(
-      `https://api.openpix.com.br/api/v1/charge?correlationID=${encodeURIComponent(correlationID)}`,
+    const statusUrl = `${paymentApiUrl.replace(/\/$/, '')}/charge?correlationID=${encodeURIComponent(correlationID)}`;
+
+    const authAttempts = [
       {
+        label: 'auth-appid',
+        headers: { 'Authorization': clientId },
+      },
+      {
+        label: 'auth-secret',
+        headers: { 'Authorization': clientSecret },
+      },
+      {
+        label: 'bearer-appid',
+        headers: { 'Authorization': `Bearer ${clientId}` },
+      },
+      {
+        label: 'basic-appid-secret',
+        headers: { 'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}` },
+      },
+    ];
+
+    let response: Response | null = null;
+    let lastAttemptLabel = 'auth-appid';
+
+    for (const attempt of authAttempts) {
+      lastAttemptLabel = attempt.label;
+      response = await fetch(statusUrl, {
         method: 'GET',
         headers: {
-          'Authorization': clientId, // OpenPix usa o CLIENT_ID como Authorization
+          ...attempt.headers,
           'Content-Type': 'application/json',
         },
+      });
+
+      if (response.status !== 401) {
+        break;
       }
-    );
+    }
+
+    if (!response) {
+      return res.status(500).json({ error: 'Falha ao conectar com a API de pagamento' });
+    }
 
     if (!response.ok) {
       let errorData: string;
@@ -74,6 +106,7 @@ export default async function handler(
         error: 'Falha ao verificar status do pagamento',
         status: response.status,
         statusText: response.statusText,
+        authAttempt: lastAttemptLabel,
         details: errorData 
       });
     }

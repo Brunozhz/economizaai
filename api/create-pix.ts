@@ -50,6 +50,7 @@ export default async function handler(
     // Credenciais da API
     const clientId = process.env.PAYMENT_CLIENT_ID;
     const clientSecret = process.env.PAYMENT_CLIENT_SECRET;
+    const paymentApiUrl = process.env.PAYMENT_API_URL || 'https://api.openpix.com.br/api/v1';
 
     if (!clientId || !clientSecret) {
       console.error('Credenciais de pagamento não configuradas');
@@ -70,19 +71,53 @@ export default async function handler(
       correlationID: finalCorrelationID, 
       value: pixPayload.value,
       clientIdPresent: !!clientId,
-      clientIdLength: clientId?.length 
+      clientIdLength: clientId?.length,
+      apiBase: paymentApiUrl
     });
 
-    // Chama API OpenPix para criar cobrança
-    // OpenPix usa o AppID diretamente no header Authorization (sem "Bearer")
-    const response = await fetch('https://api.openpix.com.br/api/v1/charge', {
-      method: 'POST',
-      headers: {
-        'Authorization': clientId, // AppID da OpenPix
-        'Content-Type': 'application/json',
+    const chargeUrl = `${paymentApiUrl.replace(/\/$/, '')}/charge`;
+
+    const authAttempts = [
+      {
+        label: 'auth-appid',
+        headers: { 'Authorization': clientId },
       },
-      body: JSON.stringify(pixPayload),
-    });
+      {
+        label: 'auth-secret',
+        headers: { 'Authorization': clientSecret },
+      },
+      {
+        label: 'bearer-appid',
+        headers: { 'Authorization': `Bearer ${clientId}` },
+      },
+      {
+        label: 'basic-appid-secret',
+        headers: { 'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}` },
+      },
+    ];
+
+    let response: Response | null = null;
+    let lastAttemptLabel = 'auth-appid';
+
+    for (const attempt of authAttempts) {
+      lastAttemptLabel = attempt.label;
+      response = await fetch(chargeUrl, {
+        method: 'POST',
+        headers: {
+          ...attempt.headers,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pixPayload),
+      });
+
+      if (response.status !== 401) {
+        break;
+      }
+    }
+
+    if (!response) {
+      return res.status(500).json({ error: 'Falha ao conectar com a API de pagamento' });
+    }
 
     if (!response.ok) {
       let errorData: string;
@@ -111,6 +146,7 @@ export default async function handler(
         error: 'Falha ao criar cobrança PIX',
         status: response.status,
         statusText: response.statusText,
+        authAttempt: lastAttemptLabel,
         details: errorData 
       });
     }
