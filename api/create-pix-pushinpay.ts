@@ -1,52 +1,62 @@
-/**
- * API Route: /api/create-pix-pushinpay
- *
- * Cria cobrança PIX via PushinPay
- *
- * Observação: o projeto está como "type": "module".
- * Por isso exportamos com ESM (`export default`) para evitar
- * erros como "module is not defined in ES module scope".
- */
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req, res) {
+type CreatePixBody = {
+  value?: number;
+  productName?: string;
+  correlationID?: string;
+};
+
+function parseJsonBody<T>(req: VercelRequest): { body: T | null; error?: string } {
+  const raw = req.body;
+  if (raw === undefined || raw === null) return { body: null, error: 'Body vazio' };
+  if (typeof raw === 'object') return { body: raw as T };
+  if (typeof raw === 'string') {
+    try {
+      return { body: JSON.parse(raw) as T };
+    } catch (err) {
+      return { body: null, error: `JSON inválido: ${(err as Error).message}` };
+    }
+  }
+  return { body: null, error: 'Formato de body não suportado' };
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Responde a requisições OPTIONS (preflight)
+  // Preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Apenas aceita POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
   try {
-    console.log('[CREATE-PIX] Recebendo requisição:', req.body);
+    const { body, error: bodyError } = parseJsonBody<CreatePixBody>(req);
+    if (!body) {
+      return res.status(400).json({ error: bodyError || 'Body inválido' });
+    }
 
-    const { value, productName, correlationID } = req.body;
+    const { value, productName, correlationID } = body;
 
-    // Validação
-    if (!value || value <= 0) {
-      console.log('[CREATE-PIX] Valor inválido:', value);
+    if (!value || typeof value !== 'number' || Number.isNaN(value) || value <= 0) {
       return res.status(400).json({ error: 'Valor inválido' });
     }
 
-    if (!productName) {
-      console.log('[CREATE-PIX] Nome do produto ausente');
+    if (!productName || typeof productName !== 'string' || !productName.trim()) {
       return res.status(400).json({ error: 'Nome do produto é obrigatório' });
     }
 
-    // Credenciais da PushinPay
     const pushinPayApiKey = process.env.PUSHINPAY_API_KEY;
     const pushinPayApiUrl = process.env.PUSHINPAY_API_URL || 'https://api.pushinpay.com.br/api';
 
     console.log('[CREATE-PIX] Variáveis de ambiente:', {
       hasApiKey: !!pushinPayApiKey,
-      apiUrl: pushinPayApiUrl
+      apiUrl: pushinPayApiUrl,
     });
 
     if (!pushinPayApiKey) {
@@ -54,26 +64,24 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Configuração de pagamento não disponível' });
     }
 
-    // Gera correlationID único se não fornecido
-    const finalCorrelationID = correlationID || `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const finalCorrelationID =
+      correlationID || `ORDER_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
-    // Payload para criar cobrança PIX (PushinPay)
     const pixPayload = {
-      value: Math.round(value * 100), // Converte para centavos
+      value: Math.round(value * 100), // centavos
       description: `Pagamento - ${productName}`,
       external_id: finalCorrelationID,
     };
 
     const chargeUrl = `${pushinPayApiUrl.replace(/\/$/, '')}/pix/cashIn`;
-
-    console.log('[CREATE-PIX] Chamando PushinPay:', chargeUrl);
+    console.log('[CREATE-PIX] Chamando PushinPay:', chargeUrl, 'payload:', pixPayload);
 
     const response = await fetch(chargeUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${pushinPayApiKey}`,
+        Authorization: `Bearer ${pushinPayApiKey}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       body: JSON.stringify(pixPayload),
     });
@@ -83,16 +91,15 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Erro desconhecido');
       console.error('[CREATE-PIX] Erro ao criar PIX:', response.status, errorText);
-      return res.status(response.status).json({ 
+      return res.status(response.status).json({
         error: 'Falha ao criar cobrança PIX',
         status: response.status,
-        details: errorText
+        details: errorText?.slice(0, 500),
       });
     }
 
-    // Tenta parsear JSON com fallback para texto (evita quebrar em HTML/plain)
-    let data;
     const rawBody = await response.text();
+    let data: any;
     try {
       data = JSON.parse(rawBody);
     } catch (parseErr) {
@@ -100,26 +107,33 @@ export default async function handler(req, res) {
       return res.status(502).json({
         error: 'Falha ao interpretar resposta da PushinPay',
         status: 502,
-        details: rawBody?.slice(0, 500) || 'Resposta vazia'
+        details: rawBody?.slice(0, 500) || 'Resposta vazia',
       });
     }
 
     console.log('[CREATE-PIX] Dados recebidos da PushinPay:', data);
 
-    // Extrai código PIX (prioriza campos mais comuns)
-    const brCode = data.brcode || data.br_code || data.emv || data.qr_code || data.qrcode || data.pixCopiaECola || '';
+    const brCode =
+      data.brcode ||
+      data.br_code ||
+      data.emv ||
+      data.qr_code ||
+      data.qrcode ||
+      data.pixCopiaECola ||
+      '';
 
-    // Extrai QR Code (gera URL se não tiver imagem)
-    const qrCodeImage = data.qr_code_base64 || data.qrcode_base64 || 
-      (brCode ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(brCode)}` : '');
+    const qrCodeImage =
+      data.qr_code_base64 ||
+      data.qrcode_base64 ||
+      (brCode
+        ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(brCode)}`
+        : '');
 
     const correlation = data.id || finalCorrelationID;
+    const expirationTime = 15 * 60 * 1000;
+    const expiresAt =
+      data.expires_at || data.expiration || new Date(Date.now() + expirationTime).toISOString();
 
-    // Calcula expiração de 15 minutos (900000ms)
-    const expirationTime = 15 * 60 * 1000; // 15 minutos em milissegundos
-    const expiresAt = data.expires_at || data.expiration || new Date(Date.now() + expirationTime).toISOString();
-
-    // Retorna dados do PIX para o frontend
     return res.status(200).json({
       success: true,
       correlationID: correlation,
@@ -127,18 +141,16 @@ export default async function handler(req, res) {
       brCode,
       qrCodeImage,
       paymentLink: '',
-      expiresAt: expiresAt,
+      expiresAt,
       expiresIn: 0,
       status: data.status || 'created',
     });
-
   } catch (error) {
     console.error('[CREATE-PIX] Erro no handler:', error);
-    console.error('[CREATE-PIX] Stack trace:', error.stack);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Erro interno ao processar pagamento',
       message: error instanceof Error ? error.message : 'Erro desconhecido',
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined,
     });
   }
 }
