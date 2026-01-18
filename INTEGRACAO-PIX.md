@@ -7,7 +7,8 @@
 Crie um arquivo `.env.local` na raiz do projeto com as seguintes variáveis:
 
 ```env
-# Credenciais da API de Pagamento PIX
+# Credenciais da API de Pagamento PIX (OpenPix)
+# O CLIENT_ID é usado como AppID/Authorization pela OpenPix
 PAYMENT_CLIENT_ID=oTcdkZ3jbIn5XIYBeRSdls77m3emMoQdbBVi9SiJ
 PAYMENT_CLIENT_SECRET=UXtdFNN3NVJTtMc5HkppxmgAMQPPcH42fqFHghYWbMbMDJ6SwIc6wOc5M6voFbnQvLY6zFJLqhVeLiDsPWeaTPzTUo12YYxlZagB5mGImNIdP75XXQWVoBPjwEd2u4cG
 
@@ -15,7 +16,10 @@ PAYMENT_CLIENT_SECRET=UXtdFNN3NVJTtMc5HkppxmgAMQPPcH42fqFHghYWbMbMDJ6SwIc6wOc5M6
 PAYMENT_API_URL=https://api.openpix.com.br/api/v1
 ```
 
-**⚠️ IMPORTANTE:** Este arquivo já está no `.gitignore` e não será commitado. Mantenha suas credenciais seguras!
+**⚠️ IMPORTANTE:** 
+- Este arquivo já está no `.gitignore` e não será commitado. 
+- A OpenPix usa o `PAYMENT_CLIENT_ID` (AppID) para autenticação nas requisições
+- Mantenha suas credenciais seguras!
 
 ### 2. Configuração na Vercel
 

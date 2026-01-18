@@ -66,23 +66,51 @@ export default async function handler(
       comment: `Pagamento - ${productName}`,
     };
 
-    console.log('Criando cobrança PIX:', { correlationID: finalCorrelationID, value: pixPayload.value });
+    console.log('Criando cobrança PIX:', { 
+      correlationID: finalCorrelationID, 
+      value: pixPayload.value,
+      clientIdPresent: !!clientId,
+      clientIdLength: clientId?.length 
+    });
 
     // Chama API OpenPix para criar cobrança
+    // OpenPix usa o AppID diretamente no header Authorization (sem "Bearer")
     const response = await fetch('https://api.openpix.com.br/api/v1/charge', {
       method: 'POST',
       headers: {
-        'Authorization': clientSecret,
+        'Authorization': clientId, // AppID da OpenPix
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(pixPayload),
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Erro ao criar cobrança PIX:', response.status, errorData);
+      let errorData: string;
+      try {
+        errorData = await response.text();
+        // Tenta parsear como JSON se possível
+        try {
+          const jsonError = JSON.parse(errorData);
+          console.error('Erro ao criar cobrança PIX (JSON):', {
+            status: response.status,
+            statusText: response.statusText,
+            error: jsonError
+          });
+        } catch {
+          console.error('Erro ao criar cobrança PIX (Texto):', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData
+          });
+        }
+      } catch (e) {
+        errorData = `Erro ao ler resposta: ${e}`;
+      }
+      
       return res.status(response.status).json({ 
         error: 'Falha ao criar cobrança PIX',
+        status: response.status,
+        statusText: response.statusText,
         details: errorData 
       });
     }
