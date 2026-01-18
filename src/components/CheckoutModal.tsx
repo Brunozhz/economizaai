@@ -107,130 +107,138 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
   // Verifica status do pagamento periodicamente (a cada 1 segundo)
   useEffect(() => {
-    if (pixData && step === 'pix-generated' && product) {
-      let isChecking = false; // Flag para evitar múltiplas verificações simultâneas
-      let consecutiveErrors = 0; // Contador de erros consecutivos
-      const MAX_CONSECUTIVE_ERRORS = 5; // Máximo de erros antes de parar
+    // Só inicia verificação se PIX foi gerado e está na etapa correta
+    if (!pixData || step !== 'pix-generated' || !product) {
+      return;
+    }
 
-      const checkStatus = async () => {
-        // Evita múltiplas verificações simultâneas
-        if (isChecking) {
-          return;
-        }
+    // Limpa qualquer intervalo anterior antes de criar um novo
+    if (statusCheckInterval.current) {
+      clearInterval(statusCheckInterval.current);
+      statusCheckInterval.current = null;
+    }
 
-        try {
-          isChecking = true;
-          const status = await checkPixStatus(pixData.correlationID);
+    let isChecking = false; // Flag para evitar múltiplas verificações simultâneas
+    let checkCount = 0; // Contador de verificações
+    const correlationID = pixData.correlationID; // Captura o ID para evitar problemas de closure
+
+    const checkStatus = async () => {
+      // Evita múltiplas verificações simultâneas
+      if (isChecking) {
+        return;
+      }
+
+      try {
+        isChecking = true;
+        checkCount++;
+        
+        // Log informativo de verificação (não mostra erro)
+        console.log(`🔄 Verificando pagamento... (tentativa ${checkCount})`);
+        
+        const status = await checkPixStatus(correlationID);
+        
+        if (status.isPaid) {
+          // Limpa o intervalo imediatamente
+          if (statusCheckInterval.current) {
+            clearInterval(statusCheckInterval.current);
+            statusCheckInterval.current = null;
+          }
+
+          console.log('✅ Pagamento confirmado!');
+          setStep('paid');
+          toast.success('Pagamento confirmado! 🎉');
           
-          // Reset contador de erros em caso de sucesso
-          consecutiveErrors = 0;
+          // Envia webhook com status "paid" quando pagamento confirmado
+          await sendWebhook({
+            status: 'paid',
+            correlationID: correlationID,
+            value: pixData.value,
+            product: {
+              name: product.name,
+              credits: product.credits,
+              originalPrice: product.originalPrice,
+              discountPrice: product.discountPrice,
+              finalPrice: finalPrice,
+            },
+            customer: {
+              name: customerName,
+              email: email,
+              phone: phone,
+              lovableLink: lovableLink,
+            },
+            timestamp: new Date().toISOString(),
+          });
           
-          if (status.isPaid) {
-            // Limpa o intervalo imediatamente
-            if (statusCheckInterval.current) {
-              clearInterval(statusCheckInterval.current);
-              statusCheckInterval.current = null;
-            }
-
-            setStep('paid');
-            toast.success('Pagamento confirmado! 🎉');
+          // Fire Meta Pixel Purchase event
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            const purchaseData = {
+              value: finalPrice,
+              currency: 'BRL',
+              content_name: product.name,
+              content_type: 'product',
+              content_ids: [product.name],
+              num_items: 1,
+              transaction_id: correlationID, // ID único da transação
+            };
             
-            // Envia webhook com status "paid" quando pagamento confirmado
-            await sendWebhook({
-              status: 'paid',
-              correlationID: pixData.correlationID,
-              value: pixData.value,
-              product: {
-                name: product.name,
-                credits: product.credits,
-                originalPrice: product.originalPrice,
-                discountPrice: product.discountPrice,
-                finalPrice: finalPrice,
-              },
-              customer: {
-                name: customerName,
-                email: email,
-                phone: phone,
-                lovableLink: lovableLink,
-              },
+            (window as any).fbq('track', 'Purchase', purchaseData);
+            
+            // Log para debug
+            console.log('✅ Meta Pixel Purchase event disparado:', {
+              event: 'Purchase',
+              data: purchaseData,
               timestamp: new Date().toISOString(),
             });
-            
-            // Fire Meta Pixel Purchase event
-            if (typeof window !== 'undefined' && (window as any).fbq) {
-              const purchaseData = {
-                value: finalPrice,
-                currency: 'BRL',
-                content_name: product.name,
-                content_type: 'product',
-                content_ids: [product.name],
-                num_items: 1,
-                transaction_id: pixData.correlationID, // ID único da transação
-              };
-              
-              (window as any).fbq('track', 'Purchase', purchaseData);
-              
-              // Log para debug
-              console.log('✅ Meta Pixel Purchase event disparado:', {
-                event: 'Purchase',
-                data: purchaseData,
-                timestamp: new Date().toISOString(),
-              });
-            } else {
-              console.warn('⚠️ Meta Pixel (fbq) não está disponível. Evento Purchase não foi disparado.');
-            }
-
-            // Fire Google Analytics purchase event
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-              (window as any).gtag('event', 'purchase', {
-                transaction_id: `order_${Date.now()}`,
-                value: finalPrice,
-                currency: 'BRL',
-                items: [{
-                  item_id: product.name,
-                  item_name: product.name,
-                  price: finalPrice,
-                  quantity: 1,
-                }],
-              });
-            }
-            
-            // Redireciona para página de sucesso após 2 segundos
-            setTimeout(() => {
-              onClose();
-              // Redireciona para página de sucesso
-              window.location.href = '/success?correlationID=' + encodeURIComponent(pixData.correlationID);
-            }, 2000);
+          } else {
+            console.warn('⚠️ Meta Pixel (fbq) não está disponível. Evento Purchase não foi disparado.');
           }
-        } catch (error) {
-          console.error('Erro ao verificar status:', error);
-          consecutiveErrors++;
+
+          // Fire Google Analytics purchase event
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'purchase', {
+              transaction_id: `order_${Date.now()}`,
+              value: finalPrice,
+              currency: 'BRL',
+              items: [{
+                item_id: product.name,
+                item_name: product.name,
+                price: finalPrice,
+                quantity: 1,
+              }],
+            });
+          }
           
-          // Para o polling se houver muitos erros consecutivos
-          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-            console.error('Muitos erros consecutivos. Parando verificação automática.');
-            if (statusCheckInterval.current) {
-              clearInterval(statusCheckInterval.current);
-              statusCheckInterval.current = null;
-            }
-            toast.error('Erro ao verificar pagamento. Tente recarregar a página.');
-          }
-        } finally {
-          isChecking = false;
+          // Redireciona para página de sucesso após 2 segundos
+          setTimeout(() => {
+            onClose();
+            // Redireciona para página de sucesso
+            window.location.href = '/success?correlationID=' + encodeURIComponent(correlationID);
+          }, 2000);
+        } else {
+          // Pagamento ainda não confirmado, continua verificando
+          console.log(`⏳ Aguardando pagamento... (tentativa ${checkCount})`);
         }
-      };
+      } catch (error) {
+        // Não mostra erro ao usuário, apenas log silencioso
+        // Continua verificando infinitamente até o pagamento ser confirmado
+        console.log(`🔄 Verificando pagamento... (tentativa ${checkCount} - aguardando resposta)`);
+      } finally {
+        isChecking = false;
+      }
+    };
 
-      // Verifica a cada 1 segundo (1000ms)
-      statusCheckInterval.current = setInterval(checkStatus, 1000);
+    // Inicia verificação imediatamente e depois a cada 1 segundo
+    checkStatus(); // Primeira verificação imediata
+    statusCheckInterval.current = setInterval(checkStatus, 1000);
 
-      return () => {
-        if (statusCheckInterval.current) {
-          clearInterval(statusCheckInterval.current);
-          statusCheckInterval.current = null;
-        }
-      };
-    }
-  }, [pixData, step, onClose, product, finalPrice, customerName, email, phone, lovableLink]);
+    // Cleanup: limpa o intervalo quando o componente desmonta ou quando as condições mudam
+    return () => {
+      if (statusCheckInterval.current) {
+        clearInterval(statusCheckInterval.current);
+        statusCheckInterval.current = null;
+      }
+    };
+  }, [pixData?.correlationID, step]); // Dependências reduzidas para evitar re-execuções desnecessárias
 
   // Timer para a oferta
   useEffect(() => {

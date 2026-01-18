@@ -102,6 +102,10 @@ export default async function handler(
 
     const correlation = data.id || finalCorrelationID;
 
+    // Calcula expiração de 15 minutos (900000ms)
+    const expirationTime = 15 * 60 * 1000; // 15 minutos em milissegundos
+    const expiresAt = data.expires_at || data.expiration || new Date(Date.now() + expirationTime).toISOString();
+
     // Retorna dados do PIX para o frontend
     return res.status(200).json({
       success: true,
@@ -110,7 +114,7 @@ export default async function handler(
       brCode,
       qrCodeImage,
       paymentLink: '',
-      expiresAt: data.expires_at || data.expiration || new Date(Date.now() + 3600000).toISOString(),
+      expiresAt: expiresAt,
       expiresIn: 0,
       status: data.status || 'created',
     });
