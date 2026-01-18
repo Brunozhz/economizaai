@@ -1,36 +1,17 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+/**
+ * API Route: /api/send-webhook
+ * 
+ * Proxy para envio de webhooks, evitando problemas de CORS
+ */
 
-interface WebhookPayload {
-  status: 'pending' | 'paid';
-  correlationID: string;
-  value: number;
-  product: {
-    name: string;
-    credits: number;
-    originalPrice: number;
-    discountPrice: number;
-    finalPrice: number;
-  };
-  customer: {
-    name: string;
-    email: string;
-    phone: string;
-    lovableLink: string;
-  };
-  timestamp: string;
-}
-
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+module.exports = async function handler(req, res) {
   // Apenas aceita POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
   try {
-    const payload: WebhookPayload = req.body;
+    const payload = req.body;
 
     // Validação básica
     if (!payload || !payload.status || !payload.correlationID) {
@@ -38,7 +19,6 @@ export default async function handler(
     }
 
     // Obtém URL do webhook da variável de ambiente
-    // Tenta primeiro sem VITE_ (para servidor), depois com VITE_ (fallback)
     const webhookUrl = process.env.WEBHOOK_URL || process.env.VITE_WEBHOOK_URL;
 
     if (!webhookUrl) {
@@ -85,4 +65,4 @@ export default async function handler(
       message: error instanceof Error ? error.message : 'Erro desconhecido'
     });
   }
-}
+};

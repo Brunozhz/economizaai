@@ -1,47 +1,17 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+/**
+ * API Route: /api/create-pix-pushinpay
+ * 
+ * Cria cobrança PIX via PushinPay
+ */
 
-interface CreatePixPayload {
-  value: number;
-  productName: string;
-  correlationID?: string;
-}
-
-interface PushinPayChargeRequest {
-  value: number;
-  webhook_url?: string;
-  external_id?: string;
-  description?: string;
-}
-
-interface PushinPayResponse {
-  id?: string;
-  value?: number;
-  status?: string;
-  qr_code?: string;
-  qrcode?: string;
-  qr_code_base64?: string;
-  qrcode_base64?: string;
-  brcode?: string;
-  br_code?: string;
-  payment_code?: string;
-  copy_paste?: string;
-  emv?: string;
-  emv_code?: string;
-  expires_at?: string;
-  expiration?: string;
-}
-
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+module.exports = async function handler(req, res) {
   // Apenas aceita POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
   try {
-    const { value, productName, correlationID }: CreatePixPayload = req.body;
+    const { value, productName, correlationID } = req.body;
 
     // Validação
     if (!value || value <= 0) {
@@ -65,7 +35,7 @@ export default async function handler(
     const finalCorrelationID = correlationID || `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Payload para criar cobrança PIX (PushinPay)
-    const pixPayload: PushinPayChargeRequest = {
+    const pixPayload = {
       value: Math.round(value * 100), // Converte para centavos
       description: `Pagamento - ${productName}`,
       external_id: finalCorrelationID,
@@ -85,13 +55,14 @@ export default async function handler(
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Erro desconhecido');
+      console.error('Erro ao criar PIX:', response.status, errorText);
       return res.status(response.status).json({ 
         error: 'Falha ao criar cobrança PIX',
         status: response.status
       });
     }
 
-    const data = await response.json() as PushinPayResponse;
+    const data = await response.json();
 
     // Extrai código PIX (prioriza campos mais comuns)
     const brCode = data.brcode || data.br_code || data.emv || data.qr_code || data.qrcode || '';
@@ -126,4 +97,4 @@ export default async function handler(
       message: error instanceof Error ? error.message : 'Erro desconhecido'
     });
   }
-}
+};

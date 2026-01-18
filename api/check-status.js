@@ -1,5 +1,3 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
 /**
  * API Route: /api/check-status
  * 
@@ -9,27 +7,10 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
  * ✅ Autentica com Bearer Token na API da PushinPay
  * ✅ Retorna apenas status essencial para o frontend
  * 
- * @version 2.0.2
+ * @version 2.0.3
  */
 
-interface CheckStatusPayload {
-  correlationID: string;
-}
-
-interface PushinPayChargeStatus {
-  id?: string;
-  status?: string;
-  value?: number;
-  brCode?: string;
-  expiresDate?: string;
-  paidAt?: string;
-  createdAt?: string;
-}
-
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+module.exports = async function handler(req, res) {
   // CORS headers para permitir requisições do frontend
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -48,8 +29,8 @@ export default async function handler(
   try {
     // Suporta correlationID via query param (GET) ou body (POST)
     const correlationID = req.method === 'GET' 
-      ? (req.query.correlationID as string)
-      : (req.body as CheckStatusPayload).correlationID;
+      ? req.query.correlationID
+      : req.body.correlationID;
 
     // Validação
     if (!correlationID) {
@@ -76,14 +57,14 @@ export default async function handler(
     const response = await fetch(statusUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${pushinPayApiKey}`, // ✅ Chave de API segura
+        'Authorization': `Bearer ${pushinPayApiKey}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     });
 
     if (!response.ok) {
-      let errorData: string;
+      let errorData;
       try {
         errorData = await response.text();
         console.error('[API CHECK-STATUS] Erro ao verificar status PIX:', {
@@ -99,14 +80,14 @@ export default async function handler(
       return res.status(response.status).json({ 
         error: 'Falha ao verificar status do pagamento',
         success: false,
-        status: 'ACTIVE', // Status padrão para continuar verificando
+        status: 'ACTIVE',
         isPaid: false,
         isExpired: false,
         isActive: true,
       });
     }
 
-    const data = await response.json() as PushinPayChargeStatus;
+    const data = await response.json();
 
     const status = data.status || 'created';
     const isPaid = status === 'paid' || status === 'PAID' || status === 'completed' || status === 'COMPLETED';
@@ -122,11 +103,10 @@ export default async function handler(
     return res.status(200).json({
       success: true,
       correlationID: data.id || correlationID,
-      status: status.toUpperCase(), // CREATED/PAID/CANCELED
-      isPaid, // ✅ Campo principal que o frontend precisa
+      status: status.toUpperCase(),
+      isPaid,
       isExpired,
       isActive: !isPaid && !isExpired,
-      // Dados adicionais (opcionais)
       value: data.value ? data.value / 100 : 0,
       paidAt: data.paidAt,
       expiresAt: data.expiresDate,
@@ -145,4 +125,4 @@ export default async function handler(
       isActive: true,
     });
   }
-}
+};
