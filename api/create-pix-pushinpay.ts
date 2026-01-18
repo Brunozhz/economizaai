@@ -91,7 +91,7 @@ export default async function handler(
       });
     }
 
-    const data: PushinPayResponse = await response.json();
+    const data = await response.json() as PushinPayResponse;
 
     // Extrai código PIX (prioriza campos mais comuns)
     const brCode = data.brcode || data.br_code || data.emv || data.qr_code || data.qrcode || '';

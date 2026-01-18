@@ -106,7 +106,7 @@ export default async function handler(
       });
     }
 
-    const data: PushinPayChargeStatus = await response.json();
+    const data = await response.json() as PushinPayChargeStatus;
 
     const status = data.status || 'created';
     const isPaid = status === 'paid' || status === 'PAID' || status === 'completed' || status === 'COMPLETED';
