@@ -105,37 +105,17 @@ export async function checkPixStatus(
     );
 
     if (!response.ok) {
-      // Se for 404, pode ser que a API ainda não esteja disponível, mas não loga erro
-      if (response.status === 404) {
-        // Retorna um status padrão indicando que ainda não foi pago
-        return {
-          success: false,
-          correlationID,
-          status: 'ACTIVE',
-          value: 0,
-          isPaid: false,
-          isExpired: false,
-          isActive: true,
-        };
-      }
-      
-      // Para outros erros, tenta ler a resposta mas não lança exceção
-      try {
-        const errorData: PaymentError = await response.json();
-        // Não loga erro para não poluir o console
-        throw new Error(errorData.error || 'Falha ao verificar status do pagamento');
-      } catch (parseError) {
-        // Se não conseguir ler a resposta, retorna status padrão
-        return {
-          success: false,
-          correlationID,
-          status: 'ACTIVE',
-          value: 0,
-          isPaid: false,
-          isExpired: false,
-          isActive: true,
-        };
-      }
+      // Para qualquer erro (404, 500, etc), retorna status padrão sem logar
+      // Isso permite que a verificação continue sem poluir o console
+      return {
+        success: false,
+        correlationID,
+        status: 'ACTIVE',
+        value: 0,
+        isPaid: false,
+        isExpired: false,
+        isActive: true,
+      };
     }
 
     const data: PixStatusData = await response.json();
@@ -217,18 +197,12 @@ export function formatTimeRemaining(expiresAt: string): string {
 }
 
 /**
- * Envia webhook para URL configurada
+ * Envia webhook para URL configurada via API route (evita problemas de CORS)
  */
 export async function sendWebhook(payload: WebhookPayload): Promise<boolean> {
   try {
-    const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
-    
-    if (!webhookUrl) {
-      console.warn('VITE_WEBHOOK_URL não configurada. Webhook não será enviado.');
-      return false;
-    }
-
-    const response = await fetch(webhookUrl, {
+    // Envia webhook através da API route do próprio servidor (evita CORS)
+    const response = await fetch('/api/send-webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -237,17 +211,19 @@ export async function sendWebhook(payload: WebhookPayload): Promise<boolean> {
     });
 
     if (!response.ok) {
-      console.error('Erro ao enviar webhook:', {
-        status: response.status,
-        statusText: response.statusText,
-      });
+      // Não loga erro para não poluir o console
       return false;
     }
 
-    console.log('Webhook enviado com sucesso:', payload.status);
-    return true;
+    const data = await response.json();
+    if (data.success) {
+      console.log('✅ Webhook enviado com sucesso:', payload.status);
+      return true;
+    }
+
+    return false;
   } catch (error) {
-    console.error('Erro ao enviar webhook:', error);
+    // Não loga erro para não poluir o console
     // Não lança erro para não interromper o fluxo de pagamento
     return false;
   }
