@@ -20,7 +20,7 @@ interface WebhookPayload {
   timestamp: string;
 }
 
-export default async function handler(
+module.exports = async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {

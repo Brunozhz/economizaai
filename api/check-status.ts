@@ -9,7 +9,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
  * ✅ Autentica com Bearer Token na API da PushinPay
  * ✅ Retorna apenas status essencial para o frontend
  * 
- * @version 2.0.1
+ * @version 2.0.2
  */
 
 interface CheckStatusPayload {
@@ -26,7 +26,7 @@ interface PushinPayChargeStatus {
   createdAt?: string;
 }
 
-export default async function handler(
+module.exports = async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
