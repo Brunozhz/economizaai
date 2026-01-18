@@ -8,6 +8,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
  * ✅ Usa process.env.PUSHINPAY_API_KEY (nunca exposta ao frontend)
  * ✅ Autentica com Bearer Token na API da PushinPay
  * ✅ Retorna apenas status essencial para o frontend
+ * 
+ * @version 2.0.1
  */
 
 interface CheckStatusPayload {
