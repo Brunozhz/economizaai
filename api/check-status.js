@@ -1,16 +1,20 @@
 /**
  * API Route: /api/check-status
- * 
+ *
  * Endpoint de verificação de status de pagamento PIX via PushinPay
  * ✅ Executa 100% no servidor (Vercel)
  * ✅ Usa process.env.PUSHINPAY_API_KEY (nunca exposta ao frontend)
  * ✅ Autentica com Bearer Token na API da PushinPay
  * ✅ Retorna apenas status essencial para o frontend
- * 
- * @version 2.0.3
+ *
+ * @version 2.0.4
+ *
+ * Observação: o projeto está com "type": "module".
+ * Exportamos com ESM (`export default`) para evitar o erro
+ * "module is not defined in ES module scope" que gera 500.
  */
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // CORS headers para permitir requisições do frontend
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -125,4 +129,4 @@ module.exports = async function handler(req, res) {
       isActive: true,
     });
   }
-};
+}

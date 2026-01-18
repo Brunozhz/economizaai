@@ -1,10 +1,14 @@
 /**
  * API Route: /api/create-pix-pushinpay
- * 
+ *
  * Cria cobrança PIX via PushinPay
+ *
+ * Observação: o projeto está como "type": "module".
+ * Por isso exportamos com ESM (`export default`) para evitar
+ * erros como "module is not defined in ES module scope".
  */
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -125,4 +129,4 @@ module.exports = async function handler(req, res) {
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
-};
+}

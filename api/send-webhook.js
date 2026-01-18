@@ -1,10 +1,14 @@
 /**
  * API Route: /api/send-webhook
- * 
+ *
  * Proxy para envio de webhooks, evitando problemas de CORS
+ *
+ * Observação: o projeto está como "type": "module".
+ * Exportamos com ESM (`export default`) para evitar erros 500
+ * causados por `module.exports` em ambiente ESM.
  */
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // Apenas aceita POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
@@ -65,4 +69,4 @@ module.exports = async function handler(req, res) {
       message: error instanceof Error ? error.message : 'Erro desconhecido'
     });
   }
-};
+}
