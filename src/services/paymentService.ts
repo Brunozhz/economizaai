@@ -105,15 +105,53 @@ export async function checkPixStatus(
     );
 
     if (!response.ok) {
-      const errorData: PaymentError = await response.json();
-      throw new Error(errorData.error || 'Falha ao verificar status do pagamento');
+      // Se for 404, pode ser que a API ainda não esteja disponível, mas não loga erro
+      if (response.status === 404) {
+        // Retorna um status padrão indicando que ainda não foi pago
+        return {
+          success: false,
+          correlationID,
+          status: 'ACTIVE',
+          value: 0,
+          isPaid: false,
+          isExpired: false,
+          isActive: true,
+        };
+      }
+      
+      // Para outros erros, tenta ler a resposta mas não lança exceção
+      try {
+        const errorData: PaymentError = await response.json();
+        // Não loga erro para não poluir o console
+        throw new Error(errorData.error || 'Falha ao verificar status do pagamento');
+      } catch (parseError) {
+        // Se não conseguir ler a resposta, retorna status padrão
+        return {
+          success: false,
+          correlationID,
+          status: 'ACTIVE',
+          value: 0,
+          isPaid: false,
+          isExpired: false,
+          isActive: true,
+        };
+      }
     }
 
     const data: PixStatusData = await response.json();
     return data;
   } catch (error) {
-    console.error('Erro ao verificar status PIX:', error);
-    throw error;
+    // Não loga erro para não poluir o console
+    // Retorna status padrão para continuar verificando
+    return {
+      success: false,
+      correlationID,
+      status: 'ACTIVE',
+      value: 0,
+      isPaid: false,
+      isExpired: false,
+      isActive: true,
+    };
   }
 }
 

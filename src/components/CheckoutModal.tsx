@@ -133,14 +133,16 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         return;
       }
 
-      try {
-        isChecking = true;
-        checkCount++;
-        
-        // Log informativo de verificação (não mostra erro)
-        console.log(`🔄 Verificando pagamento... (tentativa ${checkCount})`);
-        
-        const status = await checkPixStatus(correlationID);
+        try {
+          isChecking = true;
+          checkCount++;
+          
+          // Log informativo de verificação apenas a cada 5 tentativas para não poluir o console
+          if (checkCount === 1 || checkCount % 5 === 0) {
+            console.log(`🔄 Verificando pagamento... (tentativa ${checkCount})`);
+          }
+          
+          const status = await checkPixStatus(correlationID);
         
         if (status.isPaid) {
           // Limpa o intervalo imediatamente
@@ -221,20 +223,26 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           }, 2000);
         } else {
           // Pagamento ainda não confirmado, continua verificando
-          console.log(`⏳ Aguardando pagamento... (tentativa ${checkCount})`);
+          // Log apenas a cada 10 tentativas
+          if (checkCount % 10 === 0) {
+            console.log(`⏳ Aguardando pagamento... (tentativa ${checkCount})`);
+          }
         }
-      } catch (error) {
-        // Não mostra erro ao usuário, apenas log silencioso
-        // Continua verificando infinitamente até o pagamento ser confirmado
-        console.log(`🔄 Verificando pagamento... (tentativa ${checkCount} - aguardando resposta)`);
-      } finally {
+        } catch (error) {
+          // Não mostra erro ao usuário, apenas log silencioso
+          // Continua verificando infinitamente até o pagamento ser confirmado
+          // Log apenas a cada 10 tentativas para não poluir o console
+          if (checkCount % 10 === 0) {
+            console.log(`🔄 Verificando pagamento... (tentativa ${checkCount} - aguardando resposta)`);
+          }
+        } finally {
         isChecking = false;
       }
     };
 
-    // Inicia verificação imediatamente e depois a cada 1 segundo
+    // Inicia verificação imediatamente e depois a cada 3 segundos
     checkStatus(); // Primeira verificação imediata
-    statusCheckInterval.current = setInterval(checkStatus, 1000);
+    statusCheckInterval.current = setInterval(checkStatus, 3000); // 3 segundos
 
     // Cleanup: limpa o intervalo quando o componente desmonta ou quando as condições mudam
     return () => {
