@@ -100,15 +100,25 @@ export async function checkPixStatus(
 ): Promise<PixStatusData> {
   try {
     // ✅ Chama endpoint SEGURO no servidor (Vercel) - v2.0
-    const response = await fetch(
-      `/api/check-status?correlationID=${encodeURIComponent(correlationID)}`,
-      {
+    const primaryUrl = `/api/check-status?correlationID=${encodeURIComponent(correlationID)}`;
+    const fallbackUrl = `/api/check-pix-status-pushinpay?correlationID=${encodeURIComponent(correlationID)}`;
+
+    let response = await fetch(primaryUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Fallback quando o endpoint principal não existe (404)
+    if (response.status === 404) {
+      response = await fetch(fallbackUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-      }
-    );
+      });
+    }
 
     if (!response.ok) {
       // Para qualquer erro (404, 500, etc), retorna status padrão sem logar
