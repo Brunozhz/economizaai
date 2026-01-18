@@ -246,10 +246,26 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               lovableLink: lovableLink,
             },
             orderBumps: {
-              orderbump_1: selectedOrderBumps.has('orderbump_1'),
-              orderbump_2: selectedOrderBumps.has('orderbump_2'),
-              orderbump_3: selectedOrderBumps.has('orderbump_3'),
-              orderbump_4: selectedOrderBumps.has('orderbump_4'),
+              orderbump_1: selectedOrderBumps.has('orderbump_1') ? {
+                selected: true,
+                name: orderBumps.find(b => b.id === 'orderbump_1')?.title || '',
+                value: orderBumps.find(b => b.id === 'orderbump_1')?.price || 0
+              } : { selected: false },
+              orderbump_2: selectedOrderBumps.has('orderbump_2') ? {
+                selected: true,
+                name: orderBumps.find(b => b.id === 'orderbump_2')?.title || '',
+                value: orderBumps.find(b => b.id === 'orderbump_2')?.price || 0
+              } : { selected: false },
+              orderbump_3: selectedOrderBumps.has('orderbump_3') ? {
+                selected: true,
+                name: orderBumps.find(b => b.id === 'orderbump_3')?.title || '',
+                value: orderBumps.find(b => b.id === 'orderbump_3')?.price || 0
+              } : { selected: false },
+              orderbump_4: selectedOrderBumps.has('orderbump_4') ? {
+                selected: true,
+                name: orderBumps.find(b => b.id === 'orderbump_4')?.title || '',
+                value: orderBumps.find(b => b.id === 'orderbump_4')?.price || 0
+              } : { selected: false },
             },
             timestamp: new Date().toISOString(),
           });
@@ -459,10 +475,26 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           lovableLink: lovableLink,
         },
         orderBumps: {
-          orderbump_1: selectedOrderBumps.has('orderbump_1'),
-          orderbump_2: selectedOrderBumps.has('orderbump_2'),
-          orderbump_3: selectedOrderBumps.has('orderbump_3'),
-          orderbump_4: selectedOrderBumps.has('orderbump_4'),
+          orderbump_1: selectedOrderBumps.has('orderbump_1') ? {
+            selected: true,
+            name: orderBumps.find(b => b.id === 'orderbump_1')?.title || '',
+            value: orderBumps.find(b => b.id === 'orderbump_1')?.price || 0
+          } : { selected: false },
+          orderbump_2: selectedOrderBumps.has('orderbump_2') ? {
+            selected: true,
+            name: orderBumps.find(b => b.id === 'orderbump_2')?.title || '',
+            value: orderBumps.find(b => b.id === 'orderbump_2')?.price || 0
+          } : { selected: false },
+          orderbump_3: selectedOrderBumps.has('orderbump_3') ? {
+            selected: true,
+            name: orderBumps.find(b => b.id === 'orderbump_3')?.title || '',
+            value: orderBumps.find(b => b.id === 'orderbump_3')?.price || 0
+          } : { selected: false },
+          orderbump_4: selectedOrderBumps.has('orderbump_4') ? {
+            selected: true,
+            name: orderBumps.find(b => b.id === 'orderbump_4')?.title || '',
+            value: orderBumps.find(b => b.id === 'orderbump_4')?.price || 0
+          } : { selected: false },
         },
         timestamp: new Date().toISOString(),
       });

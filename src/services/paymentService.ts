@@ -53,10 +53,26 @@ export interface WebhookPayload {
     lovableLink: string;
   };
   orderBumps?: {
-    orderbump_1?: boolean;
-    orderbump_2?: boolean;
-    orderbump_3?: boolean;
-    orderbump_4?: boolean;
+    orderbump_1?: {
+      selected: boolean;
+      name?: string;
+      value?: number;
+    };
+    orderbump_2?: {
+      selected: boolean;
+      name?: string;
+      value?: number;
+    };
+    orderbump_3?: {
+      selected: boolean;
+      name?: string;
+      value?: number;
+    };
+    orderbump_4?: {
+      selected: boolean;
+      name?: string;
+      value?: number;
+    };
   };
   timestamp: string;
 }
