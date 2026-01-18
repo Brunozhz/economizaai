@@ -572,17 +572,19 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             <div className="space-y-4">
               {/* QR Code */}
               {pixData.qrCodeImage && (
-                <div className="bg-white p-4 rounded-xl">
-                  <img 
-                    src={pixData.qrCodeImage || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixData.brCode)}`} 
-                    alt="QR Code PIX" 
-                    className="w-full h-auto max-w-xs mx-auto"
-                    onError={(e) => {
-                      // Fallback: gera QR Code via API online se a imagem falhar
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixData.brCode)}`;
-                    }}
-                  />
+                <div className="flex justify-center">
+                  <div className="bg-white p-3 rounded-xl inline-block">
+                    <img 
+                      src={pixData.qrCodeImage || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixData.brCode)}`} 
+                      alt="QR Code PIX" 
+                      className="w-48 h-48 mx-auto"
+                      onError={(e) => {
+                        // Fallback: gera QR Code via API online se a imagem falhar
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixData.brCode)}`;
+                      }}
+                    />
+                  </div>
                 </div>
               )}
 

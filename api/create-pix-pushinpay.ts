@@ -71,12 +71,6 @@ export default async function handler(
       external_id: finalCorrelationID,
     };
 
-    console.log('Criando cobrança PIX (PushinPay):', { 
-      correlationID: finalCorrelationID, 
-      value: pixPayload.value,
-      apiBase: pushinPayApiUrl
-    });
-
     const chargeUrl = `${pushinPayApiUrl.replace(/\/$/, '')}/pix/cashIn`;
 
     const response = await fetch(chargeUrl, {
@@ -90,77 +84,35 @@ export default async function handler(
     });
 
     if (!response.ok) {
-      let errorData: string;
-      try {
-        errorData = await response.text();
-        // Tenta parsear como JSON se possível
-        try {
-          const jsonError = JSON.parse(errorData);
-          console.error('Erro ao criar cobrança PIX (JSON):', {
-            status: response.status,
-            statusText: response.statusText,
-            error: jsonError
-          });
-        } catch {
-          console.error('Erro ao criar cobrança PIX (Texto):', {
-            status: response.status,
-            statusText: response.statusText,
-            error: errorData
-          });
-        }
-      } catch (e) {
-        errorData = `Erro ao ler resposta: ${e}`;
-      }
-      
+      const errorText = await response.text().catch(() => 'Erro desconhecido');
       return res.status(response.status).json({ 
         error: 'Falha ao criar cobrança PIX',
-        status: response.status,
-        statusText: response.statusText,
-        details: errorData 
+        status: response.status
       });
     }
 
     const data: PushinPayResponse = await response.json();
 
-    const brCode =
-      data.brcode ||
-      data.br_code ||
-      data.payment_code ||
-      data.copy_paste ||
-      data.emv ||
-      data.emv_code ||
-      data.qr_code ||
-      data.qrcode ||
-      '';
+    // Extrai código PIX (prioriza campos mais comuns)
+    const brCode = data.brcode || data.br_code || data.emv || data.qr_code || data.qrcode || '';
 
-    const rawQr =
-      data.qr_code ||
-      data.qrcode ||
-      data.qr_code_base64 ||
-      data.qrcode_base64 ||
-      '';
+    // Extrai QR Code (gera URL se não tiver imagem)
+    const qrCodeImage = data.qr_code_base64 || data.qrcode_base64 || 
+      (brCode ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(brCode)}` : '');
 
-    const qrCodeImage =
-      rawQr && !rawQr.startsWith('http') && !rawQr.startsWith('data:image')
-        ? `data:image/png;base64,${rawQr}`
-        : rawQr;
-
-    const status = data.status || 'created';
     const correlation = data.id || finalCorrelationID;
-
-    console.log('Cobrança PIX criada com sucesso:', correlation);
 
     // Retorna dados do PIX para o frontend
     return res.status(200).json({
       success: true,
       correlationID: correlation,
-      value: (data.value ?? pixPayload.value) / 100, // Converte de centavos para reais
-      brCode, // Código PIX Copia e Cola
-      qrCodeImage, // URL/base64 da imagem do QR Code
+      value: (data.value ?? pixPayload.value) / 100,
+      brCode,
+      qrCodeImage,
       paymentLink: '',
-      expiresAt: data.expires_at || data.expiration || '',
+      expiresAt: data.expires_at || data.expiration || new Date(Date.now() + 3600000).toISOString(),
       expiresIn: 0,
-      status,
+      status: data.status || 'created',
     });
 
   } catch (error) {
