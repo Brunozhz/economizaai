@@ -5,20 +5,34 @@
  */
 
 module.exports = async function handler(req, res) {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Responde a requisições OPTIONS (preflight)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   // Apenas aceita POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
   try {
+    console.log('[CREATE-PIX] Recebendo requisição:', req.body);
+
     const { value, productName, correlationID } = req.body;
 
     // Validação
     if (!value || value <= 0) {
+      console.log('[CREATE-PIX] Valor inválido:', value);
       return res.status(400).json({ error: 'Valor inválido' });
     }
 
     if (!productName) {
+      console.log('[CREATE-PIX] Nome do produto ausente');
       return res.status(400).json({ error: 'Nome do produto é obrigatório' });
     }
 
@@ -26,8 +40,13 @@ module.exports = async function handler(req, res) {
     const pushinPayApiKey = process.env.PUSHINPAY_API_KEY;
     const pushinPayApiUrl = process.env.PUSHINPAY_API_URL || 'https://api.pushinpay.com.br/api';
 
+    console.log('[CREATE-PIX] Variáveis de ambiente:', {
+      hasApiKey: !!pushinPayApiKey,
+      apiUrl: pushinPayApiUrl
+    });
+
     if (!pushinPayApiKey) {
-      console.error('Chave da PushinPay não configurada');
+      console.error('[CREATE-PIX] Chave da PushinPay não configurada');
       return res.status(500).json({ error: 'Configuração de pagamento não disponível' });
     }
 
@@ -43,6 +62,8 @@ module.exports = async function handler(req, res) {
 
     const chargeUrl = `${pushinPayApiUrl.replace(/\/$/, '')}/pix/cashIn`;
 
+    console.log('[CREATE-PIX] Chamando PushinPay:', chargeUrl);
+
     const response = await fetch(chargeUrl, {
       method: 'POST',
       headers: {
@@ -53,16 +74,21 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify(pixPayload),
     });
 
+    console.log('[CREATE-PIX] Resposta PushinPay:', response.status, response.statusText);
+
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Erro desconhecido');
-      console.error('Erro ao criar PIX:', response.status, errorText);
+      console.error('[CREATE-PIX] Erro ao criar PIX:', response.status, errorText);
       return res.status(response.status).json({ 
         error: 'Falha ao criar cobrança PIX',
-        status: response.status
+        status: response.status,
+        details: errorText
       });
     }
 
     const data = await response.json();
+
+    console.log('[CREATE-PIX] Dados recebidos da PushinPay:', data);
 
     // Extrai código PIX (prioriza campos mais comuns)
     const brCode = data.brcode || data.br_code || data.emv || data.qr_code || data.qrcode || '';
@@ -91,10 +117,12 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Erro no handler create-pix-pushinpay:', error);
+    console.error('[CREATE-PIX] Erro no handler:', error);
+    console.error('[CREATE-PIX] Stack trace:', error.stack);
     return res.status(500).json({ 
       error: 'Erro interno ao processar pagamento',
-      message: error instanceof Error ? error.message : 'Erro desconhecido'
+      message: error instanceof Error ? error.message : 'Erro desconhecido',
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
