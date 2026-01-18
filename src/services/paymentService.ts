@@ -1,4 +1,4 @@
-// Tipos para a API de pagamento
+// Tipos para a API de pagamento PushinPay
 export interface CreatePixRequest {
   value: number;
   productName: string;
@@ -36,14 +36,14 @@ export interface PaymentError {
 }
 
 /**
- * Cria uma nova cobrança PIX
+ * Cria uma nova cobrança PIX via PushinPay
  */
 export async function createPixPayment(
   value: number,
   productName: string
 ): Promise<PixPaymentData> {
   try {
-    const response = await fetch('/api/create-pix', {
+    const response = await fetch('/api/create-pix-pushinpay', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,14 +68,14 @@ export async function createPixPayment(
 }
 
 /**
- * Verifica o status de um pagamento PIX
+ * Verifica o status de um pagamento PIX via PushinPay
  */
 export async function checkPixStatus(
   correlationID: string
 ): Promise<PixStatusData> {
   try {
     const response = await fetch(
-      `/api/check-pix-status?correlationID=${encodeURIComponent(correlationID)}`,
+      `/api/check-pix-status-pushinpay?correlationID=${encodeURIComponent(correlationID)}`,
       {
         method: 'GET',
         headers: {

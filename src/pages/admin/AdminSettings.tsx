@@ -28,7 +28,7 @@ const AdminSettings = () => {
               <div>
                 <p className="font-medium">Ativar notificações</p>
                 <p className="text-sm text-muted-foreground">
-                  Receba alertas quando um PIX for gerado ou pago
+                  Receba alertas quando uma venda for gerada ou confirmada
                 </p>
               </div>
               <PushNotificationToggle />

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Copy, Check, Clock, QrCode, Loader2, AlertCircle } from "lucide-react";
+import { X, ShoppingCart, Loader2, CheckCircle, AlertCircle, Timer, Gift, Sparkles, Zap, Copy, Check, QrCode, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createPixPayment, checkPixStatus, copyPixCode, formatCurrency, formatTimeRemaining, type PixPaymentData } from "@/services/paymentService";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { createPixPayment, checkPixStatus, copyPixCode, formatTimeRemaining, type PixPaymentData } from "@/services/paymentService";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -15,28 +17,62 @@ interface CheckoutModalProps {
   } | null;
 }
 
-type PaymentStep = 'initial' | 'loading' | 'pix-generated' | 'paid' | 'expired' | 'error';
+type CheckoutStep = 'form' | 'loading' | 'pix-generated' | 'paid' | 'expired' | 'success' | 'error';
 
 const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
-  const [step, setStep] = useState<PaymentStep>('initial');
+  const [step, setStep] = useState<CheckoutStep>('form');
+  const [customerName, setCustomerName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [lovableLink, setLovableLink] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [pixData, setPixData] = useState<PixPaymentData | null>(null);
   const [copied, setCopied] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [pixTimeRemaining, setPixTimeRemaining] = useState<string>('');
+
+  // Exit offer modal
+  const [showExitOffer, setShowExitOffer] = useState(false);
+  const [discountApplied, setDiscountApplied] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutos em segundos
+  const timerInterval = useRef<NodeJS.Timeout | null>(null);
   const statusCheckInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Errors
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [linkError, setLinkError] = useState('');
+
+  // Calcula preços com desconto (precisa estar antes dos useEffects)
+  const discountPercentage = discountApplied ? 15 : 0;
+  const finalPrice = product 
+    ? product.discountPrice * (1 - discountPercentage / 100)
+    : 0;
+  const discountAmount = product ? product.discountPrice - finalPrice : 0;
 
   // Reset quando o modal abre
   useEffect(() => {
     if (isOpen && product) {
-      setStep('initial');
+      setStep('form');
+      setCustomerName('');
+      setEmail('');
+      setPhone('');
+      setLovableLink('');
+      setErrorMessage('');
+      setNameError('');
+      setEmailError('');
+      setPhoneError('');
+      setLinkError('');
+      setShowExitOffer(false);
+      setDiscountApplied(false);
+      setTimeRemaining(300);
       setPixData(null);
       setCopied(false);
-      setTimeRemaining('');
-      setErrorMessage('');
+      setPixTimeRemaining('');
     }
   }, [isOpen, product]);
 
-  // Limpa intervalo ao desmontar
+  // Limpa intervalos ao desmontar
   useEffect(() => {
     return () => {
       if (statusCheckInterval.current) {
@@ -45,17 +81,19 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     };
   }, []);
 
-  // Atualiza tempo restante
+  // Atualiza tempo restante do PIX
   useEffect(() => {
     if (pixData && step === 'pix-generated') {
       const updateTime = () => {
-        const remaining = formatTimeRemaining(pixData.expiresAt);
-        setTimeRemaining(remaining);
-        
-        if (remaining === 'Expirado') {
-          setStep('expired');
-          if (statusCheckInterval.current) {
-            clearInterval(statusCheckInterval.current);
+        if (pixData.expiresAt) {
+          const remaining = formatTimeRemaining(pixData.expiresAt);
+          setPixTimeRemaining(remaining);
+          
+          if (remaining === 'Expirado') {
+            setStep('expired');
+            if (statusCheckInterval.current) {
+              clearInterval(statusCheckInterval.current);
+            }
           }
         }
       };
@@ -81,6 +119,33 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             }
             toast.success('Pagamento confirmado! 🎉');
             
+            // Fire Meta Pixel Purchase event
+            if (typeof window !== 'undefined' && (window as any).fbq) {
+              (window as any).fbq('track', 'Purchase', {
+                value: finalPrice,
+                currency: 'BRL',
+                content_name: product?.name,
+                content_type: 'product',
+                content_ids: [product?.name],
+                num_items: 1,
+              });
+            }
+
+            // Fire Google Analytics purchase event
+            if (typeof window !== 'undefined' && (window as any).gtag) {
+              (window as any).gtag('event', 'purchase', {
+                transaction_id: `order_${Date.now()}`,
+                value: finalPrice,
+                currency: 'BRL',
+                items: [{
+                  item_id: product?.name,
+                  item_name: product?.name,
+                  price: finalPrice,
+                  quantity: 1,
+                }],
+              });
+            }
+            
             // Fecha o modal após 3 segundos
             setTimeout(() => {
               onClose();
@@ -100,19 +165,113 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         }
       };
     }
-  }, [pixData, step, onClose]);
+  }, [pixData, step, onClose, product, finalPrice]);
 
-  const handleGeneratePix = async () => {
-    if (!product) return;
+  // Timer para a oferta
+  useEffect(() => {
+    if (showExitOffer && timeRemaining > 0) {
+      timerInterval.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            if (timerInterval.current) {
+              clearInterval(timerInterval.current);
+            }
+            setShowExitOffer(false);
+            onClose();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+      }
+    };
+  }, [showExitOffer, timeRemaining, onClose]);
+
+  const formatPhone = (value: string) => {
+    // Remove tudo que não for número
+    let numbers = value.replace(/\D/g, '');
+    
+    // Limitar a 11 dígitos (DDD + 9 dígitos)
+    const limited = numbers.slice(0, 11);
+    
+    if (limited.length <= 2) {
+      return limited;
+    } else if (limited.length <= 7) {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
+    } else {
+      return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    setPhone(formatted);
+    setPhoneError('');
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    
+    if (!customerName.trim() || customerName.trim().length < 2) {
+      setNameError('Digite seu nome completo');
+      isValid = false;
+    }
+    
+    const phoneNumbers = phone.replace(/\D/g, '');
+    if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
+      setPhoneError('Digite um telefone válido com DDD');
+      isValid = false;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Digite um e-mail válido');
+      isValid = false;
+    }
+
+    if (!lovableLink.trim()) {
+      setLinkError('Digite o link de convite da sua conta Lovable');
+      isValid = false;
+    } else if (!lovableLink.includes('lovable.dev') && !lovableLink.includes('lovable.app')) {
+      setLinkError('Link inválido. Use um link de convite do Lovable');
+      isValid = false;
+    }
+    
+    return isValid;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm() || !product) return;
 
     setStep('loading');
     setErrorMessage('');
 
     try {
-      const data = await createPixPayment(product.discountPrice, product.name);
+      // Cria pagamento PIX via PushinPay
+      const paymentValue = finalPrice; // Usa o preço final (com desconto se aplicado)
+      const data = await createPixPayment(paymentValue, product.name);
+      
       setPixData(data);
       setStep('pix-generated');
       toast.success('PIX gerado com sucesso!');
+
+      // Fire Meta Pixel InitiateCheckout event
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'InitiateCheckout', {
+          value: finalPrice,
+          currency: 'BRL',
+          content_name: product.name,
+          content_type: 'product',
+          content_ids: [product.name],
+          num_items: 1,
+        });
+      }
+
     } catch (error) {
       console.error('Erro ao gerar PIX:', error);
       setStep('error');
@@ -135,13 +294,106 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   };
 
   const handleClose = () => {
+    // Se tentar fechar, mostra oferta de desconto
+    if (step === 'form' && !discountApplied && !showExitOffer) {
+      setShowExitOffer(true);
+      setTimeRemaining(300);
+      return;
+    }
+    
+    // Limpa intervalos ao fechar
     if (statusCheckInterval.current) {
       clearInterval(statusCheckInterval.current);
+    }
+    
+    onClose();
+  };
+
+  const handleAcceptDiscount = () => {
+    setDiscountApplied(true);
+    setShowExitOffer(false);
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+    }
+    toast.success('Desconto de 15% aplicado! 🎉');
+  };
+
+  const handleRejectDiscount = () => {
+    setShowExitOffer(false);
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
     }
     onClose();
   };
 
-  if (!isOpen) return null;
+  // Formata tempo restante para oferta
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+  useEffect(() => {
+    if (pixData && step === 'pix-generated') {
+      const checkStatus = async () => {
+        try {
+          const status = await checkPixStatus(pixData.correlationID);
+          
+          if (status.isPaid) {
+            setStep('paid');
+            if (statusCheckInterval.current) {
+              clearInterval(statusCheckInterval.current);
+            }
+            toast.success('Pagamento confirmado! 🎉');
+            
+            // Fire Meta Pixel Purchase event
+            if (typeof window !== 'undefined' && (window as any).fbq) {
+              (window as any).fbq('track', 'Purchase', {
+                value: finalPrice,
+                currency: 'BRL',
+                content_name: product?.name,
+                content_type: 'product',
+                content_ids: [product?.name],
+                num_items: 1,
+              });
+            }
+
+            // Fire Google Analytics purchase event
+            if (typeof window !== 'undefined' && (window as any).gtag) {
+              (window as any).gtag('event', 'purchase', {
+                transaction_id: `order_${Date.now()}`,
+                value: finalPrice,
+                currency: 'BRL',
+                items: [{
+                  item_id: product?.name,
+                  item_name: product?.name,
+                  price: finalPrice,
+                  quantity: 1,
+                }],
+              });
+            }
+            
+            // Fecha o modal após 3 segundos
+            setTimeout(() => {
+              onClose();
+            }, 3000);
+          }
+        } catch (error) {
+          console.error('Erro ao verificar status:', error);
+        }
+      };
+
+      // Verifica a cada 5 segundos
+      statusCheckInterval.current = setInterval(checkStatus, 5000);
+
+      return () => {
+        if (statusCheckInterval.current) {
+          clearInterval(statusCheckInterval.current);
+        }
+      };
+    }
+  }, [pixData, step, onClose, product, finalPrice]);
+
+  if (!isOpen || !product) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -152,15 +404,15 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto scrollbar-hide" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
           <div>
             <h2 className="text-xl font-bold text-foreground">
-              {step === 'paid' ? 'Pagamento Confirmado!' : 'Checkout PIX'}
+              {step === 'paid' ? 'Pagamento Confirmado!' : step === 'pix-generated' ? 'Pagamento via PIX' : step === 'success' ? 'Pedido Confirmado!' : 'Finalizar Compra'}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {step === 'paid' ? 'Seu pedido foi processado' : 'Pagamento via PIX'}
+              {step === 'paid' ? 'Seu pagamento foi aprovado' : step === 'pix-generated' ? 'Escaneie o QR Code ou copie o código' : step === 'success' ? 'Seu pedido foi enviado' : 'Preencha seus dados'}
             </p>
           </div>
           <button
@@ -174,35 +426,134 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         {/* Content */}
         <div className="p-5">
           {/* Product Info */}
-          {product && (
-            <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 mb-5">
-              <div>
-                <p className="font-semibold text-foreground">{product.name}</p>
-                <p className="text-sm text-muted-foreground">+{product.credits} créditos</p>
-              </div>
-              <div className="text-right">
-                {product.originalPrice > 0 && (
-                  <p className="text-sm text-price-old line-through">
-                    R$ {product.originalPrice.toFixed(2).replace('.', ',')}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 mb-5">
+            <div>
+              <p className="font-semibold text-foreground">{product.name}</p>
+              <p className="text-sm text-muted-foreground">+{product.credits} créditos</p>
+            </div>
+            <div className="text-right">
+              {product.originalPrice > 0 && (
+                <p className="text-sm text-price-old line-through">
+                  R$ {product.originalPrice.toFixed(2).replace('.', ',')}
+                </p>
+              )}
+              {discountApplied && (
+                <>
+                  <p className="text-xs text-muted-foreground line-through">
+                    R$ {product.discountPrice.toFixed(2).replace('.', ',')}
                   </p>
-                )}
+                  <div className="flex items-center gap-2 justify-end">
+                    <span className="px-2 py-0.5 bg-emerald-500 text-white text-xs font-bold rounded">
+                      -15%
+                    </span>
+                    <p className="text-xl font-bold text-emerald-500">
+                      R$ {finalPrice.toFixed(2).replace('.', ',')}
+                    </p>
+                  </div>
+                  <p className="text-xs text-emerald-500 font-semibold">
+                    Você economizou R$ {discountAmount.toFixed(2).replace('.', ',')}!
+                  </p>
+                </>
+              )}
+              {!discountApplied && (
                 <p className="text-xl font-bold text-price-new">
                   R$ {product.discountPrice.toFixed(2).replace('.', ',')}
                 </p>
+              )}
+            </div>
+          </div>
+
+          {/* Discount Applied Banner */}
+          {discountApplied && step === 'form' && (
+            <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-emerald-500/20 border-2 border-emerald-500/50">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="h-5 w-5 text-emerald-500" />
+                <p className="font-bold text-emerald-700 dark:text-emerald-400">
+                  Seu desconto foi aplicado com sucesso! 🎉
+                </p>
               </div>
+              <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                Preencha seus dados abaixo para finalizar sua compra com 15% OFF!
+              </p>
             </div>
           )}
 
-          {/* Initial Step */}
-          {step === 'initial' && (
-            <div className="text-center py-6 space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
-                <QrCode className="h-8 w-8 text-emerald-500" />
+          {/* Form Step */}
+          {step === 'form' && (
+            <div className="space-y-4">
+              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome Completo *</Label>
+                <Input
+                  id="name"
+                  placeholder="Digite seu nome completo"
+                  value={customerName}
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    setNameError('');
+                  }}
+                  className={nameError ? 'border-destructive' : ''}
+                />
+                {nameError && <p className="text-xs text-destructive">{nameError}</p>}
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Pagamento via PIX</h3>
-                <p className="text-sm text-muted-foreground">
-                  Clique no botão abaixo para gerar o código PIX e realizar o pagamento de forma rápida e segura.
+
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError('');
+                  }}
+                  className={emailError ? 'border-destructive' : ''}
+                />
+                {emailError && <p className="text-xs text-destructive">{emailError}</p>}
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-2">
+                <Label htmlFor="phone">WhatsApp *</Label>
+                <div className="flex gap-2">
+                  <div className="flex items-center px-3 bg-secondary rounded-lg border border-input">
+                    <span className="text-sm text-muted-foreground">+55</span>
+                  </div>
+                  <Input
+                    id="phone"
+                    placeholder="(11) 99999-9999"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    className={`flex-1 ${phoneError ? 'border-destructive' : ''}`}
+                  />
+                </div>
+                {phoneError && <p className="text-xs text-destructive">{phoneError}</p>}
+              </div>
+
+              {/* Lovable Invite Link */}
+              <div className="space-y-2">
+                {/* Mensagem de Atenção */}
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-2">
+                  <p className="text-sm text-foreground">
+                    <span className="font-semibold">⚠️ Atenção:</span> Aqui neste campo abaixo você tem que colocar o link de convite da sua conta Lovable que vai receber os créditos. Qualquer dúvida, volte no vídeo acima desta página para poder entender.
+                  </p>
+                </div>
+                <Label htmlFor="lovableLink">Link de Convite da sua conta Lovable *</Label>
+                <Input
+                  id="lovableLink"
+                  placeholder="https://lovable.dev/..."
+                  value={lovableLink}
+                  onChange={(e) => {
+                    setLovableLink(e.target.value);
+                    setLinkError('');
+                  }}
+                  className={linkError ? 'border-destructive' : ''}
+                />
+                {linkError && <p className="text-xs text-destructive">{linkError}</p>}
+                <p className="text-xs text-muted-foreground">
+                  Cole o link de convite da sua conta Lovable para recebermos os créditos
                 </p>
               </div>
             </div>
@@ -211,7 +562,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           {/* Loading Step */}
           {step === 'loading' && (
             <div className="text-center py-8 space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-emerald-500 mx-auto" />
+              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
               <p className="text-sm text-muted-foreground">Gerando código PIX...</p>
             </div>
           )}
@@ -220,26 +571,35 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           {step === 'pix-generated' && pixData && (
             <div className="space-y-4">
               {/* QR Code */}
-              <div className="bg-white p-4 rounded-xl">
-                <img 
-                  src={pixData.qrCodeImage} 
-                  alt="QR Code PIX" 
-                  className="w-full h-auto max-w-xs mx-auto"
-                />
-              </div>
+              {pixData.qrCodeImage && (
+                <div className="bg-white p-4 rounded-xl">
+                  <img 
+                    src={pixData.qrCodeImage || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixData.brCode)}`} 
+                    alt="QR Code PIX" 
+                    className="w-full h-auto max-w-xs mx-auto"
+                    onError={(e) => {
+                      // Fallback: gera QR Code via API online se a imagem falhar
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixData.brCode)}`;
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Timer */}
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-amber-500" />
-                <span className="text-muted-foreground">Expira em:</span>
-                <span className="font-semibold text-foreground">{timeRemaining}</span>
-              </div>
+              {pixData.expiresAt && (
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-amber-500" />
+                  <span className="text-muted-foreground">Expira em:</span>
+                  <span className="font-semibold text-foreground">{pixTimeRemaining || 'Verificando...'}</span>
+                </div>
+              )}
 
               {/* PIX Code */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Código PIX Copia e Cola:</label>
                 <div className="flex gap-2">
-                  <input
+                  <Input
                     type="text"
                     readOnly
                     value={pixData.brCode}
@@ -283,7 +643,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           {step === 'paid' && (
             <div className="text-center py-8 space-y-4">
               <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 animate-bounce">
-                <Check className="h-8 w-8 text-emerald-500" />
+                <CheckCircle className="h-8 w-8 text-emerald-500" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">Pagamento Confirmado!</h3>
@@ -309,6 +669,21 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             </div>
           )}
 
+          {/* Success Step */}
+          {step === 'success' && (
+            <div className="text-center py-8 space-y-4">
+              <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 animate-bounce">
+                <CheckCircle className="h-8 w-8 text-emerald-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Pedido Enviado!</h3>
+                <p className="text-sm text-muted-foreground">
+                  Entraremos em contato via WhatsApp em breve para finalizar seu pedido.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Error Step */}
           {step === 'error' && (
             <div className="text-center py-8 space-y-4">
@@ -316,7 +691,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 <AlertCircle className="h-8 w-8 text-red-500" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Erro ao Gerar PIX</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Erro ao Enviar</h3>
                 <p className="text-sm text-muted-foreground">{errorMessage}</p>
               </div>
             </div>
@@ -325,13 +700,13 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
         {/* Footer */}
         <div className="p-5 border-t border-border bg-secondary/20">
-          {step === 'initial' && (
+          {step === 'form' && (
             <Button
-              onClick={handleGeneratePix}
+              onClick={handleSubmit}
               className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl"
             >
-              <QrCode className="mr-2 h-5 w-5" />
-              Gerar PIX
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Comprar Agora
             </Button>
           )}
 
@@ -341,7 +716,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl opacity-50"
             >
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Gerando...
+              Processando...
             </Button>
           )}
 
@@ -358,7 +733,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           {(step === 'expired' || step === 'error') && (
             <div className="flex gap-2">
               <Button
-                onClick={handleGeneratePix}
+                onClick={handleSubmit}
                 className="flex-1 h-12 gradient-primary text-primary-foreground font-bold rounded-xl"
               >
                 Tentar Novamente
@@ -381,8 +756,128 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               Concluir
             </Button>
           )}
+
+          {step === 'success' && (
+            <Button
+              onClick={handleClose}
+              className="w-full h-12 gradient-primary text-primary-foreground font-bold rounded-xl"
+            >
+              Concluir
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Exit Offer Modal - Aparece por cima */}
+      {showExitOffer && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+            onClick={handleRejectDiscount}
+          />
+          
+          {/* Modal de Oferta */}
+          <div className="relative w-full max-w-md bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 border-2 border-white/30 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
+            {/* Timer Header */}
+            <div className="bg-black/30 backdrop-blur-sm px-6 py-3 flex items-center justify-between border-b border-white/20">
+              <div className="flex items-center gap-2 text-white">
+                <Timer className="h-5 w-5 animate-pulse" />
+                <span className="text-sm font-medium">Oferta expira em:</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="bg-red-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-pulse">
+                  {formatTime(timeRemaining)}
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 text-center relative overflow-hidden">
+              {/* Decorative Elements */}
+              <div className="absolute top-4 left-4 text-yellow-300 text-3xl animate-bounce">✨</div>
+              <div className="absolute top-4 right-4 text-yellow-300 text-3xl animate-bounce" style={{ animationDelay: '0.5s' }}>🎉</div>
+              <div className="absolute bottom-4 left-8 text-yellow-300 text-3xl animate-bounce" style={{ animationDelay: '1s' }}>💎</div>
+              <div className="absolute bottom-4 right-8 text-yellow-300 text-3xl animate-bounce" style={{ animationDelay: '1.5s' }}>🔥</div>
+
+              {/* Main Content */}
+              <div className="relative z-10 space-y-4">
+                <div className="mx-auto w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 animate-pulse">
+                  <Gift className="h-12 w-12 text-white" />
+                </div>
+
+                <h3 className="text-3xl font-black text-white mb-2">
+                  ESPERA! 🛑
+                </h3>
+
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 border-2 border-white/30">
+                  <p className="text-white text-lg font-bold mb-2">
+                    Não vá embora ainda!
+                  </p>
+                  <p className="text-white/90 text-sm">
+                    Você tem uma oferta exclusiva esperando!
+                  </p>
+                </div>
+
+                {/* Discount Badge */}
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-full px-6 py-3 inline-flex items-center gap-2 font-black text-2xl shadow-xl">
+                  <Zap className="h-6 w-6" />
+                  <span>15% DE DESCONTO AGORA!</span>
+                  <Zap className="h-6 w-6" />
+                </div>
+
+                {/* Price Comparison */}
+                {product && (
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/30">
+                    <div className="flex items-center justify-between text-white mb-2">
+                      <span className="text-sm">Preço Original:</span>
+                      <span className="text-lg line-through opacity-70">
+                        R$ {product.discountPrice.toFixed(2).replace('.', ',')}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-white mb-2">
+                      <span className="text-sm font-semibold">Desconto (15%):</span>
+                      <span className="text-lg font-bold text-yellow-300">
+                        -R$ {(product.discountPrice * 0.15).toFixed(2).replace('.', ',')}
+                      </span>
+                    </div>
+                    <div className="border-t border-white/30 pt-2 mt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-white">Preço Final:</span>
+                        <span className="text-3xl font-black text-yellow-300">
+                          R$ {(product.discountPrice * 0.85).toFixed(2).replace('.', ',')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-white/90 text-sm font-medium">
+                  ⏰ Esta oferta é válida apenas por <span className="font-black text-yellow-300">5 minutos</span>!
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-black/30 backdrop-blur-sm p-6 space-y-3">
+              <Button
+                onClick={handleAcceptDiscount}
+                className="!w-full !h-14 !bg-white !text-emerald-600 hover:!bg-yellow-300 !font-black !text-lg !rounded-xl !shadow-xl hover:!scale-105 !transition-transform"
+                style={{ color: '#059669', backgroundColor: '#ffffff' }}
+              >
+                <Sparkles className="mr-2 h-5 w-5" style={{ color: '#059669' }} />
+                EU QUERO! APLICAR DESCONTO AGORA
+              </Button>
+              
+              <button
+                onClick={handleRejectDiscount}
+                className="w-full text-white/70 hover:text-white text-sm underline"
+              >
+                Não, obrigado. Quero pagar o preço normal.
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

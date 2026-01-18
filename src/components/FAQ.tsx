@@ -9,7 +9,7 @@ import { HelpCircle } from "lucide-react";
 const faqItems = [
   {
     question: "Como funciona a entrega do acesso?",
-    answer: "Após a confirmação do pagamento via PIX, você recebe o acesso imediatamente no seu e-mail cadastrado. O processo é 100% automático e leva menos de 5 minutos."
+    answer: "Após a confirmação do pagamento, você recebe o acesso imediatamente no seu e-mail cadastrado. O processo é 100% automático e leva menos de 5 minutos."
   },
   {
     question: "O acesso é vitalício?",
@@ -25,7 +25,7 @@ const faqItems = [
   },
   {
     question: "O pagamento é seguro?",
-    answer: "Totalmente seguro! Utilizamos PIX, o sistema de pagamento mais seguro do Brasil, regulamentado pelo Banco Central. Seus dados estão protegidos."
+    answer: "Totalmente seguro! Utilizamos sistemas de pagamento confiáveis e regulamentados. Seus dados estão protegidos."
   },
   {
     question: "Preciso ter conhecimento técnico?",

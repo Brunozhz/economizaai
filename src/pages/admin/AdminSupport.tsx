@@ -18,16 +18,16 @@ const QUICK_RESPONSES = [
     text: "Olá! 👋 Sou do suporte da Economiza.IA. Como posso ajudá-lo(a) hoje?"
   },
   {
-    label: "Pagamento PIX",
-    text: "Para realizar o pagamento via PIX, basta clicar no botão 'Comprar' do plano desejado. O QR Code será gerado automaticamente e você terá 30 minutos para efetuar o pagamento. Após a confirmação, seus créditos serão liberados instantaneamente! 💳"
+    label: "Pagamento",
+    text: "Para realizar o pagamento, basta clicar no botão 'Comprar' do plano desejado. Após a confirmação, seus créditos serão liberados instantaneamente! 💳"
   },
   {
     label: "Créditos não aparecem",
-    text: "Seus créditos podem levar até 5 minutos para aparecer após a confirmação do pagamento. Se o problema persistir, por favor me envie seu email de cadastro e o comprovante do PIX para verificarmos. 🔍"
+    text: "Seus créditos podem levar até 5 minutos para aparecer após a confirmação do pagamento. Se o problema persistir, por favor me envie seu email de cadastro e o comprovante de pagamento para verificarmos. 🔍"
   },
   {
     label: "Cupom de desconto",
-    text: "Para usar um cupom de desconto, basta inserir o código no campo 'Cupom' durante o checkout, antes de gerar o PIX. O desconto será aplicado automaticamente ao valor final! 🎫"
+    text: "Para usar um cupom de desconto, basta inserir o código no campo 'Cupom' durante o checkout. O desconto será aplicado automaticamente ao valor final! 🎫"
   },
   {
     label: "Como usar créditos",
@@ -43,7 +43,7 @@ const QUICK_RESPONSES = [
   },
   {
     label: "Reembolso",
-    text: "Para solicitar reembolso, por favor me envie: 1) Email de cadastro, 2) Comprovante do PIX, 3) Motivo da solicitação. Analisaremos seu caso em até 24 horas úteis. 📝"
+    text: "Para solicitar reembolso, por favor me envie: 1) Email de cadastro, 2) Comprovante de pagamento, 3) Motivo da solicitação. Analisaremos seu caso em até 24 horas úteis. 📝"
   }
 ];
 

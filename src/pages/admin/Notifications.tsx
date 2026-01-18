@@ -12,7 +12,7 @@ const Notifications = () => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
-  const [testType, setTestType] = useState<'pix_generated' | 'pix_approved'>('pix_generated');
+  const [testType, setTestType] = useState<'sale_generated' | 'sale_approved'>('sale_generated');
 
   const sendTestNotification = async () => {
     if (!title || !body) {
@@ -44,17 +44,17 @@ const Notifications = () => {
     }
   };
 
-  const sendQuickTest = async (type: 'pix_generated' | 'pix_approved') => {
+  const sendQuickTest = async (type: 'sale_generated' | 'sale_approved') => {
     setSending(true);
     try {
       const notifications = {
-        pix_generated: {
-          title: '💰 PIX Gerado!',
-          body: 'Novo PIX de R$ 99,90 gerado - Produto Teste',
+        sale_generated: {
+          title: '💰 Venda Iniciada!',
+          body: 'Nova venda de R$ 99,90 gerada - Produto Teste',
         },
-        pix_approved: {
+        sale_approved: {
           title: '✅ Venda Aprovada!',
-          body: 'PIX de R$ 99,90 foi pago - Produto Teste',
+          body: 'Venda de R$ 99,90 foi confirmada - Produto Teste',
         },
       };
 
@@ -99,7 +99,7 @@ const Notifications = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
-              onClick={() => sendQuickTest('pix_generated')}
+              onClick={() => sendQuickTest('sale_generated')}
               disabled={sending}
               className="w-full justify-start gap-3 h-auto py-4"
               variant="outline"
@@ -108,13 +108,13 @@ const Notifications = () => {
                 <Bell className="h-5 w-5 text-amber-500" />
               </div>
               <div className="text-left">
-                <div className="font-semibold">💰 PIX Gerado</div>
-                <div className="text-sm text-muted-foreground">Simula novo PIX criado</div>
+                <div className="font-semibold">💰 Venda Iniciada</div>
+                <div className="text-sm text-muted-foreground">Simula nova venda criada</div>
               </div>
             </Button>
 
             <Button
-              onClick={() => sendQuickTest('pix_approved')}
+              onClick={() => sendQuickTest('sale_approved')}
               disabled={sending}
               className="w-full justify-start gap-3 h-auto py-4"
               variant="outline"
@@ -182,17 +182,17 @@ const Notifications = () => {
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant={testType === 'pix_generated' ? 'default' : 'outline'}
+                  variant={testType === 'sale_generated' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setTestType('pix_generated')}
+                  onClick={() => setTestType('sale_generated')}
                 >
-                  💰 PIX Gerado
+                  💰 Venda Iniciada
                 </Button>
                 <Button
                   type="button"
-                  variant={testType === 'pix_approved' ? 'default' : 'outline'}
+                  variant={testType === 'sale_approved' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setTestType('pix_approved')}
+                  onClick={() => setTestType('sale_approved')}
                 >
                   ✅ Aprovado
                 </Button>

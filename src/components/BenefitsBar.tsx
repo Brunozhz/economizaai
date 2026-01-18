@@ -10,7 +10,7 @@ const benefits = [
   {
     icon: Shield,
     title: "100% Seguro",
-    description: "Pagamento via PIX protegido",
+    description: "Pagamento protegido e seguro",
     color: "from-blue-500 to-cyan-500",
   },
   {

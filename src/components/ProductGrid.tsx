@@ -67,60 +67,19 @@ const ProductGrid = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const confettiFired = useRef(false);
 
-  // Clean up checkout state on page load (don't persist open modal)
-  useEffect(() => {
-    // Remove checkout state on page load to prevent modal from reopening
-    sessionStorage.removeItem('checkout_state');
-  }, []);
-
-  // Check for remarketing redirect on mount
-  useEffect(() => {
-    const productParam = searchParams.get('produto');
-    const isRemarketing = searchParams.get('remarketing') === 'true';
-    
-    if (productParam && isRemarketing) {
-      // Find the product by name
-      const product = products.find(p => p.name.toLowerCase() === productParam.toLowerCase());
-      if (product) {
-        setSelectedProduct({
-          name: product.name,
-          credits: product.credits,
-          price: product.price,
-          originalPrice: product.originalPrice
-        });
-        setIsCheckoutOpen(true);
-        // Save to sessionStorage
-        sessionStorage.setItem('checkout_state', JSON.stringify({
-          isOpen: true,
-          product: {
-            name: product.name,
-            credits: product.credits,
-            price: product.price,
-            originalPrice: product.originalPrice
-          }
-        }));
-      }
-      
-      // Clear the URL params
-      setSearchParams({});
-    }
-  }, [searchParams, setSearchParams]);
-
   const handleBuy = (product: Product) => {
-    setSelectedProduct(product);
+    setSelectedProduct({
+      name: product.name,
+      credits: product.credits,
+      originalPrice: product.originalPrice,
+      discountPrice: product.price,
+    });
     setIsCheckoutOpen(true);
   };
 
   const handleCloseCheckout = () => {
     setIsCheckoutOpen(false);
     setSelectedProduct(null);
-    // Clear persisted state and remarketing offer after closing
-    sessionStorage.removeItem('checkout_state');
-    // Clear exit offer rejection flags when modal closes completely
-    products.forEach(product => {
-      sessionStorage.removeItem(`exit_offer_rejected_${product.name}`);
-    });
-    localStorage.removeItem('remarketing_offer');
   };
 
   // Confetti effect when scrolling to products section (first time only)
@@ -349,12 +308,7 @@ const ProductGrid = () => {
       <CheckoutModal
         isOpen={isCheckoutOpen}
         onClose={handleCloseCheckout}
-        product={selectedProduct ? {
-          name: selectedProduct.name,
-          credits: selectedProduct.credits,
-          originalPrice: selectedProduct.originalPrice,
-          discountPrice: selectedProduct.price,
-        } : null}
+        product={selectedProduct}
       />
 
     </>
