@@ -89,13 +89,19 @@ export async function createPixPayment(
 
 /**
  * Verifica o status de um pagamento PIX via PushinPay
+ * ✅ Chama API route do servidor (/api/check-status)
+ * ✅ Nunca expõe chaves de API ao frontend
+ * ✅ Autenticação com PushinPay feita 100% no servidor
+ * 
+ * ATUALIZAÇÃO: Agora usa /api/check-status (seguro)
  */
 export async function checkPixStatus(
   correlationID: string
 ): Promise<PixStatusData> {
   try {
+    // ✅ Chama endpoint SEGURO no servidor (Vercel) - v2.0
     const response = await fetch(
-      `/api/check-pix-status-pushinpay?correlationID=${encodeURIComponent(correlationID)}`,
+      `/api/check-status?correlationID=${encodeURIComponent(correlationID)}`,
       {
         method: 'GET',
         headers: {
