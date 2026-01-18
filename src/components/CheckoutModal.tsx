@@ -50,9 +50,15 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     : 0;
   const discountAmount = product ? product.discountPrice - finalPrice : 0;
 
-  // Reset quando o modal abre
+  // Reset quando o modal abre (apenas se não houver dados do PIX - indica que é uma abertura nova)
   useEffect(() => {
     if (isOpen && product) {
+      // Se já tem dados do PIX, não reseta (modal foi restaurado)
+      if (pixData) {
+        return;
+      }
+      
+      // Reset apenas se for uma abertura nova do modal
       setStep('form');
       setCustomerName('');
       setEmail('');
@@ -66,7 +72,6 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setShowExitOffer(false);
       setDiscountApplied(false);
       setTimeRemaining(300);
-      setPixData(null);
       setCopied(false);
       setPixTimeRemaining('');
     }

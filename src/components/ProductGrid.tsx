@@ -61,25 +61,63 @@ interface Product {
 
 const ProductGrid = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
+  // Restaura estado do modal do sessionStorage antes da primeira renderização
+  const getInitialCheckoutState = () => {
+    if (typeof window === 'undefined') return { isOpen: false, product: null };
+    
+    const savedCheckoutState = sessionStorage.getItem('checkoutModalState');
+    if (savedCheckoutState) {
+      try {
+        const { isOpen, product } = JSON.parse(savedCheckoutState);
+        if (isOpen && product) {
+          return { isOpen: true, product };
+        }
+      } catch (error) {
+        console.error('Erro ao restaurar estado do modal:', error);
+      }
+    }
+    return { isOpen: false, product: null };
+  };
+
+  const initialState = getInitialCheckoutState();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(initialState.isOpen);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(initialState.product);
   const [showInfinitePrice, setShowInfinitePrice] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const confettiFired = useRef(false);
 
+  // Salva estado do modal no sessionStorage quando muda
+  useEffect(() => {
+    if (isCheckoutOpen && selectedProduct) {
+      sessionStorage.setItem('checkoutModalState', JSON.stringify({
+        isOpen: true,
+        product: selectedProduct,
+      }));
+    }
+  }, [isCheckoutOpen, selectedProduct]);
+
   const handleBuy = (product: Product) => {
-    setSelectedProduct({
+    const productData = {
       name: product.name,
       credits: product.credits,
       originalPrice: product.originalPrice,
       discountPrice: product.price,
-    });
+    };
+    setSelectedProduct(productData);
     setIsCheckoutOpen(true);
+    // Salva no sessionStorage imediatamente
+    sessionStorage.setItem('checkoutModalState', JSON.stringify({
+      isOpen: true,
+      product: productData,
+    }));
   };
 
   const handleCloseCheckout = () => {
     setIsCheckoutOpen(false);
     setSelectedProduct(null);
+    // Remove do sessionStorage apenas quando realmente fecha (não quando mostra modal de desconto)
+    sessionStorage.removeItem('checkoutModalState');
   };
 
   // Confetti effect when scrolling to products section (first time only)
