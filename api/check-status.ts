@@ -26,7 +26,7 @@ interface PushinPayChargeStatus {
   createdAt?: string;
 }
 
-module.exports = async function handler(
+export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
