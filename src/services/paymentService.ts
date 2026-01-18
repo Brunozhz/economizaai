@@ -52,6 +52,12 @@ export interface WebhookPayload {
     phone: string;
     lovableLink: string;
   };
+  orderBumps?: {
+    orderbump_1?: boolean;
+    orderbump_2?: boolean;
+    orderbump_3?: boolean;
+    orderbump_4?: boolean;
+  };
   timestamp: string;
 }
 

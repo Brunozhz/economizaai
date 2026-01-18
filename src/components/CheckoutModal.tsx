@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { createPixPayment, checkPixStatus, copyPixCode, formatTimeRemaining, sendWebhook, type PixPaymentData } from "@/services/paymentService";
+import OrderBump from "@/components/OrderBump";
+import { orderBumps } from "@/data/orderBumps";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -43,12 +45,19 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [phoneError, setPhoneError] = useState('');
   const [linkError, setLinkError] = useState('');
 
+  // Order Bumps State
+  const [selectedOrderBumps, setSelectedOrderBumps] = useState<Set<string>>(new Set());
+
   // Calcula preços com desconto (precisa estar antes dos useEffects)
   const discountPercentage = discountApplied ? 15 : 0;
+  const orderBumpsTotal = Array.from(selectedOrderBumps).reduce((total, bumpId) => {
+    const bump = orderBumps.find(b => b.id === bumpId);
+    return total + (bump?.price || 0);
+  }, 0);
   const finalPrice = product 
-    ? product.discountPrice * (1 - discountPercentage / 100)
+    ? (product.discountPrice * (1 - discountPercentage / 100)) + orderBumpsTotal
     : 0;
-  const discountAmount = product ? product.discountPrice - finalPrice : 0;
+  const discountAmount = product ? product.discountPrice - (product.discountPrice * (1 - discountPercentage / 100)) : 0;
 
   // Restaura estado do PIX do sessionStorage ao montar
   useEffect(() => {
@@ -77,6 +86,10 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             setPhone(formData.phone || '');
             setLovableLink(formData.lovableLink || '');
             setDiscountApplied(formData.discountApplied || false);
+            // Restaura order bumps selecionados
+            if (formData.selectedOrderBumps) {
+              setSelectedOrderBumps(new Set(formData.selectedOrderBumps));
+            }
           }
         } catch (error) {
           console.error('Erro ao restaurar dados do PIX:', error);
@@ -99,6 +112,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         setPixData(null);
         setCopied(false);
         setPixTimeRemaining('');
+        setSelectedOrderBumps(new Set());
       }
     }
   }, [isOpen, product]);
@@ -126,9 +140,10 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         phone,
         lovableLink,
         discountApplied,
+        selectedOrderBumps: Array.from(selectedOrderBumps),
       }));
     }
-  }, [customerName, email, phone, lovableLink, discountApplied, isOpen]);
+  }, [customerName, email, phone, lovableLink, discountApplied, selectedOrderBumps, isOpen]);
 
   // Limpa intervalos ao desmontar
   useEffect(() => {
@@ -229,6 +244,12 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               email: email,
               phone: phone,
               lovableLink: lovableLink,
+            },
+            orderBumps: {
+              orderbump_1: selectedOrderBumps.has('orderbump_1'),
+              orderbump_2: selectedOrderBumps.has('orderbump_2'),
+              orderbump_3: selectedOrderBumps.has('orderbump_3'),
+              orderbump_4: selectedOrderBumps.has('orderbump_4'),
             },
             timestamp: new Date().toISOString(),
           });
@@ -356,6 +377,18 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     setPhoneError('');
   };
 
+  const handleOrderBumpToggle = (bumpId: string) => {
+    setSelectedOrderBumps(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(bumpId)) {
+        newSet.delete(bumpId);
+      } else {
+        newSet.add(bumpId);
+      }
+      return newSet;
+    });
+  };
+
   const validateForm = () => {
     let isValid = true;
     
@@ -424,6 +457,12 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           email: email,
           phone: phone,
           lovableLink: lovableLink,
+        },
+        orderBumps: {
+          orderbump_1: selectedOrderBumps.has('orderbump_1'),
+          orderbump_2: selectedOrderBumps.has('orderbump_2'),
+          orderbump_3: selectedOrderBumps.has('orderbump_3'),
+          orderbump_4: selectedOrderBumps.has('orderbump_4'),
         },
         timestamp: new Date().toISOString(),
       });
@@ -512,7 +551,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto scrollbar-hide" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-lg bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto scrollbar-hide" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
           <div>
@@ -545,7 +584,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                   R$ {product.originalPrice.toFixed(2).replace('.', ',')}
                 </p>
               )}
-              {discountApplied && (
+              {discountApplied && selectedOrderBumps.size === 0 && (
                 <>
                   <p className="text-xs text-muted-foreground line-through">
                     R$ {product.discountPrice.toFixed(2).replace('.', ',')}
@@ -555,7 +594,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                       -15%
                     </span>
                     <p className="text-xl font-bold text-emerald-500">
-                      R$ {finalPrice.toFixed(2).replace('.', ',')}
+                      R$ {(product.discountPrice * (1 - discountPercentage / 100)).toFixed(2).replace('.', ',')}
                     </p>
                   </div>
                   <p className="text-xs text-emerald-500 font-semibold">
@@ -563,10 +602,21 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                   </p>
                 </>
               )}
-              {!discountApplied && (
-                <p className="text-xl font-bold text-price-new">
-                  R$ {product.discountPrice.toFixed(2).replace('.', ',')}
-                </p>
+              {selectedOrderBumps.size > 0 ? (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    Plano + {selectedOrderBumps.size} extra{selectedOrderBumps.size > 1 ? 's' : ''}
+                  </p>
+                  <p className="text-2xl font-black text-primary">
+                    R$ {finalPrice.toFixed(2).replace('.', ',')}
+                  </p>
+                </div>
+              ) : (
+                !discountApplied && (
+                  <p className="text-xl font-bold text-price-new">
+                    R$ {product.discountPrice.toFixed(2).replace('.', ',')}
+                  </p>
+                )
               )}
             </div>
           </div>
@@ -663,6 +713,24 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 <p className="text-xs text-muted-foreground">
                   Cole o link de convite da sua conta Lovable para recebermos os créditos
                 </p>
+              </div>
+
+              {/* Order Bumps Section - MOVIDO PARA CÁ, DEPOIS DOS CAMPOS */}
+              <div className="pt-4 space-y-3 sm:space-y-4 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  <h3 className="text-base sm:text-lg font-bold text-foreground">Maximize seu investimento</h3>
+                </div>
+                <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
+                  {orderBumps.map((bump) => (
+                    <OrderBump
+                      key={bump.id}
+                      data={bump}
+                      isSelected={selectedOrderBumps.has(bump.id)}
+                      onToggle={handleOrderBumpToggle}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -815,6 +883,32 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">Erro ao Enviar</h3>
                 <p className="text-sm text-muted-foreground">{errorMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Floating Total - Sticky Bottom (Only in form step with order bumps) */}
+          {step === 'form' && (selectedOrderBumps.size > 0 || discountApplied) && (
+            <div className="sticky bottom-0 left-0 right-0 -mx-5 px-5 py-4 bg-gradient-to-t from-card via-card/98 to-card/95 backdrop-blur-md border-t-2 border-primary/30 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] z-20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Total do pedido</p>
+                  {selectedOrderBumps.size > 0 && (
+                    <p className="text-xs text-primary font-semibold">
+                      Plano + {selectedOrderBumps.size} extra{selectedOrderBumps.size > 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-black text-primary">
+                    R$ {finalPrice.toFixed(2).replace('.', ',')}
+                  </p>
+                  {discountApplied && (
+                    <p className="text-xs text-emerald-500 font-semibold">
+                      -15% aplicado
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
