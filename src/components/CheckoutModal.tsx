@@ -303,9 +303,9 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       }
     };
 
-    // Inicia verificação imediatamente e depois a cada 3 segundos
+    // Inicia verificação imediatamente e depois a cada 5 segundos
     checkStatus(); // Primeira verificação imediata
-    statusCheckInterval.current = setInterval(checkStatus, 3000); // 3 segundos
+    statusCheckInterval.current = setInterval(checkStatus, 5000); // 5 segundos
 
     // Cleanup: limpa o intervalo quando o componente desmonta ou quando as condições mudam
     return () => {
