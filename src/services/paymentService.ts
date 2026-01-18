@@ -35,6 +35,26 @@ export interface PaymentError {
   message?: string;
 }
 
+export interface WebhookPayload {
+  status: 'pending' | 'paid';
+  correlationID: string;
+  value: number;
+  product: {
+    name: string;
+    credits: number;
+    originalPrice: number;
+    discountPrice: number;
+    finalPrice: number;
+  };
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    lovableLink: string;
+  };
+  timestamp: string;
+}
+
 /**
  * Cria uma nova cobrança PIX via PushinPay
  */
@@ -156,4 +176,41 @@ export function formatTimeRemaining(expiresAt: string): string {
   }
 
   return `${diffMinutes} minutos`;
+}
+
+/**
+ * Envia webhook para URL configurada
+ */
+export async function sendWebhook(payload: WebhookPayload): Promise<boolean> {
+  try {
+    const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
+    
+    if (!webhookUrl) {
+      console.warn('VITE_WEBHOOK_URL não configurada. Webhook não será enviado.');
+      return false;
+    }
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      console.error('Erro ao enviar webhook:', {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      return false;
+    }
+
+    console.log('Webhook enviado com sucesso:', payload.status);
+    return true;
+  } catch (error) {
+    console.error('Erro ao enviar webhook:', error);
+    // Não lança erro para não interromper o fluxo de pagamento
+    return false;
+  }
 }

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { createPixPayment, checkPixStatus, copyPixCode, formatTimeRemaining, type PixPaymentData } from "@/services/paymentService";
+import { createPixPayment, checkPixStatus, copyPixCode, formatTimeRemaining, sendWebhook, type PixPaymentData } from "@/services/paymentService";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -105,30 +105,79 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     }
   }, [pixData, step]);
 
-  // Verifica status do pagamento periodicamente
+  // Verifica status do pagamento periodicamente (a cada 1 segundo)
   useEffect(() => {
-    if (pixData && step === 'pix-generated') {
+    if (pixData && step === 'pix-generated' && product) {
+      let isChecking = false; // Flag para evitar múltiplas verificações simultâneas
+      let consecutiveErrors = 0; // Contador de erros consecutivos
+      const MAX_CONSECUTIVE_ERRORS = 5; // Máximo de erros antes de parar
+
       const checkStatus = async () => {
+        // Evita múltiplas verificações simultâneas
+        if (isChecking) {
+          return;
+        }
+
         try {
+          isChecking = true;
           const status = await checkPixStatus(pixData.correlationID);
           
+          // Reset contador de erros em caso de sucesso
+          consecutiveErrors = 0;
+          
           if (status.isPaid) {
-            setStep('paid');
+            // Limpa o intervalo imediatamente
             if (statusCheckInterval.current) {
               clearInterval(statusCheckInterval.current);
+              statusCheckInterval.current = null;
             }
+
+            setStep('paid');
             toast.success('Pagamento confirmado! 🎉');
+            
+            // Envia webhook com status "paid" quando pagamento confirmado
+            await sendWebhook({
+              status: 'paid',
+              correlationID: pixData.correlationID,
+              value: pixData.value,
+              product: {
+                name: product.name,
+                credits: product.credits,
+                originalPrice: product.originalPrice,
+                discountPrice: product.discountPrice,
+                finalPrice: finalPrice,
+              },
+              customer: {
+                name: customerName,
+                email: email,
+                phone: phone,
+                lovableLink: lovableLink,
+              },
+              timestamp: new Date().toISOString(),
+            });
             
             // Fire Meta Pixel Purchase event
             if (typeof window !== 'undefined' && (window as any).fbq) {
-              (window as any).fbq('track', 'Purchase', {
+              const purchaseData = {
                 value: finalPrice,
                 currency: 'BRL',
-                content_name: product?.name,
+                content_name: product.name,
                 content_type: 'product',
-                content_ids: [product?.name],
+                content_ids: [product.name],
                 num_items: 1,
+                transaction_id: pixData.correlationID, // ID único da transação
+              };
+              
+              (window as any).fbq('track', 'Purchase', purchaseData);
+              
+              // Log para debug
+              console.log('✅ Meta Pixel Purchase event disparado:', {
+                event: 'Purchase',
+                data: purchaseData,
+                timestamp: new Date().toISOString(),
               });
+            } else {
+              console.warn('⚠️ Meta Pixel (fbq) não está disponível. Evento Purchase não foi disparado.');
             }
 
             // Fire Google Analytics purchase event
@@ -138,34 +187,50 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
                 value: finalPrice,
                 currency: 'BRL',
                 items: [{
-                  item_id: product?.name,
-                  item_name: product?.name,
+                  item_id: product.name,
+                  item_name: product.name,
                   price: finalPrice,
                   quantity: 1,
                 }],
               });
             }
             
-            // Fecha o modal após 3 segundos
+            // Redireciona para página de sucesso após 2 segundos
             setTimeout(() => {
               onClose();
-            }, 3000);
+              // Redireciona para página de sucesso
+              window.location.href = '/success?correlationID=' + encodeURIComponent(pixData.correlationID);
+            }, 2000);
           }
         } catch (error) {
           console.error('Erro ao verificar status:', error);
+          consecutiveErrors++;
+          
+          // Para o polling se houver muitos erros consecutivos
+          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+            console.error('Muitos erros consecutivos. Parando verificação automática.');
+            if (statusCheckInterval.current) {
+              clearInterval(statusCheckInterval.current);
+              statusCheckInterval.current = null;
+            }
+            toast.error('Erro ao verificar pagamento. Tente recarregar a página.');
+          }
+        } finally {
+          isChecking = false;
         }
       };
 
-      // Verifica a cada 5 segundos
-      statusCheckInterval.current = setInterval(checkStatus, 5000);
+      // Verifica a cada 1 segundo (1000ms)
+      statusCheckInterval.current = setInterval(checkStatus, 1000);
 
       return () => {
         if (statusCheckInterval.current) {
           clearInterval(statusCheckInterval.current);
+          statusCheckInterval.current = null;
         }
       };
     }
-  }, [pixData, step, onClose, product, finalPrice]);
+  }, [pixData, step, onClose, product, finalPrice, customerName, email, phone, lovableLink]);
 
   // Timer para a oferta
   useEffect(() => {
@@ -260,6 +325,27 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       setStep('pix-generated');
       toast.success('PIX gerado com sucesso!');
 
+      // Envia webhook com status "pending" imediatamente após gerar o PIX
+      await sendWebhook({
+        status: 'pending',
+        correlationID: data.correlationID,
+        value: data.value,
+        product: {
+          name: product.name,
+          credits: product.credits,
+          originalPrice: product.originalPrice,
+          discountPrice: product.discountPrice,
+          finalPrice: paymentValue,
+        },
+        customer: {
+          name: customerName,
+          email: email,
+          phone: phone,
+          lovableLink: lovableLink,
+        },
+        timestamp: new Date().toISOString(),
+      });
+
       // Fire Meta Pixel InitiateCheckout event
       if (typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('track', 'InitiateCheckout', {
@@ -332,66 +418,6 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
-  useEffect(() => {
-    if (pixData && step === 'pix-generated') {
-      const checkStatus = async () => {
-        try {
-          const status = await checkPixStatus(pixData.correlationID);
-          
-          if (status.isPaid) {
-            setStep('paid');
-            if (statusCheckInterval.current) {
-              clearInterval(statusCheckInterval.current);
-            }
-            toast.success('Pagamento confirmado! 🎉');
-            
-            // Fire Meta Pixel Purchase event
-            if (typeof window !== 'undefined' && (window as any).fbq) {
-              (window as any).fbq('track', 'Purchase', {
-                value: finalPrice,
-                currency: 'BRL',
-                content_name: product?.name,
-                content_type: 'product',
-                content_ids: [product?.name],
-                num_items: 1,
-              });
-            }
-
-            // Fire Google Analytics purchase event
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-              (window as any).gtag('event', 'purchase', {
-                transaction_id: `order_${Date.now()}`,
-                value: finalPrice,
-                currency: 'BRL',
-                items: [{
-                  item_id: product?.name,
-                  item_name: product?.name,
-                  price: finalPrice,
-                  quantity: 1,
-                }],
-              });
-            }
-            
-            // Fecha o modal após 3 segundos
-            setTimeout(() => {
-              onClose();
-            }, 3000);
-          }
-        } catch (error) {
-          console.error('Erro ao verificar status:', error);
-        }
-      };
-
-      // Verifica a cada 5 segundos
-      statusCheckInterval.current = setInterval(checkStatus, 5000);
-
-      return () => {
-        if (statusCheckInterval.current) {
-          clearInterval(statusCheckInterval.current);
-        }
-      };
-    }
-  }, [pixData, step, onClose, product, finalPrice]);
 
   if (!isOpen || !product) return null;
 
