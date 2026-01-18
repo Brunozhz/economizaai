@@ -50,32 +50,85 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     : 0;
   const discountAmount = product ? product.discountPrice - finalPrice : 0;
 
-  // Reset quando o modal abre (apenas se não houver dados do PIX - indica que é uma abertura nova)
+  // Restaura estado do PIX do sessionStorage ao montar
   useEffect(() => {
     if (isOpen && product) {
-      // Se já tem dados do PIX, não reseta (modal foi restaurado)
-      if (pixData) {
-        return;
-      }
+      const savedPixData = sessionStorage.getItem('pixPaymentData');
+      const savedStep = sessionStorage.getItem('checkoutStep');
+      const savedFormData = sessionStorage.getItem('checkoutFormData');
       
-      // Reset apenas se for uma abertura nova do modal
-      setStep('form');
-      setCustomerName('');
-      setEmail('');
-      setPhone('');
-      setLovableLink('');
-      setErrorMessage('');
-      setNameError('');
-      setEmailError('');
-      setPhoneError('');
-      setLinkError('');
-      setShowExitOffer(false);
-      setDiscountApplied(false);
-      setTimeRemaining(300);
-      setCopied(false);
-      setPixTimeRemaining('');
+      if (savedPixData) {
+        try {
+          const pix = JSON.parse(savedPixData);
+          setPixData(pix);
+          
+          // Restaura o step se existir
+          if (savedStep && ['pix-generated', 'paid', 'expired'].includes(savedStep)) {
+            setStep(savedStep as CheckoutStep);
+          } else {
+            setStep('pix-generated');
+          }
+          
+          // Restaura dados do formulário se existirem
+          if (savedFormData) {
+            const formData = JSON.parse(savedFormData);
+            setCustomerName(formData.customerName || '');
+            setEmail(formData.email || '');
+            setPhone(formData.phone || '');
+            setLovableLink(formData.lovableLink || '');
+            setDiscountApplied(formData.discountApplied || false);
+          }
+        } catch (error) {
+          console.error('Erro ao restaurar dados do PIX:', error);
+        }
+      } else {
+        // Reset apenas se não houver dados salvos (abertura nova)
+        setStep('form');
+        setCustomerName('');
+        setEmail('');
+        setPhone('');
+        setLovableLink('');
+        setErrorMessage('');
+        setNameError('');
+        setEmailError('');
+        setPhoneError('');
+        setLinkError('');
+        setShowExitOffer(false);
+        setDiscountApplied(false);
+        setTimeRemaining(300);
+        setPixData(null);
+        setCopied(false);
+        setPixTimeRemaining('');
+      }
     }
   }, [isOpen, product]);
+  
+  // Salva dados do PIX no sessionStorage quando mudam
+  useEffect(() => {
+    if (pixData) {
+      sessionStorage.setItem('pixPaymentData', JSON.stringify(pixData));
+    }
+  }, [pixData]);
+  
+  // Salva step no sessionStorage
+  useEffect(() => {
+    if (step !== 'form' && isOpen) {
+      sessionStorage.setItem('checkoutStep', step);
+    }
+  }, [step, isOpen]);
+  
+  // Salva dados do formulário no sessionStorage
+  useEffect(() => {
+    if (isOpen && (customerName || email || phone || lovableLink)) {
+      sessionStorage.setItem('checkoutFormData', JSON.stringify({
+        customerName,
+        email,
+        phone,
+        lovableLink,
+        discountApplied,
+      }));
+    }
+  }, [customerName, email, phone, lovableLink, discountApplied, isOpen]);
 
   // Limpa intervalos ao desmontar
   useEffect(() => {
@@ -151,12 +204,16 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             statusCheckInterval.current = null;
           }
 
-          console.log('✅ Pagamento confirmado!');
-          setStep('paid');
-          toast.success('Pagamento confirmado! 🎉');
-          
-          // Envia webhook com status "paid" quando pagamento confirmado
-          await sendWebhook({
+            console.log('✅ Pagamento confirmado!');
+            setStep('paid');
+            
+            // Atualiza dados salvos
+            sessionStorage.setItem('checkoutStep', 'paid');
+            
+            toast.success('Pagamento confirmado! 🎉');
+            
+            // Envia webhook com status "paid" quando pagamento confirmado
+            await sendWebhook({
             status: 'paid',
             correlationID: correlationID,
             value: pixData.value,
@@ -215,12 +272,18 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
             });
           }
           
-          // Redireciona para página de sucesso após 2 segundos
-          setTimeout(() => {
-            onClose();
-            // Redireciona para página de sucesso
-            window.location.href = '/success?correlationID=' + encodeURIComponent(correlationID);
-          }, 2000);
+            // Limpa dados do sessionStorage após confirmar pagamento
+            sessionStorage.removeItem('pixPaymentData');
+            sessionStorage.removeItem('checkoutModalState');
+            sessionStorage.removeItem('checkoutStep');
+            sessionStorage.removeItem('checkoutFormData');
+            
+            // Redireciona para página de sucesso após 2 segundos
+            setTimeout(() => {
+              onClose();
+              // Redireciona para página de sucesso
+              window.location.href = '/success?correlationID=' + encodeURIComponent(correlationID);
+            }, 2000);
         } else {
           // Pagamento ainda não confirmado, continua verificando
           // Log apenas a cada 10 tentativas
@@ -344,6 +407,11 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       
       setPixData(data);
       setStep('pix-generated');
+      
+      // Salva dados do PIX no sessionStorage para restaurar se sair do site
+      sessionStorage.setItem('pixPaymentData', JSON.stringify(data));
+      sessionStorage.setItem('checkoutStep', 'pix-generated');
+      
       toast.success('PIX gerado com sucesso!');
 
       // Envia webhook com status "pending" imediatamente após gerar o PIX

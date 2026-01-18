@@ -117,7 +117,14 @@ const ProductGrid = () => {
     setIsCheckoutOpen(false);
     setSelectedProduct(null);
     // Remove do sessionStorage apenas quando realmente fecha (não quando mostra modal de desconto)
-    sessionStorage.removeItem('checkoutModalState');
+    // Mas mantém os dados do PIX se existirem para restaurar quando reabrir
+    const savedPixData = sessionStorage.getItem('pixPaymentData');
+    if (!savedPixData) {
+      // Só remove tudo se não houver PIX gerado
+      sessionStorage.removeItem('checkoutModalState');
+      sessionStorage.removeItem('checkoutStep');
+      sessionStorage.removeItem('checkoutFormData');
+    }
   };
 
   // Confetti effect when scrolling to products section (first time only)
