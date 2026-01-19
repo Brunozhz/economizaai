@@ -97,6 +97,33 @@ const ProductGrid = () => {
     }
   }, [isCheckoutOpen, selectedProduct]);
 
+  // Restaura o modal quando o usuário volta para a aba
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !isCheckoutOpen) {
+        // Quando a aba fica visível e o modal está fechado, verifica se deve reabrir
+        const savedCheckoutState = sessionStorage.getItem('checkoutModalState');
+        if (savedCheckoutState) {
+          try {
+            const { isOpen, product } = JSON.parse(savedCheckoutState);
+            if (isOpen && product) {
+              setSelectedProduct(product);
+              setIsCheckoutOpen(true);
+            }
+          } catch (error) {
+            console.error('Erro ao restaurar estado do modal:', error);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isCheckoutOpen]);
+
   const handleBuy = (product: Product) => {
     const productData = {
       name: product.name,
@@ -116,15 +143,10 @@ const ProductGrid = () => {
   const handleCloseCheckout = () => {
     setIsCheckoutOpen(false);
     setSelectedProduct(null);
-    // Remove do sessionStorage apenas quando realmente fecha (não quando mostra modal de desconto)
-    // Mas mantém os dados do PIX se existirem para restaurar quando reabrir
-    const savedPixData = sessionStorage.getItem('pixPaymentData');
-    if (!savedPixData) {
-      // Só remove tudo se não houver PIX gerado
-      sessionStorage.removeItem('checkoutModalState');
-      sessionStorage.removeItem('checkoutStep');
-      sessionStorage.removeItem('checkoutFormData');
-    }
+    // Limpa o estado do modal do sessionStorage quando fecha
+    sessionStorage.removeItem('checkoutModalState');
+    // Mantém os dados do PIX e formulário caso o usuário volte
+    // Eles só serão limpos quando o usuário completar ou realmente sair do fluxo
   };
 
   // Confetti effect when scrolling to products section (first time only)
