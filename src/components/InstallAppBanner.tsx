@@ -21,8 +21,8 @@ const InstallAppBanner = () => {
 
   return (
     <>
-      {/* Floating Install Banner */}
-      <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50 animate-fade-in">
+      {/* Floating Install Banner - Hidden on mobile, visible on desktop */}
+      <div className="hidden md:block fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50 animate-fade-in">
         <div className="relative bg-card/95 backdrop-blur-xl border border-primary/20 rounded-2xl p-4 shadow-[0_8px_40px_rgba(34,197,94,0.25)]">
           {/* Close button */}
           <button 
