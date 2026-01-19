@@ -576,7 +576,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   if (!isOpen || !product) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-0 md:p-4">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
@@ -584,7 +584,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-card border border-border rounded-2xl shadow-card overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto scrollbar-hide" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full md:max-w-lg bg-card border border-border rounded-none md:rounded-2xl shadow-card overflow-hidden animate-fade-in h-[100svh] md:h-auto max-h-[100svh] md:max-h-[90vh] overflow-y-auto scrollbar-hide" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
           <div>
@@ -1034,14 +1034,14 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
 
       {/* Exit Offer Modal - Aparece por cima */}
       {showExitOffer && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-0 md:p-4">
           <div 
             className="absolute inset-0 bg-black/90 backdrop-blur-sm"
             onClick={handleRejectDiscount}
           />
           
           {/* Modal de Oferta */}
-          <div className="relative w-full max-w-md bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 border-2 border-white/30 rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full md:max-w-md bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 border-2 border-white/30 rounded-none md:rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 h-[100svh] md:h-auto max-h-[100svh] md:max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Timer Header */}
             <div className="bg-black/30 backdrop-blur-sm px-3 py-2 md:px-6 md:py-3 flex items-center justify-between border-b border-white/20">
               <div className="flex items-center gap-1.5 md:gap-2 text-white">

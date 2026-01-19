@@ -215,7 +215,7 @@ const HeroSection = () => {
                   onClick={handleVideoClick}
                   poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E"
                 >
-                  <source src="https://fsyzkjag8xspq00w.public.blob.vercel-storage.com/0118.mov" type="video/mp4" />
+                  <source src="https://fsyzkjag8xspq00w.public.blob.vercel-storage.com/0118%281%29.mov" type="video/mp4" />
                   Seu navegador não suporta a reprodução de vídeo.
                 </video>
                 
