@@ -73,6 +73,13 @@
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
+    /* Hide scrollbar */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  body::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
   }
 
   body::before {
@@ -116,6 +123,13 @@
 
   html {
     scroll-behavior: smooth;
+    /* Hide scrollbar */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  html::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
   }
 }
 

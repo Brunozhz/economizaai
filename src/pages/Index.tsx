@@ -8,7 +8,6 @@ import ProductGrid from "@/components/ProductGrid";
 import PriceComparison from "@/components/PriceComparison";
 import Footer from "@/components/Footer";
 import InstallAppBanner from "@/components/InstallAppBanner";
-import SupportChatWidget from "@/components/SupportChatWidget";
 
 const Index = () => {
   return (
@@ -23,7 +22,6 @@ const Index = () => {
       </main>
       <Footer />
       <InstallAppBanner />
-      <SupportChatWidget />
     </div>
   );
 };
