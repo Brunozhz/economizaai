@@ -54,10 +54,11 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
     const bump = orderBumps.find(b => b.id === bumpId);
     return total + (bump?.price || 0);
   }, 0);
-  const finalPrice = product 
-    ? (product.discountPrice * (1 - discountPercentage / 100)) + orderBumpsTotal
-    : 0;
-  const discountAmount = product ? product.discountPrice - (product.discountPrice * (1 - discountPercentage / 100)) : 0;
+  // Calcula o valor total (produto + order bumps) ANTES do desconto
+  const totalBeforeDiscount = product ? product.discountPrice + orderBumpsTotal : 0;
+  // Aplica o desconto sobre o valor total
+  const discountAmount = totalBeforeDiscount * (discountPercentage / 100);
+  const finalPrice = totalBeforeDiscount - discountAmount;
 
   // Restaura estado do PIX do sessionStorage ao montar
   useEffect(() => {
@@ -1040,100 +1041,100 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
           />
           
           {/* Modal de Oferta */}
-          <div className="relative w-full max-w-md bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 border-2 border-white/30 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-md bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 border-2 border-white/30 rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Timer Header */}
-            <div className="bg-black/30 backdrop-blur-sm px-6 py-3 flex items-center justify-between border-b border-white/20">
-              <div className="flex items-center gap-2 text-white">
-                <Timer className="h-5 w-5 animate-pulse" />
-                <span className="text-sm font-medium">Oferta expira em:</span>
+            <div className="bg-black/30 backdrop-blur-sm px-3 py-2 md:px-6 md:py-3 flex items-center justify-between border-b border-white/20">
+              <div className="flex items-center gap-1.5 md:gap-2 text-white">
+                <Timer className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
+                <span className="text-xs md:text-sm font-medium">Oferta expira em:</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="bg-red-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-pulse">
+                <div className="bg-red-500 text-white px-2 py-0.5 md:px-3 md:py-1 rounded-full font-bold text-sm md:text-lg animate-pulse">
                   {formatTime(timeRemaining)}
                 </div>
               </div>
             </div>
 
             {/* Content */}
-            <div className="p-6 text-center relative overflow-hidden">
+            <div className="p-3 md:p-6 text-center relative overflow-hidden">
               {/* Decorative Elements */}
-              <div className="absolute top-4 left-4 text-yellow-300 text-3xl animate-bounce">✨</div>
-              <div className="absolute top-4 right-4 text-yellow-300 text-3xl animate-bounce" style={{ animationDelay: '0.5s' }}>🎉</div>
-              <div className="absolute bottom-4 left-8 text-yellow-300 text-3xl animate-bounce" style={{ animationDelay: '1s' }}>💎</div>
-              <div className="absolute bottom-4 right-8 text-yellow-300 text-3xl animate-bounce" style={{ animationDelay: '1.5s' }}>🔥</div>
+              <div className="absolute top-2 left-2 md:top-4 md:left-4 text-yellow-300 text-xl md:text-3xl animate-bounce">✨</div>
+              <div className="absolute top-2 right-2 md:top-4 md:right-4 text-yellow-300 text-xl md:text-3xl animate-bounce" style={{ animationDelay: '0.5s' }}>🎉</div>
+              <div className="absolute bottom-2 left-4 md:bottom-4 md:left-8 text-yellow-300 text-xl md:text-3xl animate-bounce" style={{ animationDelay: '1s' }}>💎</div>
+              <div className="absolute bottom-2 right-4 md:bottom-4 md:right-8 text-yellow-300 text-xl md:text-3xl animate-bounce" style={{ animationDelay: '1.5s' }}>🔥</div>
 
               {/* Main Content */}
-              <div className="relative z-10 space-y-4">
-                <div className="mx-auto w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 animate-pulse">
-                  <Gift className="h-12 w-12 text-white" />
+              <div className="relative z-10 space-y-2.5 md:space-y-4">
+                <div className="mx-auto w-14 h-14 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-2 md:mb-4 animate-pulse">
+                  <Gift className="h-8 w-8 md:h-12 md:w-12 text-white" />
                 </div>
 
-                <h3 className="text-3xl font-black text-white mb-2">
+                <h3 className="text-2xl md:text-3xl font-black text-white mb-1 md:mb-2">
                   ESPERA! 🛑
                 </h3>
 
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 border-2 border-white/30">
-                  <p className="text-white text-lg font-bold mb-2">
+                <div className="bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl p-2.5 md:p-4 border-2 border-white/30">
+                  <p className="text-white text-base md:text-lg font-bold mb-1 md:mb-2">
                     Não vá embora ainda!
                   </p>
-                  <p className="text-white/90 text-sm">
+                  <p className="text-white/90 text-xs md:text-sm">
                     Você tem uma oferta exclusiva esperando!
                   </p>
                 </div>
 
                 {/* Discount Badge */}
-                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-full px-6 py-3 inline-flex items-center gap-2 font-black text-2xl shadow-xl">
-                  <Zap className="h-6 w-6" />
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-full px-3 py-2 md:px-6 md:py-3 inline-flex items-center gap-1.5 md:gap-2 font-black text-base md:text-2xl shadow-xl">
+                  <Zap className="h-4 w-4 md:h-6 md:w-6" />
                   <span>15% DE DESCONTO AGORA!</span>
-                  <Zap className="h-6 w-6" />
+                  <Zap className="h-4 w-4 md:h-6 md:w-6" />
                 </div>
 
                 {/* Price Comparison */}
                 {product && (
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/30">
-                    <div className="flex items-center justify-between text-white mb-2">
-                      <span className="text-sm">Preço Original:</span>
-                      <span className="text-lg line-through opacity-70">
-                        R$ {product.discountPrice.toFixed(2).replace('.', ',')}
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg md:rounded-xl p-2.5 md:p-4 border border-white/30">
+                    <div className="flex items-center justify-between text-white mb-1.5 md:mb-2">
+                      <span className="text-xs md:text-sm">Preço Total:</span>
+                      <span className="text-base md:text-lg line-through opacity-70">
+                        R$ {(product.discountPrice + orderBumpsTotal).toFixed(2).replace('.', ',')}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-white mb-2">
-                      <span className="text-sm font-semibold">Desconto (15%):</span>
-                      <span className="text-lg font-bold text-yellow-300">
-                        -R$ {(product.discountPrice * 0.15).toFixed(2).replace('.', ',')}
+                    <div className="flex items-center justify-between text-white mb-1.5 md:mb-2">
+                      <span className="text-xs md:text-sm font-semibold">Desconto (15%):</span>
+                      <span className="text-base md:text-lg font-bold text-yellow-300">
+                        -R$ {((product.discountPrice + orderBumpsTotal) * 0.15).toFixed(2).replace('.', ',')}
                       </span>
                     </div>
-                    <div className="border-t border-white/30 pt-2 mt-2">
+                    <div className="border-t border-white/30 pt-1.5 mt-1.5 md:pt-2 md:mt-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-white">Preço Final:</span>
-                        <span className="text-3xl font-black text-yellow-300">
-                          R$ {(product.discountPrice * 0.85).toFixed(2).replace('.', ',')}
+                        <span className="text-base md:text-lg font-bold text-white">Preço Final:</span>
+                        <span className="text-2xl md:text-3xl font-black text-yellow-300">
+                          R$ {((product.discountPrice + orderBumpsTotal) * 0.85).toFixed(2).replace('.', ',')}
                         </span>
                       </div>
                     </div>
                   </div>
                 )}
 
-                <p className="text-white/90 text-sm font-medium">
-                  ⏰ Esta oferta é válida apenas por <span className="font-black text-yellow-300">5 minutos</span>!
+                <p className="text-white/90 text-xs md:text-sm font-medium">
+                  💎 Esta oferta é válida apenas por <span className="font-black text-yellow-300">5 minutos</span>! 🔥
                 </p>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="bg-black/30 backdrop-blur-sm p-6 space-y-3">
+            <div className="bg-black/30 backdrop-blur-sm p-3 md:p-6 space-y-2 md:space-y-3">
               <Button
                 onClick={handleAcceptDiscount}
-                className="!w-full !h-14 !bg-white !text-emerald-600 hover:!bg-yellow-300 !font-black !text-lg !rounded-xl !shadow-xl hover:!scale-105 !transition-transform"
+                className="!w-full !h-12 md:!h-14 !bg-white !text-emerald-600 hover:!bg-yellow-300 !font-black !text-base md:!text-lg !rounded-xl !shadow-xl hover:!scale-105 !transition-transform"
                 style={{ color: '#059669', backgroundColor: '#ffffff' }}
               >
-                <Sparkles className="mr-2 h-5 w-5" style={{ color: '#059669' }} />
-                EU QUERO! APLICAR DESCONTO AGORA
+                <Sparkles className="mr-2 h-4 w-4 md:h-5 md:w-5" style={{ color: '#059669' }} />
+                EU QUERO
               </Button>
               
               <button
                 onClick={handleRejectDiscount}
-                className="w-full text-white/70 hover:text-white text-sm underline"
+                className="w-full text-white/70 hover:text-white text-xs md:text-sm underline"
               >
                 Não, obrigado. Quero pagar o preço normal.
               </button>

@@ -103,7 +103,7 @@ const OrderBump = ({ data, isSelected, onToggle }: OrderBumpProps) => {
       className={cn(
         "relative rounded-xl border-2 transition-all duration-300 cursor-pointer overflow-hidden",
         isSelected 
-          ? `${theme.borderActive} ${theme.bgActive} ${theme.glowActive}` 
+          ? "border-emerald-400 bg-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.6)]" 
           : `${theme.border} ${theme.bg} ${theme.glow}`,
         isHovered && !isSelected && "scale-[1.02]"
       )}
@@ -111,21 +111,50 @@ const OrderBump = ({ data, isSelected, onToggle }: OrderBumpProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Animated border effect for selected state */}
+      {/* Overlay Verde com Blur e Mensagem SELECIONADO */}
       {isSelected && (
-        <div 
-          className="absolute inset-0 opacity-50 pointer-events-none"
-          style={{
-            background: `linear-gradient(90deg, transparent 40%, ${data.theme === 'gold' ? 'rgba(250,204,21,0.2)' : data.theme === 'green' ? 'rgba(16,185,129,0.2)' : data.theme === 'purple' ? 'rgba(168,85,247,0.2)' : 'rgba(253,224,71,0.2)'} 50%, transparent 60%)`,
-            backgroundSize: '200% 200%',
-            animation: 'energy-flow 3s linear infinite',
-          }}
-        />
+        <>
+          <div 
+            className="absolute inset-0 bg-emerald-500/20 backdrop-blur-sm pointer-events-none z-10"
+          />
+          
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-20"
+          >
+            <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-4 py-2 md:px-6 md:py-2.5 rounded-full font-black text-xs md:text-sm shadow-2xl border-2 border-emerald-300/50 backdrop-blur-md animate-pulse">
+              <span className="flex items-center gap-2">
+                <Check className="h-4 w-4 md:h-5 md:w-5" />
+                SELECIONADO
+              </span>
+            </div>
+          </div>
+          
+          <div 
+            className="absolute inset-0 opacity-40 pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, transparent 40%, rgba(16,185,129,0.3) 50%, transparent 60%)',
+              backgroundSize: '200% 200%',
+              animation: 'energy-flow 3s linear infinite',
+            }}
+          />
+        </>
       )}
 
-      <div className="relative p-3 sm:p-4 space-y-2 sm:space-y-3">
+      <div className="relative p-3 sm:p-4 space-y-2 sm:space-y-3 z-[5]">
+        {/* Badge SELECIONAR no canto superior direito */}
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10">
+          <div className={cn(
+            "px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wide transition-all duration-300",
+            isSelected 
+              ? "bg-emerald-500 text-white shadow-lg" 
+              : "bg-white/10 text-muted-foreground border border-border/50"
+          )}>
+            {isSelected ? "✓ SELECIONADO" : "SELECIONAR"}
+          </div>
+        </div>
+
         {/* Header: Icon + Title */}
-        <div className="flex items-start gap-2 sm:gap-3">
+        <div className="flex items-start gap-2 sm:gap-3 pr-20 sm:pr-24">
           {/* Icon/Image */}
           {data.imageUrl && !imageError ? (
             <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden border border-border/50">
@@ -150,7 +179,7 @@ const OrderBump = ({ data, isSelected, onToggle }: OrderBumpProps) => {
             <p className={cn("font-bold text-xs sm:text-sm", theme.text)}>
               Sim! {data.title}
             </p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 line-clamp-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
               {data.proofText}
             </p>
           </div>
@@ -164,11 +193,11 @@ const OrderBump = ({ data, isSelected, onToggle }: OrderBumpProps) => {
         {/* Description */}
         <div className="space-y-0.5 sm:space-y-1">
           {data.subtitle && (
-            <p className={cn("font-bold text-xs sm:text-sm uppercase tracking-wide line-clamp-1", theme.text)}>
+            <p className={cn("font-bold text-xs sm:text-sm uppercase tracking-wide", theme.text)}>
               {data.subtitle}
             </p>
           )}
-          <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-none">
+          <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">
             {data.description}
           </p>
         </div>
