@@ -31,6 +31,7 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   const [pixData, setPixData] = useState<PixPaymentData | null>(null);
   const [copied, setCopied] = useState(false);
   const [pixTimeRemaining, setPixTimeRemaining] = useState<string>('');
+  const pixWarmupDoneRef = useRef(false);
 
   // Exit offer modal
   const [showExitOffer, setShowExitOffer] = useState(false);
@@ -63,6 +64,10 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
   // Restaura estado do PIX do sessionStorage ao montar
   useEffect(() => {
     if (isOpen && product) {
+      if (!pixWarmupDoneRef.current) {
+        pixWarmupDoneRef.current = true;
+        fetch('/api/create-pix-pushinpay', { method: 'OPTIONS' }).catch(() => {});
+      }
       const savedPixData = sessionStorage.getItem('pixPaymentData');
       const savedStep = sessionStorage.getItem('checkoutStep');
       const savedFormData = sessionStorage.getItem('checkoutFormData');
@@ -115,6 +120,8 @@ const CheckoutModal = ({ isOpen, onClose, product }: CheckoutModalProps) => {
         setPixTimeRemaining('');
         setSelectedOrderBumps(new Set());
       }
+    } else if (!isOpen) {
+      pixWarmupDoneRef.current = false;
     }
   }, [isOpen, product]);
   
